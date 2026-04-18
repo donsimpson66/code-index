@@ -105,10 +105,10 @@ The tool should help AI agents:
 - [x] Filter generated files by default:
   - [x] `bin/**`
   - [x] `obj/**`
-  - [ ] `*.g.cs`
-  - [ ] `*.g.i.cs`
-  - [ ] `*.designer.cs`
-  - [ ] `*.generated.cs`
+  - [x] `*.g.cs`
+  - [x] `*.g.i.cs`
+  - [x] `*.designer.cs`
+  - [x] `*.generated.cs`
 
 ### Done Criteria
 
@@ -225,7 +225,7 @@ The tool should help AI agents:
 ### Done Criteria
 
 - [x] `build` works end-to-end
-- [ ] Output is deterministic across repeated runs
+- [x] Output is deterministic across repeated runs
 - [x] Output validates successfully
 
 ---
@@ -261,9 +261,9 @@ The tool should help AI agents:
 
 - [x] Validate file references
 - [x] Validate parent references
-- [ ] Validate edge references
-- [ ] Validate range values
-- [ ] Validate duplicate IDs
+- [x] Validate edge references
+- [x] Validate range values
+- [x] Validate duplicate IDs
 - [ ] Add partial class handling rule
 - [ ] Improve error messages
 - [ ] Add clear non-zero exit codes for failures
@@ -280,21 +280,21 @@ The tool should help AI agents:
 
 ### Core Tests
 
-- [ ] Path normalization tests
-- [ ] ID generation tests
+- [x] Path normalization tests
+- [x] ID generation tests
 - [ ] JSON serialization tests
-- [ ] validation rule tests
+- [x] validation rule tests
 
 ### Roslyn Tests
 
-- [ ] class extraction tests
+- [x] class extraction tests
 - [ ] method extraction tests
-- [ ] namespace extraction tests
+- [x] namespace extraction tests
 - [ ] inheritance extraction tests
 - [ ] interface implementation tests
 - [ ] override extraction tests
 - [ ] XML summary extraction tests
-- [ ] generated-file filter tests
+- [x] generated-file filter tests
 
 ### CLI Tests
 
@@ -307,9 +307,9 @@ The tool should help AI agents:
 
 ### Done Criteria
 
-- [ ] Core behavior is covered
+- [ ] Core behavior is broadly covered
 - [x] Main CLI flows are covered
-- [ ] Sample solution can be indexed in tests
+- [x] Current repository solution can be indexed in tests
 
 ---
 
@@ -325,7 +325,7 @@ The tool should help AI agents:
   - [ ] override method
   - [ ] properties and fields
   - [ ] XML docs
-- [ ] Use sample solution in tests
+- [x] Use current repository solution in tests
 - [ ] Use sample solution in README examples
 
 ### Done Criteria

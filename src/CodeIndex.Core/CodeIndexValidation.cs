@@ -15,6 +15,25 @@ public sealed class CodeIndexValidationException : Exception
 
 public sealed class CodeIndexValidator
 {
+    private static readonly IComparer<EdgeRecord> EdgeComparer = Comparer<EdgeRecord>.Create(static (left, right) =>
+    {
+        var typeComparison = StringComparer.Ordinal.Compare(left.Type, right.Type);
+
+        if (typeComparison != 0)
+        {
+            return typeComparison;
+        }
+
+        var fromComparison = StringComparer.Ordinal.Compare(left.From, right.From);
+
+        if (fromComparison != 0)
+        {
+            return fromComparison;
+        }
+
+        return StringComparer.Ordinal.Compare(left.To, right.To);
+    });
+
     public IReadOnlyList<ValidationIssue> Validate(CodeIndexSnapshot snapshot)
     {
         var issues = new List<ValidationIssue>();
@@ -44,7 +63,7 @@ public sealed class CodeIndexValidator
             issues.Add(new ValidationIssue("symbols-not-sorted", "Symbols must be sorted by qualified name using ordinal ordering."));
         }
 
-        if (!IsSorted(snapshot.Edges.Select(edge => $"{edge.Type}|{edge.From}|{edge.To}"), StringComparer.Ordinal))
+        if (!IsSorted(snapshot.Edges, EdgeComparer))
         {
             issues.Add(new ValidationIssue("edges-not-sorted", "Edges must be sorted by type, from, then to using ordinal ordering."));
         }
@@ -52,7 +71,7 @@ public sealed class CodeIndexValidator
         AddDuplicateIssues(issues, snapshot.Files.Select(file => file.Id), "file-id-duplicate", "Duplicate file ID");
         AddDuplicateIssues(issues, snapshot.Files.Select(file => file.Path), "file-path-duplicate", "Duplicate file path");
         AddDuplicateIssues(issues, snapshot.Symbols.Select(symbol => symbol.Id), "symbol-id-duplicate", "Duplicate symbol ID");
-        AddDuplicateIssues(issues, snapshot.Edges.Select(edge => $"{edge.Type}|{edge.From}|{edge.To}"), "edge-duplicate", "Duplicate edge");
+        AddDuplicateEdgeIssues(issues, snapshot.Edges);
 
         var fileIds = snapshot.Files.Select(file => file.Id).ToHashSet(StringComparer.Ordinal);
         var filesById = snapshot.Files.ToDictionary(file => file.Id, StringComparer.Ordinal);
@@ -160,6 +179,18 @@ public sealed class CodeIndexValidator
         }
     }
 
+    private static void AddDuplicateEdgeIssues(List<ValidationIssue> issues, IEnumerable<EdgeRecord> edges)
+    {
+        foreach (var duplicate in edges
+                     .GroupBy(edge => edge)
+                     .Where(group => group.Count() > 1)
+                     .Select(group => group.Key)
+                     .OrderBy(edge => edge, EdgeComparer))
+        {
+            issues.Add(new ValidationIssue("edge-duplicate", $"Duplicate edge: {duplicate.Type} {duplicate.From} -> {duplicate.To}."));
+        }
+    }
+
     private static bool IsSorted(IEnumerable<string> values, StringComparer comparer)
     {
         string? previous = null;
@@ -172,6 +203,25 @@ public sealed class CodeIndexValidator
             }
 
             previous = value;
+        }
+
+        return true;
+    }
+
+    private static bool IsSorted<T>(IEnumerable<T> values, IComparer<T> comparer)
+    {
+        var hasPrevious = false;
+        var previous = default(T);
+
+        foreach (var value in values)
+        {
+            if (hasPrevious && comparer.Compare(previous!, value) > 0)
+            {
+                return false;
+            }
+
+            previous = value;
+            hasPrevious = true;
         }
 
         return true;

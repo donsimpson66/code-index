@@ -20,10 +20,12 @@ Completed today:
 - XML doc `<summary>` extraction and fallback summaries are implemented
 - structural edge extraction is implemented and `code-index.edges.json` is generated
 - validation service is implemented and runs before build artifacts are written
+- validation now correctly enforces tuple ordering for edges without false positives from concatenated string comparisons
 - query commands are implemented: `find-symbol`, `get-symbol`, `get-children`, and `get-excerpt`
 - query commands now support filtering, limits, and explicit sort modes for smaller result sets
 - CLI tests now cover `inspect`, `build`, `find-symbol`, `get-symbol`, `get-children`, `get-excerpt`, and invalid-input error paths
 - `build` now supports `--out`, `--include-generated`, and `--verbose`
+- Roslyn tests now cover deterministic repeated indexing of the current repository solution and explicit generated-file suffix filtering
 
 Still pending:
 
