@@ -86,6 +86,11 @@ public static class CliApplication
 			Description = "Directory where code-index artifacts will be written."
 		};
 
+		var dbOutOption = new Option<string>("--db-out")
+		{
+			Description = "SQLite database file where code-index data will be written."
+		};
+
 		var includeGeneratedOption = new Option<bool>("--include-generated")
 		{
 			Description = "Include generated C# files such as obj outputs and *.g.cs files."
@@ -99,6 +104,11 @@ public static class CliApplication
 		var indexOption = new Option<string>("--index")
 		{
 			Description = "Directory containing generated code-index artifacts."
+		};
+
+		var dbOption = new Option<string>("--db")
+		{
+			Description = "SQLite database file containing generated code-index data."
 		};
 
 		var limitOption = new Option<int>("--limit")
@@ -189,12 +199,14 @@ public static class CliApplication
 		var buildCommand = new Command("build", "Build the initial file index artifact from a solution or project.");
 		buildCommand.Add(pathArgument);
 		buildCommand.Add(outputOption);
+		buildCommand.Add(dbOutOption);
 		buildCommand.Add(includeGeneratedOption);
 		buildCommand.Add(verboseOption);
 		buildCommand.SetAction(async (parseResult, cancellationToken) =>
 		{
 			var path = parseResult.GetValue(pathArgument);
 			var outputDirectory = parseResult.GetValue(outputOption);
+			var databaseOutputPath = parseResult.GetValue(dbOutOption);
 			var includeGenerated = parseResult.GetValue(includeGeneratedOption);
 			var verbose = parseResult.GetValue(verboseOption);
 
@@ -203,9 +215,9 @@ public static class CliApplication
 				throw new InvalidOperationException("A solution or project path is required.");
 			}
 
-			if (string.IsNullOrWhiteSpace(outputDirectory))
+			if (string.IsNullOrWhiteSpace(outputDirectory) && string.IsNullOrWhiteSpace(databaseOutputPath))
 			{
-				throw new InvalidOperationException("An output directory is required. Pass --out <path>.");
+				throw new InvalidOperationException("An output target is required. Pass --out <path> and/or --db-out <path>.");
 			}
 
 			if (verbose)
@@ -235,31 +247,42 @@ public static class CliApplication
 				Console.WriteLine($"Indexed {edges.Count} edges.");
 			}
 
-			var fullOutputDirectory = Path.GetFullPath(outputDirectory);
 			var inputKind = Path.GetExtension(path).Equals(".sln", StringComparison.OrdinalIgnoreCase) ? "solution" : "project";
 			var meta = CodeIndexMetaFactory.Create(path, inputKind);
 			var snapshot = new CodeIndexSnapshot(meta, files, symbols, edges);
 			runtime.ValidateSnapshot(snapshot);
+			var sqliteStore = new SqliteCodeIndexStore();
 
 			if (verbose)
 			{
 				Console.WriteLine("Validation passed.");
 			}
 
-			var metaOutputPath = Path.Combine(fullOutputDirectory, "code-index.meta.json");
-			var filesOutputPath = Path.Combine(fullOutputDirectory, "code-index.files.json");
-			var symbolsOutputPath = Path.Combine(fullOutputDirectory, "code-index.symbols.json");
-			var edgesOutputPath = Path.Combine(fullOutputDirectory, "code-index.edges.json");
+			if (!string.IsNullOrWhiteSpace(outputDirectory))
+			{
+				var fullOutputDirectory = Path.GetFullPath(outputDirectory);
+				var metaOutputPath = Path.Combine(fullOutputDirectory, "code-index.meta.json");
+				var filesOutputPath = Path.Combine(fullOutputDirectory, "code-index.files.json");
+				var symbolsOutputPath = Path.Combine(fullOutputDirectory, "code-index.symbols.json");
+				var edgesOutputPath = Path.Combine(fullOutputDirectory, "code-index.edges.json");
 
-			await CodeIndexJson.WriteToFileAsync(metaOutputPath, meta, cancellationToken);
-			await CodeIndexJson.WriteToFileAsync(filesOutputPath, files, cancellationToken);
-			await CodeIndexJson.WriteToFileAsync(symbolsOutputPath, symbols, cancellationToken);
-			await CodeIndexJson.WriteToFileAsync(edgesOutputPath, edges, cancellationToken);
+				await CodeIndexJson.WriteToFileAsync(metaOutputPath, meta, cancellationToken);
+				await CodeIndexJson.WriteToFileAsync(filesOutputPath, files, cancellationToken);
+				await CodeIndexJson.WriteToFileAsync(symbolsOutputPath, symbols, cancellationToken);
+				await CodeIndexJson.WriteToFileAsync(edgesOutputPath, edges, cancellationToken);
 
-			Console.WriteLine($"Wrote metadata to {metaOutputPath}");
-			Console.WriteLine($"Wrote {files.Count} file records to {filesOutputPath}");
-			Console.WriteLine($"Wrote {symbols.Count} symbol records to {symbolsOutputPath}");
-			Console.WriteLine($"Wrote {edges.Count} edge records to {edgesOutputPath}");
+				Console.WriteLine($"Wrote metadata to {metaOutputPath}");
+				Console.WriteLine($"Wrote {files.Count} file records to {filesOutputPath}");
+				Console.WriteLine($"Wrote {symbols.Count} symbol records to {symbolsOutputPath}");
+				Console.WriteLine($"Wrote {edges.Count} edge records to {edgesOutputPath}");
+			}
+
+			if (!string.IsNullOrWhiteSpace(databaseOutputPath))
+			{
+				var fullDatabasePath = Path.GetFullPath(databaseOutputPath);
+				await sqliteStore.WriteAsync(fullDatabasePath, snapshot, cancellationToken);
+				Console.WriteLine($"Wrote SQLite index to {fullDatabasePath}");
+			}
 
 			return 0;
 		});
@@ -267,6 +290,7 @@ public static class CliApplication
 		var findSymbolCommand = new Command("find-symbol", "Find symbols by name or qualified name from a generated index.");
 		findSymbolCommand.Add(symbolQueryArgument);
 		findSymbolCommand.Add(indexOption);
+		findSymbolCommand.Add(dbOption);
 		findSymbolCommand.Add(limitOption);
 		findSymbolCommand.Add(kindOption);
 		findSymbolCommand.Add(accessibilityOption);
@@ -275,6 +299,7 @@ public static class CliApplication
 		{
 			var query = parseResult.GetValue(symbolQueryArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
+			var databasePath = parseResult.GetValue(dbOption);
 			var limit = parseResult.GetValue(limitOption);
 			var kind = parseResult.GetValue(kindOption);
 			var accessibility = parseResult.GetValue(accessibilityOption);
@@ -285,14 +310,18 @@ public static class CliApplication
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
-			var matches = LimitResults(OrderFindSymbolResults(snapshot.Symbols
-				.Where(symbol =>
-					string.Equals(symbol.Name, query, StringComparison.OrdinalIgnoreCase) ||
-					string.Equals(symbol.QualifiedName, query, StringComparison.OrdinalIgnoreCase) ||
-					symbol.QualifiedName.Contains(query, StringComparison.OrdinalIgnoreCase))
-				.Where(symbol => string.IsNullOrWhiteSpace(kind) || string.Equals(symbol.Kind, kind, StringComparison.OrdinalIgnoreCase))
-				.Where(symbol => string.IsNullOrWhiteSpace(accessibility) || string.Equals(symbol.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), query, sort), limit)
+			EnsureSingleStoreSource(indexDirectory, databasePath);
+
+			var sqliteStore = new SqliteCodeIndexStore();
+			var matches = !string.IsNullOrWhiteSpace(databasePath)
+				? LimitResults(OrderFindSymbolResults(await sqliteStore.FindSymbolsAsync(databasePath, query, kind, accessibility, cancellationToken), query, sort), limit).ToArray()
+				: LimitResults(OrderFindSymbolResults((await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken)).Symbols
+					.Where(symbol =>
+						string.Equals(symbol.Name, query, StringComparison.OrdinalIgnoreCase) ||
+						string.Equals(symbol.QualifiedName, query, StringComparison.OrdinalIgnoreCase) ||
+						symbol.QualifiedName.Contains(query, StringComparison.OrdinalIgnoreCase))
+					.Where(symbol => string.IsNullOrWhiteSpace(kind) || string.Equals(symbol.Kind, kind, StringComparison.OrdinalIgnoreCase))
+					.Where(symbol => string.IsNullOrWhiteSpace(accessibility) || string.Equals(symbol.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), query, sort), limit)
 				.ToArray();
 
 			WriteJson(matches);
@@ -302,20 +331,24 @@ public static class CliApplication
 		var getSymbolCommand = new Command("get-symbol", "Get a single symbol by ID or qualified name from a generated index.");
 		getSymbolCommand.Add(symbolQueryArgument);
 		getSymbolCommand.Add(indexOption);
+		getSymbolCommand.Add(dbOption);
 		getSymbolCommand.SetAction(async (parseResult, cancellationToken) =>
 		{
 			var query = parseResult.GetValue(symbolQueryArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
+			var databasePath = parseResult.GetValue(dbOption);
 
 			if (string.IsNullOrWhiteSpace(query))
 			{
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
-			var symbol = snapshot.Symbols.FirstOrDefault(candidate =>
-				string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
-				string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
+			var sqliteStore = new SqliteCodeIndexStore();
+			var symbol = !string.IsNullOrWhiteSpace(databasePath)
+				? await sqliteStore.GetSymbolAsync(databasePath, query, cancellationToken)
+				: (await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken)).Symbols.FirstOrDefault(candidate =>
+					string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
+					string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
 
 			if (symbol is null)
 			{
@@ -329,6 +362,7 @@ public static class CliApplication
 		var getChildrenCommand = new Command("get-children", "Get child symbols for a parent symbol from a generated index.");
 		getChildrenCommand.Add(symbolQueryArgument);
 		getChildrenCommand.Add(indexOption);
+		getChildrenCommand.Add(dbOption);
 		getChildrenCommand.Add(limitOption);
 		getChildrenCommand.Add(kindOption);
 		getChildrenCommand.Add(accessibilityOption);
@@ -337,6 +371,7 @@ public static class CliApplication
 		{
 			var query = parseResult.GetValue(symbolQueryArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
+			var databasePath = parseResult.GetValue(dbOption);
 			var limit = parseResult.GetValue(limitOption);
 			var kind = parseResult.GetValue(kindOption);
 			var accessibility = parseResult.GetValue(accessibilityOption);
@@ -347,22 +382,38 @@ public static class CliApplication
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
-			var parent = snapshot.Symbols.FirstOrDefault(candidate =>
-				string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
-				string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
-
-			if (parent is null)
+			var sqliteStore = new SqliteCodeIndexStore();
+			SymbolRecord[] children;
+			if (!string.IsNullOrWhiteSpace(databasePath))
 			{
-				throw new InvalidOperationException($"No symbol found for query: {query}");
-			}
+				var parent = await sqliteStore.GetSymbolAsync(databasePath, query, cancellationToken);
 
-			var children = LimitResults(OrderChildResults(snapshot.Edges
-				.Where(edge => edge.Type == EdgeTypes.Contains && edge.From == parent.Id)
-				.Join(snapshot.Symbols, edge => edge.To, symbol => symbol.Id, (_, symbol) => symbol)
-				.Where(symbol => string.IsNullOrWhiteSpace(kind) || string.Equals(symbol.Kind, kind, StringComparison.OrdinalIgnoreCase))
-				.Where(symbol => string.IsNullOrWhiteSpace(accessibility) || string.Equals(symbol.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), sort), limit)
-				.ToArray();
+				if (parent is null)
+				{
+					throw new InvalidOperationException($"No symbol found for query: {query}");
+				}
+
+				children = LimitResults(OrderChildResults(await sqliteStore.GetChildrenAsync(databasePath, parent.Id, kind, accessibility, cancellationToken), sort), limit).ToArray();
+			}
+			else
+			{
+				var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken);
+				var parent = snapshot.Symbols.FirstOrDefault(candidate =>
+					string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
+					string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
+
+				if (parent is null)
+				{
+					throw new InvalidOperationException($"No symbol found for query: {query}");
+				}
+
+				children = LimitResults(OrderChildResults(snapshot.Edges
+					.Where(edge => edge.Type == EdgeTypes.Contains && edge.From == parent.Id)
+					.Join(snapshot.Symbols, edge => edge.To, symbol => symbol.Id, (_, symbol) => symbol)
+					.Where(symbol => string.IsNullOrWhiteSpace(kind) || string.Equals(symbol.Kind, kind, StringComparison.OrdinalIgnoreCase))
+					.Where(symbol => string.IsNullOrWhiteSpace(accessibility) || string.Equals(symbol.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), sort), limit)
+					.ToArray();
+			}
 
 			WriteJson(children);
 			return 0;
@@ -371,12 +422,14 @@ public static class CliApplication
 		var getExcerptCommand = new Command("get-excerpt", "Get exact file lines from a generated index.");
 		getExcerptCommand.Add(filePathArgument);
 		getExcerptCommand.Add(indexOption);
+		getExcerptCommand.Add(dbOption);
 		getExcerptCommand.Add(startOption);
 		getExcerptCommand.Add(endOption);
 		getExcerptCommand.SetAction(async (parseResult, cancellationToken) =>
 		{
 			var file = parseResult.GetValue(filePathArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
+			var databasePath = parseResult.GetValue(dbOption);
 			var start = parseResult.GetValue(startOption);
 			var end = parseResult.GetValue(endOption);
 
@@ -390,15 +443,20 @@ public static class CliApplication
 				throw new InvalidOperationException("Use positive line numbers and ensure --end is greater than or equal to --start.");
 			}
 
-			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
-			var fileRecord = snapshot.Files.FirstOrDefault(candidate => string.Equals(candidate.Path, file, StringComparison.OrdinalIgnoreCase));
+			var sqliteStore = new SqliteCodeIndexStore();
+			var fileRecord = !string.IsNullOrWhiteSpace(databasePath)
+				? await sqliteStore.GetFileByPathAsync(databasePath, file, cancellationToken)
+				: (await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken)).Files.FirstOrDefault(candidate => string.Equals(candidate.Path, file, StringComparison.OrdinalIgnoreCase));
 
 			if (fileRecord is null)
 			{
 				throw new InvalidOperationException($"No indexed file found for path: {file}");
 			}
 
-			var fullFilePath = Path.Combine(snapshot.Meta.SourceRoot, fileRecord.Path.Replace('/', Path.DirectorySeparatorChar));
+			var meta = !string.IsNullOrWhiteSpace(databasePath)
+				? await sqliteStore.ReadMetaAsync(databasePath, cancellationToken)
+				: (await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken)).Meta;
+			var fullFilePath = Path.Combine(meta.SourceRoot, fileRecord.Path.Replace('/', Path.DirectorySeparatorChar));
 			var lines = await File.ReadAllLinesAsync(fullFilePath, cancellationToken);
 			var excerpt = Enumerable.Range(start, Math.Min(end, lines.Length) - start + 1)
 				.Select(lineNumber => new { line = lineNumber, text = lines[lineNumber - 1] })
@@ -410,6 +468,7 @@ public static class CliApplication
 
 		var benchmarkCommand = new Command("benchmark", "Compare reading the indexed project directly versus using code-index artifacts first.");
 		benchmarkCommand.Add(indexOption);
+		benchmarkCommand.Add(dbOption);
 		benchmarkCommand.Add(benchmarkSymbolOption);
 		benchmarkCommand.Add(benchmarkFileOption);
 		benchmarkCommand.Add(startOption);
@@ -417,6 +476,7 @@ public static class CliApplication
 		benchmarkCommand.SetAction(async (parseResult, cancellationToken) =>
 		{
 			var indexDirectory = parseResult.GetValue(indexOption);
+			var databasePath = parseResult.GetValue(dbOption);
 			var symbolQuery = parseResult.GetValue(benchmarkSymbolOption);
 			var file = parseResult.GetValue(benchmarkFileOption);
 			var start = parseResult.GetValue(startOption);
@@ -432,14 +492,37 @@ public static class CliApplication
 				throw new InvalidOperationException("Use positive line numbers and ensure --end is greater than or equal to --start when benchmarking an excerpt.");
 			}
 
-			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
-			var fullIndexDirectory = Path.GetFullPath(indexDirectory!);
+			EnsureSingleStoreSource(indexDirectory, databasePath);
+			var sqliteStore = new SqliteCodeIndexStore();
+			CodeIndexSnapshot? snapshot = null;
+			var fullIndexDirectory = string.IsNullOrWhiteSpace(indexDirectory) ? null : Path.GetFullPath(indexDirectory);
+			var fullDatabasePath = string.IsNullOrWhiteSpace(databasePath) ? null : Path.GetFullPath(databasePath);
+			CodeIndexMeta meta;
+			IReadOnlyList<FileRecord> files;
+			int symbolCount;
+			int edgeCount;
 
-			var sourceFiles = snapshot.Files
+			if (!string.IsNullOrWhiteSpace(fullDatabasePath))
+			{
+				meta = await sqliteStore.ReadMetaAsync(fullDatabasePath, cancellationToken);
+				files = await sqliteStore.ReadFilesAsync(fullDatabasePath, cancellationToken);
+				symbolCount = await sqliteStore.CountSymbolsAsync(fullDatabasePath, cancellationToken);
+				edgeCount = await sqliteStore.CountEdgesAsync(fullDatabasePath, cancellationToken);
+			}
+			else
+			{
+				snapshot = await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken);
+				meta = snapshot.Meta;
+				files = snapshot.Files;
+				symbolCount = snapshot.Symbols.Count;
+				edgeCount = snapshot.Edges.Count;
+			}
+
+			var sourceFiles = files
 				.Select(fileRecord => new
 				{
 					Record = fileRecord,
-					FullPath = Path.Combine(snapshot.Meta.SourceRoot, fileRecord.Path.Replace('/', Path.DirectorySeparatorChar))
+					FullPath = Path.Combine(meta.SourceRoot, fileRecord.Path.Replace('/', Path.DirectorySeparatorChar))
 				})
 				.ToArray();
 
@@ -454,36 +537,55 @@ public static class CliApplication
 			var totalSourceBytes = sourceFiles.Sum(sourceFile => new FileInfo(sourceFile.FullPath).Length);
 			var totalSourceLines = sourceFiles.Sum(sourceFile => File.ReadLines(sourceFile.FullPath).Count());
 
-			var metaPath = Path.Combine(fullIndexDirectory, "code-index.meta.json");
-			var filesPath = Path.Combine(fullIndexDirectory, "code-index.files.json");
-			var symbolsPath = Path.Combine(fullIndexDirectory, "code-index.symbols.json");
-			var edgesPath = Path.Combine(fullIndexDirectory, "code-index.edges.json");
+			long metaBytes = 0;
+			long filesBytes = 0;
+			long symbolsBytes = 0;
+			long edgesBytes = 0;
+			long totalIndexBytes = 0;
+			long? databaseBytes = null;
 
-			var metaBytes = new FileInfo(metaPath).Length;
-			var filesBytes = new FileInfo(filesPath).Length;
-			var symbolsBytes = new FileInfo(symbolsPath).Length;
-			var edgesBytes = new FileInfo(edgesPath).Length;
-			var totalIndexBytes = metaBytes + filesBytes + symbolsBytes + edgesBytes;
+			if (!string.IsNullOrWhiteSpace(fullIndexDirectory))
+			{
+				var metaPath = Path.Combine(fullIndexDirectory, "code-index.meta.json");
+				var filesPath = Path.Combine(fullIndexDirectory, "code-index.files.json");
+				var symbolsPath = Path.Combine(fullIndexDirectory, "code-index.symbols.json");
+				var edgesPath = Path.Combine(fullIndexDirectory, "code-index.edges.json");
+
+				metaBytes = new FileInfo(metaPath).Length;
+				filesBytes = new FileInfo(filesPath).Length;
+				symbolsBytes = new FileInfo(symbolsPath).Length;
+				edgesBytes = new FileInfo(edgesPath).Length;
+				totalIndexBytes = metaBytes + filesBytes + symbolsBytes + edgesBytes;
+			}
+			else if (!string.IsNullOrWhiteSpace(fullDatabasePath))
+			{
+				databaseBytes = new FileInfo(fullDatabasePath).Length;
+				totalIndexBytes = databaseBytes.Value;
+			}
 
 			object? symbolQueryMetrics = null;
 			long indexFirstFlowBytes = 0;
 
 			if (!string.IsNullOrWhiteSpace(symbolQuery))
 			{
-				var matches = LimitResults(OrderFindSymbolResults(snapshot.Symbols
-					.Where(symbol =>
-						string.Equals(symbol.Name, symbolQuery, StringComparison.OrdinalIgnoreCase) ||
-						string.Equals(symbol.QualifiedName, symbolQuery, StringComparison.OrdinalIgnoreCase) ||
-						symbol.QualifiedName.Contains(symbolQuery, StringComparison.OrdinalIgnoreCase)), symbolQuery, "ranked"), 5)
-					.ToArray();
+				var matches = !string.IsNullOrWhiteSpace(fullDatabasePath)
+					? LimitResults(OrderFindSymbolResults(await sqliteStore.FindSymbolsAsync(fullDatabasePath, symbolQuery, null, null, cancellationToken), symbolQuery, "ranked"), 5).ToArray()
+					: LimitResults(OrderFindSymbolResults(snapshot!.Symbols
+						.Where(symbol =>
+							string.Equals(symbol.Name, symbolQuery, StringComparison.OrdinalIgnoreCase) ||
+							string.Equals(symbol.QualifiedName, symbolQuery, StringComparison.OrdinalIgnoreCase) ||
+							symbol.QualifiedName.Contains(symbolQuery, StringComparison.OrdinalIgnoreCase)), symbolQuery, "ranked"), 5)
+						.ToArray();
 
 				var selected = matches.FirstOrDefault();
 				var children = selected is null
 					? Array.Empty<SymbolRecord>()
-					: OrderChildResults(snapshot.Edges
-						.Where(edge => edge.Type == EdgeTypes.Contains && edge.From == selected.Id)
-						.Join(snapshot.Symbols, edge => edge.To, symbol => symbol.Id, (_, symbol) => symbol), "declaration")
-						.ToArray();
+					: !string.IsNullOrWhiteSpace(fullDatabasePath)
+						? OrderChildResults(await sqliteStore.GetChildrenAsync(fullDatabasePath, selected.Id, null, null, cancellationToken), "declaration").ToArray()
+						: OrderChildResults(snapshot!.Edges
+							.Where(edge => edge.Type == EdgeTypes.Contains && edge.From == selected.Id)
+							.Join(snapshot.Symbols, edge => edge.To, symbol => symbol.Id, (_, symbol) => symbol), "declaration")
+							.ToArray();
 
 				var findSymbolBytes = GetSerializedByteCount(matches);
 				var getSymbolBytes = selected is null ? 0 : GetSerializedByteCount(selected);
@@ -506,14 +608,16 @@ public static class CliApplication
 
 			if (!string.IsNullOrWhiteSpace(file))
 			{
-				var fileRecord = snapshot.Files.FirstOrDefault(candidate => string.Equals(candidate.Path, file, StringComparison.OrdinalIgnoreCase));
+				var fileRecord = !string.IsNullOrWhiteSpace(fullDatabasePath)
+					? await sqliteStore.GetFileByPathAsync(fullDatabasePath, file, cancellationToken)
+					: files.FirstOrDefault(candidate => string.Equals(candidate.Path, file, StringComparison.OrdinalIgnoreCase));
 
 				if (fileRecord is null)
 				{
 					throw new InvalidOperationException($"No indexed file found for path: {file}");
 				}
 
-				var fullFilePath = Path.Combine(snapshot.Meta.SourceRoot, fileRecord.Path.Replace('/', Path.DirectorySeparatorChar));
+				var fullFilePath = Path.Combine(meta.SourceRoot, fileRecord.Path.Replace('/', Path.DirectorySeparatorChar));
 				var lines = await File.ReadAllLinesAsync(fullFilePath, cancellationToken);
 				var excerpt = Enumerable.Range(start, Math.Min(end, lines.Length) - start + 1)
 					.Select(lineNumber => new { line = lineNumber, text = lines[lineNumber - 1] })
@@ -533,15 +637,15 @@ public static class CliApplication
 
 			var benchmark = new
 			{
-				inputPath = snapshot.Meta.InputPath,
-				inputKind = snapshot.Meta.InputKind,
-				sourceRoot = snapshot.Meta.SourceRoot,
+				inputPath = meta.InputPath,
+				inputKind = meta.InputKind,
+				sourceRoot = meta.SourceRoot,
 				rawSource = new
 				{
-					fileCount = snapshot.Files.Count,
+					fileCount = files.Count,
 					totalBytes = totalSourceBytes,
 					totalLines = totalSourceLines,
-					averageBytesPerFile = snapshot.Files.Count == 0 ? 0 : totalSourceBytes / snapshot.Files.Count
+					averageBytesPerFile = files.Count == 0 ? 0 : totalSourceBytes / files.Count
 				},
 				indexArtifacts = new
 				{
@@ -551,8 +655,15 @@ public static class CliApplication
 					symbolsBytes,
 					edgesBytes,
 					totalBytes = totalIndexBytes,
-					symbolCount = snapshot.Symbols.Count,
-					edgeCount = snapshot.Edges.Count
+					symbolCount = symbolCount,
+					edgeCount = edgeCount
+				},
+				database = databaseBytes is null ? null : new
+				{
+					path = fullDatabasePath,
+					totalBytes = databaseBytes,
+					symbolCount = symbolCount,
+					edgeCount = edgeCount
 				},
 				wholeProjectComparison = new
 				{
@@ -585,12 +696,41 @@ public static class CliApplication
 
 	private static async Task<CodeIndexSnapshot> ReadSnapshotAsync(CliRuntime runtime, string? indexDirectory, CancellationToken cancellationToken)
 	{
+		return await ReadSnapshotAsync(runtime, indexDirectory, null, cancellationToken);
+	}
+
+	private static async Task<CodeIndexSnapshot> ReadSnapshotAsync(CliRuntime runtime, string? indexDirectory, string? databasePath, CancellationToken cancellationToken)
+	{
+		EnsureSingleStoreSource(indexDirectory, databasePath);
+
+		if (!string.IsNullOrWhiteSpace(databasePath))
+		{
+			var sqliteStore = new SqliteCodeIndexStore();
+			return await sqliteStore.ReadAsync(databasePath, cancellationToken);
+		}
+
 		if (string.IsNullOrWhiteSpace(indexDirectory))
 		{
 			throw new InvalidOperationException("An index directory is required. Pass --index <path>.");
 		}
 
 		return await runtime.ReadSnapshotAsync(indexDirectory, cancellationToken);
+	}
+
+	private static void EnsureSingleStoreSource(string? indexDirectory, string? databasePath)
+	{
+		var hasIndex = !string.IsNullOrWhiteSpace(indexDirectory);
+		var hasDatabase = !string.IsNullOrWhiteSpace(databasePath);
+
+		if (!hasIndex && !hasDatabase)
+		{
+			throw new InvalidOperationException("An index directory or database is required. Pass --index <path> or --db <path>.");
+		}
+
+		if (hasIndex && hasDatabase)
+		{
+			throw new InvalidOperationException("Pass either --index <path> or --db <path>, but not both.");
+		}
 	}
 
 	private static void WriteJson<T>(T value)

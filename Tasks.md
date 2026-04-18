@@ -2,8 +2,9 @@
 
 ## Goal
 
-Build a .NET 10 CLI tool that uses Roslyn to generate a compact JSON code
-index for C# solutions and projects.
+Build a .NET 10 CLI tool that uses Roslyn to generate compact code index
+artifacts for C# solutions and projects, with JSON output and optional SQLite
+storage.
 
 The tool should help AI agents:
 
@@ -344,13 +345,38 @@ Do not implement these until MVP is stable.
 - [ ] `FindReferencesAsync`
 - [ ] cached references index
 - [ ] caller/callee analysis
-- [ ] SQLite backend
+- [x] SQLite backend
 - [ ] incremental indexing
 - [ ] API server
 - [ ] multi-language support
 - [ ] local variable indexing
 - [ ] vector embeddings
 - [ ] test linking heuristics
+
+## Milestone 12 - SQLite Store and Query Path
+
+### Tasks
+
+- [x] Add SQLite package support in core storage layer
+- [x] Create SQLite schema for `meta`, `files`, `symbols`, and `edges`
+- [x] Write full snapshot to SQLite during `build --db-out`
+- [x] Support `find-symbol --db`
+- [x] Support `get-symbol --db`
+- [x] Support `get-children --db`
+- [x] Support `get-excerpt --db`
+- [x] Support `benchmark --db`
+- [x] Use direct metadata, file, and count queries for `benchmark --db`
+- [x] Validate mutual exclusivity of `--index` and `--db`
+- [x] Add CLI tests for SQLite build/query/benchmark flows
+- [x] Benchmark SQLite mode against the current repository
+- [x] Ignore generated `bin/` and `obj/` outputs at the repository root
+
+### Done Criteria
+
+- [x] SQLite-backed commands return the same shape as JSON-backed commands
+- [x] CLI tests cover both storage paths
+- [x] Current repository builds and benchmarks through the SQLite path
+- [x] Database benchmark metrics do not require a full snapshot read
 
 ---
 

@@ -54,4 +54,38 @@ public class FileIndexingTests
             }
         }
     }
+
+    [Fact]
+    public async Task SqliteCodeIndexStore_ReadsMetaFilesAndCountsWithoutFullSnapshot()
+    {
+        var databasePath = Path.Combine(Path.GetTempPath(), $"code-index-core-tests-{Guid.NewGuid():N}.db");
+        var snapshot = new CodeIndexSnapshot(
+            new CodeIndexMeta("1.0", "0.1.0", "repo", DateTimeOffset.UtcNow, "/repo", "/repo/repo.sln", "solution"),
+            [new FileRecord("f:file.cs", "file.cs", "Repo", "C#", "sha256:test", "summary")],
+            [new SymbolRecord("s:T:Repo.Type", "Type", "Repo.Type", "class", "f:file.cs", new TextRangeRecord(1, 1, 1, 10), "class Repo.Type", "summary", null, "public", false, false, false, false)],
+            [new EdgeRecord(EdgeTypes.Contains, "s:T:Repo.Type", "s:T:Repo.Type")]);
+
+        try
+        {
+            var sqliteStore = new SqliteCodeIndexStore();
+            await sqliteStore.WriteAsync(databasePath, snapshot);
+
+            var meta = await sqliteStore.ReadMetaAsync(databasePath);
+            var files = await sqliteStore.ReadFilesAsync(databasePath);
+            var symbolCount = await sqliteStore.CountSymbolsAsync(databasePath);
+            var edgeCount = await sqliteStore.CountEdgesAsync(databasePath);
+
+            Assert.Equal(snapshot.Meta, meta);
+            Assert.Equal(snapshot.Files, files);
+            Assert.Equal(1, symbolCount);
+            Assert.Equal(1, edgeCount);
+        }
+        finally
+        {
+            if (File.Exists(databasePath))
+            {
+                File.Delete(databasePath);
+            }
+        }
+    }
 }

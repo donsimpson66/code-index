@@ -1,0 +1,28 @@
+**/bin/
+**/obj/
+
+# Visual Studio / VS Code / Rider user state
+.vs/
+.vscode/*.code-snippets
+*.suo
+*.user
+*.userprefs
+*.rsuser
+*.sln.docstates
+*.DotSettings.user
+.idea/
+
+# Test and coverage outputs
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage/
+
+# NuGet and packaging artifacts
+*.nupkg
+*.snupkg
+packages/
+
+# Local tool caches
+artifacts/**/TestResults/

@@ -1,6 +1,6 @@
 # CodeIndex
 
-A .NET 10 C# project for a CLI tool that will build a compact JSON code index
+A .NET 10 C# project for a CLI tool that builds a compact code index
 for C# solutions and projects using Roslyn.
 
 The index is optimized for AI agents that need to:
@@ -23,7 +23,7 @@ They work better when they can first ask:
 - what is its signature
 - what source lines should I read next
 
-This tool generates a deterministic JSON index to support that workflow.
+This tool generates deterministic JSON artifacts and an optional SQLite index to support that workflow.
 
 ## Current Scope
 
@@ -34,6 +34,7 @@ Initial implementation focuses on:
 - symbol extraction
 - structural relationships
 - compact JSON output
+- SQLite-backed query storage
 - CLI query commands
 
 It does not aim to replace an IDE or full code intelligence platform.
@@ -52,10 +53,10 @@ The current implementation supports:
 
 - Roslyn/MSBuild loading for `.sln` and `.csproj`
 - `inspect` for project and source-document discovery
-- `build` for `meta`, `files`, `symbols`, and `edges` artifacts
+- `build` for `meta`, `files`, `symbols`, and `edges` artifacts, plus optional SQLite output
 - `benchmark` for comparing full-source reading volume versus index-first retrieval volume
 - validation before artifact write
-- artifact-backed query commands:
+- artifact-backed and SQLite-backed query commands:
   - `find-symbol`
   - `get-symbol`
   - `get-children`
@@ -104,6 +105,12 @@ dotnet build code-index.sln
 dotnet run --project src/CodeIndex.Cli -- build ./code-index.sln --out ./artifacts/code-index
 ```
 
+To also write the SQLite store used by database-backed queries:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- build ./code-index.sln --out ./artifacts/code-index --db-out ./artifacts/code-index/code-index.db
+```
+
 This repository keeps a current index in `artifacts/code-index`.
 Rebuild it after structural code changes so queries stay aligned with source.
 
@@ -126,7 +133,8 @@ The commands below reflect the current implemented CLI surface.
 ## Agent Workflow
 
 Before searching through source files directly, an agent should consult the
-index for this repository in `./artifacts/code-index`.
+index for this repository in `./artifacts/code-index` or the SQLite store at
+`./artifacts/code-index/code-index.db`.
 
 Recommended flow:
 
@@ -134,12 +142,14 @@ Recommended flow:
 
 ```bash
 dotnet run --project src/CodeIndex.Cli -- build ./code-index.sln --out ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- build ./code-index.sln --db-out ./artifacts/code-index/code-index.db
 ```
 
 2. find likely symbols first:
 
 ```bash
 dotnet run --project src/CodeIndex.Cli -- find-symbol "WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- find-symbol "WorkspaceSymbolIndexBuilder" --db ./artifacts/code-index/code-index.db
 ```
 
 3. fetch one symbol record or its children:
@@ -147,12 +157,15 @@ dotnet run --project src/CodeIndex.Cli -- find-symbol "WorkspaceSymbolIndexBuild
 ```bash
 dotnet run --project src/CodeIndex.Cli -- get-symbol "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index
 dotnet run --project src/CodeIndex.Cli -- get-children "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index --kind method --sort declaration
+dotnet run --project src/CodeIndex.Cli -- get-symbol "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --db ./artifacts/code-index/code-index.db
+dotnet run --project src/CodeIndex.Cli -- get-children "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --db ./artifacts/code-index/code-index.db --kind method --sort declaration
 ```
 
 4. read only the exact file lines you still need:
 
 ```bash
 dotnet run --project src/CodeIndex.Cli -- get-excerpt "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs" --index ./artifacts/code-index --start 1 --end 80
+dotnet run --project src/CodeIndex.Cli -- get-excerpt "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs" --db ./artifacts/code-index/code-index.db --start 1 --end 80
 ```
 
 Index-first guidance:
@@ -175,7 +188,7 @@ dotnet run --project src/CodeIndex.Cli -- inspect ./samples/SampleSolution/Sampl
 
 ### `build`
 
-Creates JSON index artifacts from a `.sln` or `.csproj`.
+Creates JSON index artifacts and optional SQLite storage from a `.sln` or `.csproj`.
 
 Example:
 
@@ -186,6 +199,7 @@ dotnet run --project src/CodeIndex.Cli -- build ./samples/SampleSolution/SampleS
 Options:
 
 - `--out <path>`
+- `--db-out <path>`
 - `--include-generated`
 - `--verbose`
 
@@ -193,6 +207,7 @@ Notes:
 
 - generated files are excluded by default
 - validation runs before artifacts are written
+- pass `--out`, `--db-out`, or both depending on which backing store you want
 
 ### `find-symbol`
 
@@ -204,6 +219,7 @@ Example:
 dotnet run --project src/CodeIndex.Cli -- find-symbol "FriendlyGreeter"
 dotnet run --project src/CodeIndex.Cli -- find-symbol "SampleLibrary.FriendlyGreeter.CreateGreeting"
 dotnet run --project src/CodeIndex.Cli -- find-symbol "FriendlyGreeter" --index ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- find-symbol "FriendlyGreeter" --db ./artifacts/code-index/code-index.db
 dotnet run --project src/CodeIndex.Cli -- find-symbol "FriendlyGreeter" --index ./artifacts/code-index --kind class --accessibility public --limit 5
 dotnet run --project src/CodeIndex.Cli -- find-symbol "FriendlyGreeter" --index ./artifacts/code-index --sort accessibility --limit 5
 
@@ -223,8 +239,10 @@ Examples:
 
 ```bash
 dotnet run --project src/CodeIndex.Cli -- benchmark --index ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- benchmark --db ./artifacts/code-index/code-index.db
 dotnet run --project src/CodeIndex.Cli -- benchmark --index ./artifacts/code-index --symbol "WorkspaceSymbolIndexBuilder"
 dotnet run --project src/CodeIndex.Cli -- benchmark --index ./artifacts/code-index --symbol "WorkspaceSymbolIndexBuilder" --file "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs" --start 1 --end 80
+dotnet run --project src/CodeIndex.Cli -- benchmark --db ./artifacts/code-index/code-index.db --symbol "WorkspaceSymbolIndexBuilder" --file "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs" --start 1 --end 20
 ```
 
 The output includes:
@@ -235,6 +253,18 @@ The output includes:
 - optional targeted retrieval costs for a symbol query and excerpt flow
 - a recommendation indicating whether the index should be treated as a selective navigation tool or whether whole-index reads may be competitive
 
+When `--db` is used, the whole-project benchmark path reads database metadata,
+file rows, and symbol and edge counts directly instead of materializing the
+full SQLite snapshot before reporting metrics.
+
+Current repository SQLite benchmark:
+
+- database bytes: `331776`
+- raw source bytes: `146664`
+- whole database to source ratio: `2.262`
+- representative index-first flow bytes: `26609`
+- representative flow vs full source ratio: `0.181`
+
 ### `get-symbol`
 
 Get one symbol by ID or qualified name.
@@ -244,6 +274,7 @@ Example:
 ```bash
 dotnet run --project src/CodeIndex.Cli -- get-symbol "SampleLibrary.FriendlyGreeter.CreateGreeting"
 dotnet run --project src/CodeIndex.Cli -- get-symbol "s:T:SampleLibrary.FriendlyGreeter" --index ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- get-symbol "s:T:SampleLibrary.FriendlyGreeter" --db ./artifacts/code-index/code-index.db
 ```
 
 ### `get-children`
@@ -255,6 +286,7 @@ Example:
 ```bash
 dotnet run --project src/CodeIndex.Cli -- get-children "SampleLibrary.FriendlyGreeter"
 dotnet run --project src/CodeIndex.Cli -- get-children "SampleLibrary.FriendlyGreeter" --index ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- get-children "SampleLibrary.FriendlyGreeter" --db ./artifacts/code-index/code-index.db
 dotnet run --project src/CodeIndex.Cli -- get-children "SampleLibrary.FriendlyGreeter" --index ./artifacts/code-index --kind method --limit 10
 dotnet run --project src/CodeIndex.Cli -- get-children "SampleLibrary.FriendlyGreeter" --index ./artifacts/code-index --kind method --sort declaration --limit 10
 
@@ -274,6 +306,7 @@ Example:
 ```bash
 dotnet run --project src/CodeIndex.Cli -- get-excerpt "SampleLibrary/FriendlyGreeter.cs" --start 1 --end 20
 dotnet run --project src/CodeIndex.Cli -- get-excerpt "SampleLibrary/FriendlyGreeter.cs" --index ./artifacts/code-index --start 1 --end 20
+dotnet run --project src/CodeIndex.Cli -- get-excerpt "SampleLibrary/FriendlyGreeter.cs" --db ./artifacts/code-index/code-index.db --start 1 --end 20
 ```
 
 ## Output Files
@@ -284,6 +317,7 @@ The `build` command writes:
 - `code-index.files.json`
 - `code-index.symbols.json`
 - `code-index.edges.json`
+- optional `code-index.db`
 
 ## Output Design
 
@@ -379,6 +413,9 @@ By default, generated files should be excluded:
 - `*.g.i.cs`
 - `*.designer.cs`
 - `*.generated.cs`
+
+The repository root `.gitignore` also ignores `bin/` and `obj/` directories so
+generated build outputs do not pollute code review diffs.
 
 ## Design Rules
 

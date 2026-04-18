@@ -33,10 +33,19 @@ Completed today:
 - a real `samples/SampleSolution` now exists and includes interface/base/derived/override/property/field/XML-doc constructs
 - README examples now use the sample solution consistently
 - sample solution indexing is covered by Roslyn and CLI tests and succeeds end to end through the real CLI
+- SQLite storage is implemented for `meta`, `files`, `symbols`, and `edges`
+- `build` now supports `--db-out` for writing a SQLite index alongside or instead of JSON artifacts
+- query commands now support `--db` for SQLite-backed `find-symbol`, `get-symbol`, `get-children`, and `get-excerpt`
+- `benchmark` now supports `--db` so repository-scale comparisons can measure database-backed retrieval cost directly
+- `benchmark --db` now reads metadata, file rows, and symbol and edge counts directly instead of reconstructing a full snapshot for whole-project metrics
+- CLI tests now cover SQLite build, query, benchmark, and mixed-input guard behavior
+- the current repository builds successfully to `artifacts/code-index/code-index.db` and benchmarks successfully against that database
+- the repository root now ignores `bin/` and `obj/`, and tracked build outputs have been removed from version control
 
 Still pending:
 
 - broader generated-file handling policy beyond the current build-time include/exclude switch
+- improved validation and wider direct-read database query paths if incremental indexing is added later
 
 The tool must help AI agents:
 
@@ -110,7 +119,6 @@ Create a CLI tool that:
 - comments not attached to declarations
 - source code embedding/vector search
 - non-C# languages
-- database backend
 - web API
 
 ## Why This Exists
@@ -136,6 +144,7 @@ Use the following unless there is a strong reason to change:
 - `Microsoft.Build.Locator`
 - `System.CommandLine`
 - `System.Text.Json`
+- `Microsoft.Data.Sqlite`
 
 ## Suggested Solution Structure
 
@@ -166,6 +175,7 @@ Contains:
 - domain models
 - schema definitions
 - JSON serialization
+- SQLite serialization and query storage
 - path normalization helpers
 - ID generation
 - validation logic
@@ -202,6 +212,7 @@ Currently implemented:
 - `get-symbol`
 - `get-children`
 - `get-excerpt`
+- `benchmark`
 
 ### `build`
 
@@ -216,11 +227,11 @@ dotnet run --project src/CodeIndex.Cli -- build ./MySolution.sln --out ./artifac
 Options:
 
 - `--out <path>`
+- `--db-out <path>`
 - `--include-generated false|true`
 - `--verbose`
 
-Current implementation supports `--out <path>`.
-Current implementation supports `--out <path>`, `--include-generated`, and `--verbose`.
+Current implementation supports `--out <path>`, `--db-out <path>`, `--include-generated`, and `--verbose`.
 
 ### `find-symbol`
 

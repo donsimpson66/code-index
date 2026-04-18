@@ -205,12 +205,101 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
     }
 
     [Fact]
+    public async Task FindSymbol_UsingRepositorySolutionDatabase_ReturnsCliApplication()
+    {
+        var output = await fixture.RunCliAsync(
+            "find-symbol",
+            "CodeIndex.Cli.CliApplication",
+            "--db",
+            await fixture.GetSolutionDatabasePathAsync(),
+            "--limit",
+            "1");
+
+        using var document = JsonDocument.Parse(output);
+        var results = document.RootElement.EnumerateArray().ToArray();
+
+        Assert.Single(results);
+        Assert.Equal("CliApplication", results[0].GetProperty("name").GetString());
+        Assert.Equal("CodeIndex.Cli.CliApplication", results[0].GetProperty("qualifiedName").GetString());
+    }
+
+    [Fact]
+    public async Task Benchmark_UsingRepositorySolutionDatabase_ReturnsDatabaseMetrics()
+    {
+        var output = await fixture.RunCliAsync(
+            "benchmark",
+            "--db",
+            await fixture.GetSolutionDatabasePathAsync(),
+            "--symbol",
+            "WorkspaceSymbolIndexBuilder",
+            "--file",
+            "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
+            "--start",
+            "1",
+            "--end",
+            "20");
+
+        using var document = JsonDocument.Parse(output);
+        var root = document.RootElement;
+
+        Assert.Equal("solution", root.GetProperty("inputKind").GetString());
+        Assert.True(root.GetProperty("database").GetProperty("totalBytes").GetInt64() > 0);
+        Assert.Equal("WorkspaceSymbolIndexBuilder", root.GetProperty("symbolQuery").GetProperty("query").GetString());
+        Assert.True(root.GetProperty("indexFirstFlowBytes").GetInt32() > 0);
+    }
+
+    [Fact]
+    public async Task Build_WritesSqliteDatabase_WhenDbOutIsProvided()
+    {
+        var databasePath = Path.Combine(Path.GetTempPath(), $"code-index-cli-tests-{Guid.NewGuid():N}.db");
+        var runtime = new global::CodeIndex.Cli.CliRuntime
+        {
+            BuildFilesAsync = (_, _, _) => Task.FromResult<IReadOnlyList<global::CodeIndex.Core.FileRecord>>(
+            [
+                new global::CodeIndex.Core.FileRecord("f:WorkspaceInspection.cs", "WorkspaceInspection.cs", "CodeIndex.Roslyn", "C#", "sha256:test", "summary")
+            ]),
+            BuildSymbolsAsync = (_, _, _, _) => Task.FromResult<IReadOnlyList<global::CodeIndex.Core.SymbolRecord>>(
+            [
+                new global::CodeIndex.Core.SymbolRecord("s:T:CodeIndex.Roslyn.WorkspaceInspector", "WorkspaceInspector", "CodeIndex.Roslyn.WorkspaceInspector", "class", "f:WorkspaceInspection.cs", new global::CodeIndex.Core.TextRangeRecord(1, 1, 1, 10), "class CodeIndex.Roslyn.WorkspaceInspector", "summary", null, "public", false, false, false, false)
+            ]),
+            BuildEdgesAsync = (_, _, _) => Task.FromResult<IReadOnlyList<global::CodeIndex.Core.EdgeRecord>>(Array.Empty<global::CodeIndex.Core.EdgeRecord>())
+        };
+
+        try
+        {
+            var output = await fixture.RunCliAsync(
+                runtime,
+                "build",
+                fixture.RoslynProjectPath,
+                "--db-out",
+                databasePath,
+                "--verbose");
+
+            Assert.Contains("Wrote SQLite index to", output);
+            Assert.True(File.Exists(databasePath));
+
+            var sqliteStore = new global::CodeIndex.Core.SqliteCodeIndexStore();
+            var symbol = await sqliteStore.GetSymbolAsync(databasePath, "CodeIndex.Roslyn.WorkspaceInspector");
+
+            Assert.NotNull(symbol);
+            Assert.Equal("WorkspaceInspector", symbol!.Name);
+        }
+        finally
+        {
+            if (File.Exists(databasePath))
+            {
+                File.Delete(databasePath);
+            }
+        }
+    }
+
+    [Fact]
     public async Task FindSymbol_WithoutIndex_ReturnsClearError()
     {
         var result = await fixture.RunCliExpectFailureAsync("find-symbol", "WorkspaceInspector");
 
         Assert.Equal(1, result.ExitCode);
-        Assert.Contains("An index directory is required. Pass --index <path>.", result.StandardError);
+        Assert.Contains("An index directory or database is required. Pass --index <path> or --db <path>.", result.StandardError);
     }
 
     [Fact]
@@ -273,13 +362,30 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
         Assert.Equal(1, result.ExitCode);
         Assert.Contains("Pass --file when using --start or --end with benchmark.", result.StandardError);
     }
+
+    [Fact]
+    public async Task FindSymbol_WithIndexAndDbTogether_ReturnsClearError()
+    {
+        var result = await fixture.RunCliExpectFailureAsync(
+            "find-symbol",
+            "WorkspaceInspector",
+            "--index",
+            fixture.IndexDirectory,
+            "--db",
+            await fixture.GetSolutionDatabasePathAsync());
+
+        Assert.Equal(1, result.ExitCode);
+        Assert.Contains("Pass either --index <path> or --db <path>, but not both.", result.StandardError);
+    }
 }
 
 public sealed class IndexFixture : IAsyncLifetime
 {
     private readonly SemaphoreSlim consoleLock = new(1, 1);
     private readonly SemaphoreSlim solutionIndexLock = new(1, 1);
+    private readonly SemaphoreSlim solutionDatabaseLock = new(1, 1);
     private string? solutionIndexDirectory;
+    private string? solutionDatabasePath;
 
     public string RepoRoot { get; } = FindRepoRoot();
 
@@ -305,10 +411,16 @@ public sealed class IndexFixture : IAsyncLifetime
     {
         consoleLock.Dispose();
         solutionIndexLock.Dispose();
+        solutionDatabaseLock.Dispose();
 
         if (!string.IsNullOrWhiteSpace(solutionIndexDirectory) && Directory.Exists(solutionIndexDirectory))
         {
             Directory.Delete(solutionIndexDirectory, recursive: true);
+        }
+
+        if (!string.IsNullOrWhiteSpace(solutionDatabasePath) && File.Exists(solutionDatabasePath))
+        {
+            File.Delete(solutionDatabasePath);
         }
 
         return Task.CompletedTask;
@@ -352,6 +464,44 @@ public sealed class IndexFixture : IAsyncLifetime
         finally
         {
             solutionIndexLock.Release();
+        }
+    }
+
+    public async Task<string> GetSolutionDatabasePathAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(solutionDatabasePath) && File.Exists(solutionDatabasePath))
+        {
+            return solutionDatabasePath;
+        }
+
+        await solutionDatabaseLock.WaitAsync();
+
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(solutionDatabasePath) && File.Exists(solutionDatabasePath))
+            {
+                return solutionDatabasePath;
+            }
+
+            solutionDatabasePath = Path.Combine(Path.GetTempPath(), $"code-index-cli-solution-{Guid.NewGuid():N}.db");
+            var fileBuilder = new global::CodeIndex.Roslyn.WorkspaceFileIndexBuilder();
+            var symbolBuilder = new global::CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder();
+            var edgeBuilder = new global::CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder();
+            var files = await fileBuilder.BuildAsync(SolutionPath);
+            var symbols = await symbolBuilder.BuildAsync(SolutionPath, files);
+            var edges = await edgeBuilder.BuildAsync(SolutionPath);
+            var meta = global::CodeIndex.Core.CodeIndexMetaFactory.Create(SolutionPath, "solution");
+            var snapshot = new global::CodeIndex.Core.CodeIndexSnapshot(meta, files, symbols, edges);
+            var validator = new global::CodeIndex.Core.CodeIndexValidator();
+            validator.ValidateOrThrow(snapshot);
+            var sqliteStore = new global::CodeIndex.Core.SqliteCodeIndexStore();
+            await sqliteStore.WriteAsync(solutionDatabasePath, snapshot);
+
+            return solutionDatabasePath;
+        }
+        finally
+        {
+            solutionDatabaseLock.Release();
         }
     }
 
