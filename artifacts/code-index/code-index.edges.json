@@ -1,0 +1,262 @@
+[
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Roslyn",
+    "to": "s:T:CodeIndex.Roslyn.CSharpFileSummaryGenerator"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Roslyn",
+    "to": "s:T:CodeIndex.Roslyn.CSharpSourceDocumentFilter"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Roslyn",
+    "to": "s:T:CodeIndex.Roslyn.LoadedWorkspace"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Roslyn",
+    "to": "s:T:CodeIndex.Roslyn.ProjectInspectionResult"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Roslyn",
+    "to": "s:T:CodeIndex.Roslyn.SymbolIdentity"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Roslyn",
+    "to": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Roslyn",
+    "to": "s:T:CodeIndex.Roslyn.WorkspaceFileIndexBuilder"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Roslyn",
+    "to": "s:T:CodeIndex.Roslyn.WorkspaceInspectionResult"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Roslyn",
+    "to": "s:T:CodeIndex.Roslyn.WorkspaceInspector"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Roslyn",
+    "to": "s:T:CodeIndex.Roslyn.WorkspaceLoader"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Roslyn",
+    "to": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.CSharpFileSummaryGenerator",
+    "to": "s:M:CodeIndex.Roslyn.CSharpFileSummaryGenerator.CreateDeclarationSummary(Microsoft.CodeAnalysis.SyntaxNode)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.CSharpFileSummaryGenerator",
+    "to": "s:M:CodeIndex.Roslyn.CSharpFileSummaryGenerator.CreateSummaryAsync(Microsoft.CodeAnalysis.Document,System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.CSharpFileSummaryGenerator",
+    "to": "s:M:CodeIndex.Roslyn.CSharpFileSummaryGenerator.IsTopLevelDeclaration(Microsoft.CodeAnalysis.CSharp.Syntax.MemberDeclarationSyntax)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.CSharpSourceDocumentFilter",
+    "to": "s:M:CodeIndex.Roslyn.CSharpSourceDocumentFilter.IsGeneratedFile(System.String)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.CSharpSourceDocumentFilter",
+    "to": "s:M:CodeIndex.Roslyn.CSharpSourceDocumentFilter.IsRelevantSourceDocument(System.String,System.String,System.Boolean)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.LoadedWorkspace",
+    "to": "s:M:CodeIndex.Roslyn.LoadedWorkspace.#ctor(Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace,System.String,System.String,System.Collections.Generic.IReadOnlyList{Microsoft.CodeAnalysis.Project})"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.LoadedWorkspace",
+    "to": "s:M:CodeIndex.Roslyn.LoadedWorkspace.Dispose"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.LoadedWorkspace",
+    "to": "s:P:CodeIndex.Roslyn.LoadedWorkspace.InputKind"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.LoadedWorkspace",
+    "to": "s:P:CodeIndex.Roslyn.LoadedWorkspace.InputPath"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.LoadedWorkspace",
+    "to": "s:P:CodeIndex.Roslyn.LoadedWorkspace.Projects"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.LoadedWorkspace",
+    "to": "s:P:CodeIndex.Roslyn.LoadedWorkspace.Workspace"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.SymbolIdentity",
+    "to": "s:M:CodeIndex.Roslyn.SymbolIdentity.CreateStableId(Microsoft.CodeAnalysis.ISymbol)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.AddContainsEdge(System.Collections.Generic.HashSet{CodeIndex.Core.EdgeRecord},System.String,Microsoft.CodeAnalysis.ISymbol,System.Collections.Generic.IReadOnlyDictionary{System.String,Microsoft.CodeAnalysis.ISymbol})"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.AddImplementsEdges(System.Collections.Generic.HashSet{CodeIndex.Core.EdgeRecord},System.String,Microsoft.CodeAnalysis.ISymbol,System.Collections.Generic.IReadOnlyDictionary{System.String,Microsoft.CodeAnalysis.ISymbol})"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.AddInheritanceEdges(System.Collections.Generic.HashSet{CodeIndex.Core.EdgeRecord},System.String,Microsoft.CodeAnalysis.ISymbol,System.Collections.Generic.IReadOnlyDictionary{System.String,Microsoft.CodeAnalysis.ISymbol})"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.AddOverrideEdges(System.Collections.Generic.HashSet{CodeIndex.Core.EdgeRecord},System.String,Microsoft.CodeAnalysis.ISymbol,System.Collections.Generic.IReadOnlyDictionary{System.String,Microsoft.CodeAnalysis.ISymbol})"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.BuildAsync(System.String,System.Boolean,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.EnumerateDeclarations(Microsoft.CodeAnalysis.SyntaxNode)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.GetDeclaredSymbol(Microsoft.CodeAnalysis.SemanticModel,Microsoft.CodeAnalysis.SyntaxNode,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.GetIndexedSymbolId(Microsoft.CodeAnalysis.ISymbol,System.Collections.Generic.IReadOnlyDictionary{System.String,Microsoft.CodeAnalysis.ISymbol})"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.IsIndexableSymbol(Microsoft.CodeAnalysis.ISymbol)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceFileIndexBuilder",
+    "to": "s:F:CodeIndex.Roslyn.WorkspaceFileIndexBuilder._workspaceInspector"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceFileIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceFileIndexBuilder.BuildAsync(System.String,System.Boolean,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceInspector",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceInspector.CreateProjectResult(Microsoft.CodeAnalysis.Project)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceInspector",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceInspector.InspectAsync(System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceLoader",
+    "to": "s:F:CodeIndex.Roslyn.WorkspaceLoader.RegistrationLock"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceLoader",
+    "to": "s:F:CodeIndex.Roslyn.WorkspaceLoader._isMsBuildRegistered"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceLoader",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceLoader.EnsureMsBuildRegistered"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceLoader",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceLoader.GetSourceRoot(System.String)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceLoader",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceLoader.LoadAsync(System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceLoader",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceLoader.LoadProjectAsync(Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace,System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceLoader",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceLoader.LoadSolutionProjectsAsync(Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace,System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:F:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.QualifiedNameFormat"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.BuildAsync(System.String,System.Collections.Generic.IReadOnlyList{CodeIndex.Core.FileRecord},System.Boolean,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.EnumerateDeclarations(Microsoft.CodeAnalysis.SyntaxNode)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetAccessibility(Microsoft.CodeAnalysis.ISymbol)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetDeclaredSymbol(Microsoft.CodeAnalysis.SemanticModel,Microsoft.CodeAnalysis.SyntaxNode,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetParentId(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.ISymbol)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetSummary(Microsoft.CodeAnalysis.ISymbol,System.String)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetSymbolKind(Microsoft.CodeAnalysis.ISymbol)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.TryCreateSymbolRecord(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.SyntaxNode,System.String,CodeIndex.Core.SymbolRecord@)"
+  }
+]

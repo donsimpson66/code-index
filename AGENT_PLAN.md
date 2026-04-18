@@ -18,13 +18,16 @@ Completed today:
 - file indexing is implemented with normalized paths, stable file IDs, hashes, and improved source-aware summaries
 - initial symbol extraction is implemented for namespaces, types, delegates, constructors, methods, properties, fields, and events
 - XML doc `<summary>` extraction and fallback summaries are implemented
+- structural edge extraction is implemented and `code-index.edges.json` is generated
+- validation service is implemented and runs before build artifacts are written
+- query commands are implemented: `find-symbol`, `get-symbol`, `get-children`, and `get-excerpt`
+- query commands now support filtering, limits, and explicit sort modes for smaller result sets
+- CLI tests now cover `inspect`, `build`, `find-symbol`, `get-symbol`, `get-children`, `get-excerpt`, and invalid-input error paths
+- `build` now supports `--out`, `--include-generated`, and `--verbose`
 
 Still pending:
 
-- edge extraction and `code-index.edges.json`
-- validation service for output consistency
-- `--include-generated` and `--verbose` build options
-- query commands (`find-symbol`, `get-symbol`, `get-children`, `get-excerpt`)
+- broader generated-file handling policy beyond the current build-time include/exclude switch
 
 The tool must help AI agents:
 
@@ -185,7 +188,11 @@ Implement these commands.
 Currently implemented:
 
 - `inspect`
-- `build` (partial MVP: meta/files/symbols artifacts only)
+- `build`
+- `find-symbol`
+- `get-symbol`
+- `get-children`
+- `get-excerpt`
 
 ### `build`
 
@@ -204,6 +211,7 @@ Options:
 - `--verbose`
 
 Current implementation supports `--out <path>`.
+Current implementation supports `--out <path>`, `--include-generated`, and `--verbose`.
 
 ### `find-symbol`
 
@@ -255,7 +263,7 @@ Write these files into the output directory.
 - `code-index.symbols.json`
 - `code-index.edges.json`
 
-Current implementation writes the first three files. `code-index.edges.json` is still pending.
+Current implementation writes all four files.
 
 ## JSON Schema Design
 

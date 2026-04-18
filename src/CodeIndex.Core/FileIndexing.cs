@@ -77,4 +77,17 @@ public static class CodeIndexJson
         await using var stream = File.Create(outputPath);
         await JsonSerializer.SerializeAsync(stream, value, SerializerOptions, cancellationToken);
     }
+
+    public static async Task<T> ReadFromFileAsync<T>(string inputPath, CancellationToken cancellationToken = default)
+    {
+        await using var stream = File.OpenRead(inputPath);
+        var value = await JsonSerializer.DeserializeAsync<T>(stream, SerializerOptions, cancellationToken);
+
+        if (value is null)
+        {
+            throw new InvalidOperationException($"Could not deserialize JSON from {inputPath}");
+        }
+
+        return value;
+    }
 }

@@ -22,6 +22,7 @@ public sealed class WorkspaceSymbolIndexBuilder
     public async Task<IReadOnlyList<SymbolRecord>> BuildAsync(
         string inputPath,
         IReadOnlyList<FileRecord> files,
+        bool includeGenerated = false,
         CancellationToken cancellationToken = default)
     {
         using var loadedWorkspace = await WorkspaceLoader.LoadAsync(inputPath, cancellationToken);
@@ -39,7 +40,7 @@ public sealed class WorkspaceSymbolIndexBuilder
 
             foreach (var document in project.Documents)
             {
-                if (document.FilePath is null || !CSharpSourceDocumentFilter.IsRelevantSourceDocument(document.FilePath, projectDirectory))
+                if (document.FilePath is null || !CSharpSourceDocumentFilter.IsRelevantSourceDocument(document.FilePath, projectDirectory, includeGenerated))
                 {
                     continue;
                 }
@@ -127,7 +128,7 @@ public sealed class WorkspaceSymbolIndexBuilder
             return false;
         }
 
-        var stableId = symbol.GetDocumentationCommentId() ?? symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var stableId = SymbolIdentity.CreateStableId(symbol);
         var location = symbol.Locations.FirstOrDefault(candidate => candidate.IsInSource) ?? declaration.GetLocation();
         var lineSpan = location.GetLineSpan();
 
@@ -182,7 +183,7 @@ public sealed class WorkspaceSymbolIndexBuilder
             return null;
         }
 
-        var stableId = containingSymbol.GetDocumentationCommentId() ?? containingSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var stableId = SymbolIdentity.CreateStableId(containingSymbol);
         return DeterministicId.CreateSymbolId(stableId);
     }
 

@@ -6,7 +6,7 @@ public sealed class WorkspaceFileIndexBuilder
 {
     private readonly WorkspaceInspector _workspaceInspector = new();
 
-    public async Task<IReadOnlyList<FileRecord>> BuildAsync(string inputPath, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FileRecord>> BuildAsync(string inputPath, bool includeGenerated = false, CancellationToken cancellationToken = default)
     {
         using var loadedWorkspace = await WorkspaceLoader.LoadAsync(inputPath, cancellationToken);
         var sourceRoot = WorkspaceLoader.GetSourceRoot(loadedWorkspace.InputPath);
@@ -18,7 +18,7 @@ public sealed class WorkspaceFileIndexBuilder
 
             foreach (var document in project.Documents)
             {
-                if (document.FilePath is null || !CSharpSourceDocumentFilter.IsRelevantSourceDocument(document.FilePath, projectDirectory))
+                if (document.FilePath is null || !CSharpSourceDocumentFilter.IsRelevantSourceDocument(document.FilePath, projectDirectory, includeGenerated))
                 {
                     continue;
                 }

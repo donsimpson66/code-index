@@ -145,7 +145,7 @@ internal static class WorkspaceLoader
 
 internal static class CSharpSourceDocumentFilter
 {
-    public static bool IsRelevantSourceDocument(string path, string? projectDirectory)
+    public static bool IsRelevantSourceDocument(string path, string? projectDirectory, bool includeGenerated = false)
     {
         if (!path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
         {
@@ -154,9 +154,15 @@ internal static class CSharpSourceDocumentFilter
 
         var fullPath = Path.GetFullPath(path);
 
-        if (fullPath.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) ||
-            fullPath.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) ||
-            fullPath.Contains($"{Path.DirectorySeparatorChar}.nuget{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+        if (fullPath.Contains($"{Path.DirectorySeparatorChar}.nuget{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!includeGenerated &&
+            (fullPath.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) ||
+             fullPath.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) ||
+             IsGeneratedFile(fullPath)))
         {
             return false;
         }
@@ -170,5 +176,13 @@ internal static class CSharpSourceDocumentFilter
             .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
         return fullPath.StartsWith(fullProjectDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsGeneratedFile(string path)
+    {
+        return path.EndsWith(".g.cs", StringComparison.OrdinalIgnoreCase) ||
+               path.EndsWith(".g.i.cs", StringComparison.OrdinalIgnoreCase) ||
+               path.EndsWith(".designer.cs", StringComparison.OrdinalIgnoreCase) ||
+               path.EndsWith(".generated.cs", StringComparison.OrdinalIgnoreCase);
     }
 }

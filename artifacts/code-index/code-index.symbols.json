@@ -4,7 +4,7 @@
     "name": "CreateDeclarationSummary",
     "qualifiedName": "(string Kind, string Name)? CodeIndex.Roslyn.CSharpFileSummaryGenerator.CreateDeclarationSummary(Microsoft.CodeAnalysis.SyntaxNode)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/CSharpFileSummaryGenerator.cs",
+    "fileId": "f:CSharpFileSummaryGenerator.cs",
     "range": {
       "startLine": 53,
       "startColumn": 48,
@@ -21,347 +21,11 @@
     "isOverride": false
   },
   {
-    "id": "s:N:CodeIndex.Cli.Tests",
-    "name": "Tests",
-    "qualifiedName": "CodeIndex.Cli.Tests",
-    "kind": "namespace",
-    "fileId": "f:tests/CodeIndex.Cli.Tests/UnitTest1.cs",
-    "range": {
-      "startLine": 1,
-      "startColumn": 25,
-      "endLine": 1,
-      "endColumn": 30
-    },
-    "signature": "CodeIndex.Cli.Tests",
-    "summary": "namespace Tests.",
-    "parentId": null,
-    "accessibility": "public",
-    "isStatic": true,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:T:CodeIndex.Cli.Tests.UnitTest1",
-    "name": "UnitTest1",
-    "qualifiedName": "CodeIndex.Cli.Tests.UnitTest1",
-    "kind": "class",
-    "fileId": "f:tests/CodeIndex.Cli.Tests/UnitTest1.cs",
-    "range": {
-      "startLine": 3,
-      "startColumn": 14,
-      "endLine": 3,
-      "endColumn": 23
-    },
-    "signature": "CodeIndex.Cli.Tests.UnitTest1",
-    "summary": "class UnitTest1.",
-    "parentId": "s:N:CodeIndex.Cli.Tests",
-    "accessibility": "public",
-    "isStatic": false,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:N:CodeIndex.Core",
-    "name": "Core",
-    "qualifiedName": "CodeIndex.Core",
-    "kind": "namespace",
-    "fileId": "f:src/CodeIndex.Core/CodeIndexMeta.cs",
-    "range": {
-      "startLine": 1,
-      "startColumn": 21,
-      "endLine": 1,
-      "endColumn": 25
-    },
-    "signature": "CodeIndex.Core",
-    "summary": "namespace Core.",
-    "parentId": null,
-    "accessibility": "public",
-    "isStatic": true,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:T:CodeIndex.Core.CodeIndexJson",
-    "name": "CodeIndexJson",
-    "qualifiedName": "CodeIndex.Core.CodeIndexJson",
-    "kind": "class",
-    "fileId": "f:src/CodeIndex.Core/FileIndexing.cs",
-    "range": {
-      "startLine": 60,
-      "startColumn": 21,
-      "endLine": 60,
-      "endColumn": 34
-    },
-    "signature": "CodeIndex.Core.CodeIndexJson",
-    "summary": "class CodeIndexJson.",
-    "parentId": "s:N:CodeIndex.Core",
-    "accessibility": "public",
-    "isStatic": true,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:T:CodeIndex.Core.CodeIndexMeta",
-    "name": "CodeIndexMeta",
-    "qualifiedName": "CodeIndex.Core.CodeIndexMeta",
-    "kind": "record",
-    "fileId": "f:src/CodeIndex.Core/CodeIndexMeta.cs",
-    "range": {
-      "startLine": 3,
-      "startColumn": 22,
-      "endLine": 3,
-      "endColumn": 35
-    },
-    "signature": "CodeIndex.Core.CodeIndexMeta",
-    "summary": "record CodeIndexMeta.",
-    "parentId": "s:N:CodeIndex.Core",
-    "accessibility": "public",
-    "isStatic": false,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:M:CodeIndex.Core.CodeIndexMetaFactory.Create(System.String,System.String)",
-    "name": "Create",
-    "qualifiedName": "CodeIndex.Core.CodeIndexMeta CodeIndex.Core.CodeIndexMetaFactory.Create(string, string)",
-    "kind": "method",
-    "fileId": "f:src/CodeIndex.Core/FileIndexing.cs",
-    "range": {
-      "startLine": 43,
-      "startColumn": 33,
-      "endLine": 43,
-      "endColumn": 39
-    },
-    "signature": "CodeIndex.Core.CodeIndexMetaFactory.Create(string, string)",
-    "summary": "method Create.",
-    "parentId": "s:T:CodeIndex.Core.CodeIndexMetaFactory",
-    "accessibility": "public",
-    "isStatic": true,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:T:CodeIndex.Core.CodeIndexMetaFactory",
-    "name": "CodeIndexMetaFactory",
-    "qualifiedName": "CodeIndex.Core.CodeIndexMetaFactory",
-    "kind": "class",
-    "fileId": "f:src/CodeIndex.Core/FileIndexing.cs",
-    "range": {
-      "startLine": 41,
-      "startColumn": 21,
-      "endLine": 41,
-      "endColumn": 41
-    },
-    "signature": "CodeIndex.Core.CodeIndexMetaFactory",
-    "summary": "class CodeIndexMetaFactory.",
-    "parentId": "s:N:CodeIndex.Core",
-    "accessibility": "public",
-    "isStatic": true,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:T:CodeIndex.Core.DeterministicId",
-    "name": "DeterministicId",
-    "qualifiedName": "CodeIndex.Core.DeterministicId",
-    "kind": "class",
-    "fileId": "f:src/CodeIndex.Core/FileIndexing.cs",
-    "range": {
-      "startLine": 6,
-      "startColumn": 21,
-      "endLine": 6,
-      "endColumn": 36
-    },
-    "signature": "CodeIndex.Core.DeterministicId",
-    "summary": "class DeterministicId.",
-    "parentId": "s:N:CodeIndex.Core",
-    "accessibility": "public",
-    "isStatic": true,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:T:CodeIndex.Core.FileHashProvider",
-    "name": "FileHashProvider",
-    "qualifiedName": "CodeIndex.Core.FileHashProvider",
-    "kind": "class",
-    "fileId": "f:src/CodeIndex.Core/FileIndexing.cs",
-    "range": {
-      "startLine": 22,
-      "startColumn": 21,
-      "endLine": 22,
-      "endColumn": 37
-    },
-    "signature": "CodeIndex.Core.FileHashProvider",
-    "summary": "class FileHashProvider.",
-    "parentId": "s:N:CodeIndex.Core",
-    "accessibility": "public",
-    "isStatic": true,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:T:CodeIndex.Core.FileRecord",
-    "name": "FileRecord",
-    "qualifiedName": "CodeIndex.Core.FileRecord",
-    "kind": "record",
-    "fileId": "f:src/CodeIndex.Core/FileRecord.cs",
-    "range": {
-      "startLine": 3,
-      "startColumn": 22,
-      "endLine": 3,
-      "endColumn": 32
-    },
-    "signature": "CodeIndex.Core.FileRecord",
-    "summary": "record FileRecord.",
-    "parentId": "s:N:CodeIndex.Core",
-    "accessibility": "public",
-    "isStatic": false,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:T:CodeIndex.Core.FileSummaryGenerator",
-    "name": "FileSummaryGenerator",
-    "qualifiedName": "CodeIndex.Core.FileSummaryGenerator",
-    "kind": "class",
-    "fileId": "f:src/CodeIndex.Core/FileIndexing.cs",
-    "range": {
-      "startLine": 32,
-      "startColumn": 21,
-      "endLine": 32,
-      "endColumn": 41
-    },
-    "signature": "CodeIndex.Core.FileSummaryGenerator",
-    "summary": "class FileSummaryGenerator.",
-    "parentId": "s:N:CodeIndex.Core",
-    "accessibility": "public",
-    "isStatic": true,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:T:CodeIndex.Core.PathNormalization",
-    "name": "PathNormalization",
-    "qualifiedName": "CodeIndex.Core.PathNormalization",
-    "kind": "class",
-    "fileId": "f:src/CodeIndex.Core/FileIndexing.cs",
-    "range": {
-      "startLine": 13,
-      "startColumn": 21,
-      "endLine": 13,
-      "endColumn": 38
-    },
-    "signature": "CodeIndex.Core.PathNormalization",
-    "summary": "class PathNormalization.",
-    "parentId": "s:N:CodeIndex.Core",
-    "accessibility": "public",
-    "isStatic": true,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:T:CodeIndex.Core.SymbolRecord",
-    "name": "SymbolRecord",
-    "qualifiedName": "CodeIndex.Core.SymbolRecord",
-    "kind": "record",
-    "fileId": "f:src/CodeIndex.Core/SymbolRecord.cs",
-    "range": {
-      "startLine": 9,
-      "startColumn": 22,
-      "endLine": 9,
-      "endColumn": 34
-    },
-    "signature": "CodeIndex.Core.SymbolRecord",
-    "summary": "record SymbolRecord.",
-    "parentId": "s:N:CodeIndex.Core",
-    "accessibility": "public",
-    "isStatic": false,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:N:CodeIndex.Core.Tests",
-    "name": "Tests",
-    "qualifiedName": "CodeIndex.Core.Tests",
-    "kind": "namespace",
-    "fileId": "f:tests/CodeIndex.Core.Tests/FileIndexingTests.cs",
-    "range": {
-      "startLine": 3,
-      "startColumn": 26,
-      "endLine": 3,
-      "endColumn": 31
-    },
-    "signature": "CodeIndex.Core.Tests",
-    "summary": "namespace Tests.",
-    "parentId": null,
-    "accessibility": "public",
-    "isStatic": true,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:T:CodeIndex.Core.Tests.FileIndexingTests",
-    "name": "FileIndexingTests",
-    "qualifiedName": "CodeIndex.Core.Tests.FileIndexingTests",
-    "kind": "class",
-    "fileId": "f:tests/CodeIndex.Core.Tests/FileIndexingTests.cs",
-    "range": {
-      "startLine": 5,
-      "startColumn": 14,
-      "endLine": 5,
-      "endColumn": 31
-    },
-    "signature": "CodeIndex.Core.Tests.FileIndexingTests",
-    "summary": "class FileIndexingTests.",
-    "parentId": "s:N:CodeIndex.Core.Tests",
-    "accessibility": "public",
-    "isStatic": false,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:T:CodeIndex.Core.TextRangeRecord",
-    "name": "TextRangeRecord",
-    "qualifiedName": "CodeIndex.Core.TextRangeRecord",
-    "kind": "record",
-    "fileId": "f:src/CodeIndex.Core/SymbolRecord.cs",
-    "range": {
-      "startLine": 3,
-      "startColumn": 22,
-      "endLine": 3,
-      "endColumn": 37
-    },
-    "signature": "CodeIndex.Core.TextRangeRecord",
-    "summary": "record TextRangeRecord.",
-    "parentId": "s:N:CodeIndex.Core",
-    "accessibility": "public",
-    "isStatic": false,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
     "id": "s:N:CodeIndex.Roslyn",
     "name": "Roslyn",
     "qualifiedName": "CodeIndex.Roslyn",
     "kind": "namespace",
-    "fileId": "f:src/CodeIndex.Roslyn/CSharpFileSummaryGenerator.cs",
+    "fileId": "f:CSharpFileSummaryGenerator.cs",
     "range": {
       "startLine": 5,
       "startColumn": 21,
@@ -382,7 +46,7 @@
     "name": "CSharpFileSummaryGenerator",
     "qualifiedName": "CodeIndex.Roslyn.CSharpFileSummaryGenerator",
     "kind": "class",
-    "fileId": "f:src/CodeIndex.Roslyn/CSharpFileSummaryGenerator.cs",
+    "fileId": "f:CSharpFileSummaryGenerator.cs",
     "range": {
       "startLine": 7,
       "startColumn": 23,
@@ -403,7 +67,7 @@
     "name": "CSharpSourceDocumentFilter",
     "qualifiedName": "CodeIndex.Roslyn.CSharpSourceDocumentFilter",
     "kind": "class",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "fileId": "f:WorkspaceLoader.cs",
     "range": {
       "startLine": 146,
       "startColumn": 23,
@@ -424,7 +88,7 @@
     "name": "LoadedWorkspace",
     "qualifiedName": "CodeIndex.Roslyn.LoadedWorkspace",
     "kind": "class",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "fileId": "f:WorkspaceLoader.cs",
     "range": {
       "startLine": 7,
       "startColumn": 23,
@@ -445,7 +109,7 @@
     "name": ".ctor",
     "qualifiedName": "CodeIndex.Roslyn.LoadedWorkspace.LoadedWorkspace(Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace, string, string, System.Collections.Generic.IReadOnlyList\u003CMicrosoft.CodeAnalysis.Project\u003E)",
     "kind": "constructor",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "fileId": "f:WorkspaceLoader.cs",
     "range": {
       "startLine": 9,
       "startColumn": 12,
@@ -466,7 +130,7 @@
     "name": "ProjectInspectionResult",
     "qualifiedName": "CodeIndex.Roslyn.ProjectInspectionResult",
     "kind": "record",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceInspection.cs",
+    "fileId": "f:WorkspaceInspection.cs",
     "range": {
       "startLine": 5,
       "startColumn": 22,
@@ -487,7 +151,7 @@
     "name": "CreateProjectResult",
     "qualifiedName": "CodeIndex.Roslyn.ProjectInspectionResult CodeIndex.Roslyn.WorkspaceInspector.CreateProjectResult(Microsoft.CodeAnalysis.Project)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceInspection.cs",
+    "fileId": "f:WorkspaceInspection.cs",
     "range": {
       "startLine": 27,
       "startColumn": 44,
@@ -504,41 +168,41 @@
     "isOverride": false
   },
   {
-    "id": "s:N:CodeIndex.Roslyn.Tests",
-    "name": "Tests",
-    "qualifiedName": "CodeIndex.Roslyn.Tests",
-    "kind": "namespace",
-    "fileId": "f:tests/CodeIndex.Roslyn.Tests/WorkspaceIndexBuildersTests.cs",
+    "id": "s:T:CodeIndex.Roslyn.SymbolIdentity",
+    "name": "SymbolIdentity",
+    "qualifiedName": "CodeIndex.Roslyn.SymbolIdentity",
+    "kind": "class",
+    "fileId": "f:SymbolIdentity.cs",
     "range": {
-      "startLine": 3,
-      "startColumn": 28,
-      "endLine": 3,
-      "endColumn": 33
+      "startLine": 5,
+      "startColumn": 23,
+      "endLine": 5,
+      "endColumn": 37
     },
-    "signature": "CodeIndex.Roslyn.Tests",
-    "summary": "namespace Tests.",
-    "parentId": null,
-    "accessibility": "public",
+    "signature": "CodeIndex.Roslyn.SymbolIdentity",
+    "summary": "class SymbolIdentity.",
+    "parentId": "s:N:CodeIndex.Roslyn",
+    "accessibility": "internal",
     "isStatic": true,
     "isAbstract": false,
     "isVirtual": false,
     "isOverride": false
   },
   {
-    "id": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
-    "name": "WorkspaceIndexBuildersTests",
-    "qualifiedName": "CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
+    "id": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "name": "WorkspaceEdgeIndexBuilder",
+    "qualifiedName": "CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
     "kind": "class",
-    "fileId": "f:tests/CodeIndex.Roslyn.Tests/WorkspaceIndexBuildersTests.cs",
+    "fileId": "f:WorkspaceEdgeIndexBuilder.cs",
     "range": {
-      "startLine": 5,
-      "startColumn": 14,
-      "endLine": 5,
-      "endColumn": 41
+      "startLine": 7,
+      "startColumn": 21,
+      "endLine": 7,
+      "endColumn": 46
     },
-    "signature": "CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
-    "summary": "class WorkspaceIndexBuildersTests.",
-    "parentId": "s:N:CodeIndex.Roslyn.Tests",
+    "signature": "CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "summary": "class WorkspaceEdgeIndexBuilder.",
+    "parentId": "s:N:CodeIndex.Roslyn",
     "accessibility": "public",
     "isStatic": false,
     "isAbstract": false,
@@ -550,7 +214,7 @@
     "name": "WorkspaceFileIndexBuilder",
     "qualifiedName": "CodeIndex.Roslyn.WorkspaceFileIndexBuilder",
     "kind": "class",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceFileIndexBuilder.cs",
+    "fileId": "f:WorkspaceFileIndexBuilder.cs",
     "range": {
       "startLine": 5,
       "startColumn": 21,
@@ -571,7 +235,7 @@
     "name": "WorkspaceInspectionResult",
     "qualifiedName": "CodeIndex.Roslyn.WorkspaceInspectionResult",
     "kind": "record",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceInspection.cs",
+    "fileId": "f:WorkspaceInspection.cs",
     "range": {
       "startLine": 10,
       "startColumn": 22,
@@ -592,7 +256,7 @@
     "name": "WorkspaceInspector",
     "qualifiedName": "CodeIndex.Roslyn.WorkspaceInspector",
     "kind": "class",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceInspection.cs",
+    "fileId": "f:WorkspaceInspection.cs",
     "range": {
       "startLine": 15,
       "startColumn": 21,
@@ -613,7 +277,7 @@
     "name": "_workspaceInspector",
     "qualifiedName": "CodeIndex.Roslyn.WorkspaceInspector CodeIndex.Roslyn.WorkspaceFileIndexBuilder._workspaceInspector",
     "kind": "field",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceFileIndexBuilder.cs",
+    "fileId": "f:WorkspaceFileIndexBuilder.cs",
     "range": {
       "startLine": 7,
       "startColumn": 41,
@@ -634,7 +298,7 @@
     "name": "WorkspaceLoader",
     "qualifiedName": "CodeIndex.Roslyn.WorkspaceLoader",
     "kind": "class",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "fileId": "f:WorkspaceLoader.cs",
     "range": {
       "startLine": 31,
       "startColumn": 23,
@@ -655,7 +319,7 @@
     "name": "WorkspaceSymbolIndexBuilder",
     "qualifiedName": "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
     "kind": "class",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
+    "fileId": "f:WorkspaceSymbolIndexBuilder.cs",
     "range": {
       "startLine": 8,
       "startColumn": 21,
@@ -672,15 +336,36 @@
     "isOverride": false
   },
   {
+    "id": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.GetDeclaredSymbol(Microsoft.CodeAnalysis.SemanticModel,Microsoft.CodeAnalysis.SyntaxNode,System.Threading.CancellationToken)",
+    "name": "GetDeclaredSymbol",
+    "qualifiedName": "Microsoft.CodeAnalysis.ISymbol CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.GetDeclaredSymbol(Microsoft.CodeAnalysis.SemanticModel, Microsoft.CodeAnalysis.SyntaxNode, System.Threading.CancellationToken)",
+    "kind": "method",
+    "fileId": "f:WorkspaceEdgeIndexBuilder.cs",
+    "range": {
+      "startLine": 189,
+      "startColumn": 29,
+      "endLine": 189,
+      "endColumn": 46
+    },
+    "signature": "CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.GetDeclaredSymbol(Microsoft.CodeAnalysis.SemanticModel, Microsoft.CodeAnalysis.SyntaxNode, System.Threading.CancellationToken)",
+    "summary": "method GetDeclaredSymbol.",
+    "parentId": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "accessibility": "private",
+    "isStatic": true,
+    "isAbstract": false,
+    "isVirtual": false,
+    "isOverride": false
+  },
+  {
     "id": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetDeclaredSymbol(Microsoft.CodeAnalysis.SemanticModel,Microsoft.CodeAnalysis.SyntaxNode,System.Threading.CancellationToken)",
     "name": "GetDeclaredSymbol",
     "qualifiedName": "Microsoft.CodeAnalysis.ISymbol CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetDeclaredSymbol(Microsoft.CodeAnalysis.SemanticModel, Microsoft.CodeAnalysis.SyntaxNode, System.Threading.CancellationToken)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
+    "fileId": "f:WorkspaceSymbolIndexBuilder.cs",
     "range": {
-      "startLine": 104,
+      "startLine": 105,
       "startColumn": 29,
-      "endLine": 104,
+      "endLine": 105,
       "endColumn": 46
     },
     "signature": "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetDeclaredSymbol(Microsoft.CodeAnalysis.SemanticModel, Microsoft.CodeAnalysis.SyntaxNode, System.Threading.CancellationToken)",
@@ -697,7 +382,7 @@
     "name": "Workspace",
     "qualifiedName": "Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace CodeIndex.Roslyn.LoadedWorkspace.Workspace",
     "kind": "property",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "fileId": "f:WorkspaceLoader.cs",
     "range": {
       "startLine": 17,
       "startColumn": 29,
@@ -718,7 +403,7 @@
     "name": "QualifiedNameFormat",
     "qualifiedName": "Microsoft.CodeAnalysis.SymbolDisplayFormat CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.QualifiedNameFormat",
     "kind": "field",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
+    "fileId": "f:WorkspaceSymbolIndexBuilder.cs",
     "range": {
       "startLine": 10,
       "startColumn": 49,
@@ -735,15 +420,36 @@
     "isOverride": false
   },
   {
+    "id": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.EnumerateDeclarations(Microsoft.CodeAnalysis.SyntaxNode)",
+    "name": "EnumerateDeclarations",
+    "qualifiedName": "System.Collections.Generic.IEnumerable\u003CMicrosoft.CodeAnalysis.SyntaxNode\u003E CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.EnumerateDeclarations(Microsoft.CodeAnalysis.SyntaxNode)",
+    "kind": "method",
+    "fileId": "f:WorkspaceEdgeIndexBuilder.cs",
+    "range": {
+      "startLine": 169,
+      "startColumn": 44,
+      "endLine": 169,
+      "endColumn": 65
+    },
+    "signature": "CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.EnumerateDeclarations(Microsoft.CodeAnalysis.SyntaxNode)",
+    "summary": "method EnumerateDeclarations.",
+    "parentId": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "accessibility": "private",
+    "isStatic": true,
+    "isAbstract": false,
+    "isVirtual": false,
+    "isOverride": false
+  },
+  {
     "id": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.EnumerateDeclarations(Microsoft.CodeAnalysis.SyntaxNode)",
     "name": "EnumerateDeclarations",
     "qualifiedName": "System.Collections.Generic.IEnumerable\u003CMicrosoft.CodeAnalysis.SyntaxNode\u003E CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.EnumerateDeclarations(Microsoft.CodeAnalysis.SyntaxNode)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
+    "fileId": "f:WorkspaceSymbolIndexBuilder.cs",
     "range": {
-      "startLine": 84,
+      "startLine": 85,
       "startColumn": 44,
-      "endLine": 84,
+      "endLine": 85,
       "endColumn": 65
     },
     "signature": "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.EnumerateDeclarations(Microsoft.CodeAnalysis.SyntaxNode)",
@@ -760,7 +466,7 @@
     "name": "Projects",
     "qualifiedName": "System.Collections.Generic.IReadOnlyList\u003CMicrosoft.CodeAnalysis.Project\u003E CodeIndex.Roslyn.LoadedWorkspace.Projects",
     "kind": "property",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "fileId": "f:WorkspaceLoader.cs",
     "range": {
       "startLine": 23,
       "startColumn": 35,
@@ -777,32 +483,11 @@
     "isOverride": false
   },
   {
-    "id": "s:F:CodeIndex.Core.CodeIndexJson.SerializerOptions",
-    "name": "SerializerOptions",
-    "qualifiedName": "System.Text.Json.JsonSerializerOptions CodeIndex.Core.CodeIndexJson.SerializerOptions",
-    "kind": "field",
-    "fileId": "f:src/CodeIndex.Core/FileIndexing.cs",
-    "range": {
-      "startLine": 62,
-      "startColumn": 51,
-      "endLine": 62,
-      "endColumn": 68
-    },
-    "signature": "CodeIndex.Core.CodeIndexJson.SerializerOptions",
-    "summary": "field SerializerOptions.",
-    "parentId": "s:T:CodeIndex.Core.CodeIndexJson",
-    "accessibility": "private",
-    "isStatic": true,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
     "id": "s:F:CodeIndex.Roslyn.WorkspaceLoader.RegistrationLock",
     "name": "RegistrationLock",
     "qualifiedName": "System.Threading.Lock CodeIndex.Roslyn.WorkspaceLoader.RegistrationLock",
     "kind": "field",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "fileId": "f:WorkspaceLoader.cs",
     "range": {
       "startLine": 33,
       "startColumn": 34,
@@ -819,74 +504,11 @@
     "isOverride": false
   },
   {
-    "id": "s:M:CodeIndex.Core.CodeIndexJson.WriteToFileAsync\u0060\u00601(System.String,\u0060\u00600,System.Threading.CancellationToken)",
-    "name": "WriteToFileAsync",
-    "qualifiedName": "System.Threading.Tasks.Task CodeIndex.Core.CodeIndexJson.WriteToFileAsync\u003CT\u003E(string, T, System.Threading.CancellationToken)",
-    "kind": "method",
-    "fileId": "f:src/CodeIndex.Core/FileIndexing.cs",
-    "range": {
-      "startLine": 68,
-      "startColumn": 30,
-      "endLine": 68,
-      "endColumn": 46
-    },
-    "signature": "CodeIndex.Core.CodeIndexJson.WriteToFileAsync\u003CT\u003E(string, T, System.Threading.CancellationToken)",
-    "summary": "method WriteToFileAsync.",
-    "parentId": "s:T:CodeIndex.Core.CodeIndexJson",
-    "accessibility": "public",
-    "isStatic": true,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:M:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.BuildAsync_ExtractsWorkspaceInspectorSymbol",
-    "name": "BuildAsync_ExtractsWorkspaceInspectorSymbol",
-    "qualifiedName": "System.Threading.Tasks.Task CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.BuildAsync_ExtractsWorkspaceInspectorSymbol()",
-    "kind": "method",
-    "fileId": "f:tests/CodeIndex.Roslyn.Tests/WorkspaceIndexBuildersTests.cs",
-    "range": {
-      "startLine": 20,
-      "startColumn": 23,
-      "endLine": 20,
-      "endColumn": 66
-    },
-    "signature": "CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.BuildAsync_ExtractsWorkspaceInspectorSymbol()",
-    "summary": "method BuildAsync_ExtractsWorkspaceInspectorSymbol.",
-    "parentId": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
-    "accessibility": "public",
-    "isStatic": false,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:M:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.BuildAsync_GeneratesStructuredFileSummaries",
-    "name": "BuildAsync_GeneratesStructuredFileSummaries",
-    "qualifiedName": "System.Threading.Tasks.Task CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.BuildAsync_GeneratesStructuredFileSummaries()",
-    "kind": "method",
-    "fileId": "f:tests/CodeIndex.Roslyn.Tests/WorkspaceIndexBuildersTests.cs",
-    "range": {
-      "startLine": 8,
-      "startColumn": 23,
-      "endLine": 8,
-      "endColumn": 66
-    },
-    "signature": "CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.BuildAsync_GeneratesStructuredFileSummaries()",
-    "summary": "method BuildAsync_GeneratesStructuredFileSummaries.",
-    "parentId": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
-    "accessibility": "public",
-    "isStatic": false,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
     "id": "s:M:CodeIndex.Roslyn.WorkspaceLoader.LoadAsync(System.String,System.Threading.CancellationToken)",
     "name": "LoadAsync",
     "qualifiedName": "System.Threading.Tasks.Task\u003CCodeIndex.Roslyn.LoadedWorkspace\u003E CodeIndex.Roslyn.WorkspaceLoader.LoadAsync(string, System.Threading.CancellationToken)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "fileId": "f:WorkspaceLoader.cs",
     "range": {
       "startLine": 36,
       "startColumn": 47,
@@ -907,7 +529,7 @@
     "name": "InspectAsync",
     "qualifiedName": "System.Threading.Tasks.Task\u003CCodeIndex.Roslyn.WorkspaceInspectionResult\u003E CodeIndex.Roslyn.WorkspaceInspector.InspectAsync(string, System.Threading.CancellationToken)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceInspection.cs",
+    "fileId": "f:WorkspaceInspection.cs",
     "range": {
       "startLine": 17,
       "startColumn": 50,
@@ -924,18 +546,39 @@
     "isOverride": false
   },
   {
-    "id": "s:M:CodeIndex.Roslyn.WorkspaceFileIndexBuilder.BuildAsync(System.String,System.Threading.CancellationToken)",
+    "id": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.BuildAsync(System.String,System.Boolean,System.Threading.CancellationToken)",
     "name": "BuildAsync",
-    "qualifiedName": "System.Threading.Tasks.Task\u003CSystem.Collections.Generic.IReadOnlyList\u003CCodeIndex.Core.FileRecord\u003E\u003E CodeIndex.Roslyn.WorkspaceFileIndexBuilder.BuildAsync(string, System.Threading.CancellationToken)",
+    "qualifiedName": "System.Threading.Tasks.Task\u003CSystem.Collections.Generic.IReadOnlyList\u003CCodeIndex.Core.EdgeRecord\u003E\u003E CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.BuildAsync(string, bool, System.Threading.CancellationToken)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceFileIndexBuilder.cs",
+    "fileId": "f:WorkspaceEdgeIndexBuilder.cs",
     "range": {
       "startLine": 9,
       "startColumn": 50,
       "endLine": 9,
       "endColumn": 60
     },
-    "signature": "CodeIndex.Roslyn.WorkspaceFileIndexBuilder.BuildAsync(string, System.Threading.CancellationToken)",
+    "signature": "CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.BuildAsync(string, bool, System.Threading.CancellationToken)",
+    "summary": "method BuildAsync.",
+    "parentId": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "accessibility": "public",
+    "isStatic": false,
+    "isAbstract": false,
+    "isVirtual": false,
+    "isOverride": false
+  },
+  {
+    "id": "s:M:CodeIndex.Roslyn.WorkspaceFileIndexBuilder.BuildAsync(System.String,System.Boolean,System.Threading.CancellationToken)",
+    "name": "BuildAsync",
+    "qualifiedName": "System.Threading.Tasks.Task\u003CSystem.Collections.Generic.IReadOnlyList\u003CCodeIndex.Core.FileRecord\u003E\u003E CodeIndex.Roslyn.WorkspaceFileIndexBuilder.BuildAsync(string, bool, System.Threading.CancellationToken)",
+    "kind": "method",
+    "fileId": "f:WorkspaceFileIndexBuilder.cs",
+    "range": {
+      "startLine": 9,
+      "startColumn": 50,
+      "endLine": 9,
+      "endColumn": 60
+    },
+    "signature": "CodeIndex.Roslyn.WorkspaceFileIndexBuilder.BuildAsync(string, bool, System.Threading.CancellationToken)",
     "summary": "method BuildAsync.",
     "parentId": "s:T:CodeIndex.Roslyn.WorkspaceFileIndexBuilder",
     "accessibility": "public",
@@ -945,18 +588,18 @@
     "isOverride": false
   },
   {
-    "id": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.BuildAsync(System.String,System.Collections.Generic.IReadOnlyList{CodeIndex.Core.FileRecord},System.Threading.CancellationToken)",
+    "id": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.BuildAsync(System.String,System.Collections.Generic.IReadOnlyList{CodeIndex.Core.FileRecord},System.Boolean,System.Threading.CancellationToken)",
     "name": "BuildAsync",
-    "qualifiedName": "System.Threading.Tasks.Task\u003CSystem.Collections.Generic.IReadOnlyList\u003CCodeIndex.Core.SymbolRecord\u003E\u003E CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.BuildAsync(string, System.Collections.Generic.IReadOnlyList\u003CCodeIndex.Core.FileRecord\u003E, System.Threading.CancellationToken)",
+    "qualifiedName": "System.Threading.Tasks.Task\u003CSystem.Collections.Generic.IReadOnlyList\u003CCodeIndex.Core.SymbolRecord\u003E\u003E CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.BuildAsync(string, System.Collections.Generic.IReadOnlyList\u003CCodeIndex.Core.FileRecord\u003E, bool, System.Threading.CancellationToken)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
+    "fileId": "f:WorkspaceSymbolIndexBuilder.cs",
     "range": {
       "startLine": 22,
       "startColumn": 52,
       "endLine": 22,
       "endColumn": 62
     },
-    "signature": "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.BuildAsync(string, System.Collections.Generic.IReadOnlyList\u003CCodeIndex.Core.FileRecord\u003E, System.Threading.CancellationToken)",
+    "signature": "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.BuildAsync(string, System.Collections.Generic.IReadOnlyList\u003CCodeIndex.Core.FileRecord\u003E, bool, System.Threading.CancellationToken)",
     "summary": "method BuildAsync.",
     "parentId": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
     "accessibility": "public",
@@ -970,7 +613,7 @@
     "name": "LoadProjectAsync",
     "qualifiedName": "System.Threading.Tasks.Task\u003CSystem.Collections.Generic.IReadOnlyList\u003CMicrosoft.CodeAnalysis.Project\u003E\u003E CodeIndex.Roslyn.WorkspaceLoader.LoadProjectAsync(Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace, string, System.Threading.CancellationToken)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "fileId": "f:WorkspaceLoader.cs",
     "range": {
       "startLine": 130,
       "startColumn": 55,
@@ -991,7 +634,7 @@
     "name": "LoadSolutionProjectsAsync",
     "qualifiedName": "System.Threading.Tasks.Task\u003CSystem.Collections.Generic.IReadOnlyList\u003CMicrosoft.CodeAnalysis.Project\u003E\u003E CodeIndex.Roslyn.WorkspaceLoader.LoadSolutionProjectsAsync(Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace, string, System.Threading.CancellationToken)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "fileId": "f:WorkspaceLoader.cs",
     "range": {
       "startLine": 117,
       "startColumn": 55,
@@ -1008,32 +651,11 @@
     "isOverride": false
   },
   {
-    "id": "s:M:CodeIndex.Core.FileHashProvider.ComputeSha256Async(System.String,System.Threading.CancellationToken)",
-    "name": "ComputeSha256Async",
-    "qualifiedName": "System.Threading.Tasks.Task\u003Cstring\u003E CodeIndex.Core.FileHashProvider.ComputeSha256Async(string, System.Threading.CancellationToken)",
-    "kind": "method",
-    "fileId": "f:src/CodeIndex.Core/FileIndexing.cs",
-    "range": {
-      "startLine": 24,
-      "startColumn": 38,
-      "endLine": 24,
-      "endColumn": 56
-    },
-    "signature": "CodeIndex.Core.FileHashProvider.ComputeSha256Async(string, System.Threading.CancellationToken)",
-    "summary": "method ComputeSha256Async.",
-    "parentId": "s:T:CodeIndex.Core.FileHashProvider",
-    "accessibility": "public",
-    "isStatic": true,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
     "id": "s:M:CodeIndex.Roslyn.CSharpFileSummaryGenerator.CreateSummaryAsync(Microsoft.CodeAnalysis.Document,System.String,System.Threading.CancellationToken)",
     "name": "CreateSummaryAsync",
     "qualifiedName": "System.Threading.Tasks.Task\u003Cstring\u003E CodeIndex.Roslyn.CSharpFileSummaryGenerator.CreateSummaryAsync(Microsoft.CodeAnalysis.Document, string, System.Threading.CancellationToken)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/CSharpFileSummaryGenerator.cs",
+    "fileId": "f:CSharpFileSummaryGenerator.cs",
     "range": {
       "startLine": 9,
       "startColumn": 38,
@@ -1054,7 +676,7 @@
     "name": "IsTopLevelDeclaration",
     "qualifiedName": "bool CodeIndex.Roslyn.CSharpFileSummaryGenerator.IsTopLevelDeclaration(Microsoft.CodeAnalysis.CSharp.Syntax.MemberDeclarationSyntax)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/CSharpFileSummaryGenerator.cs",
+    "fileId": "f:CSharpFileSummaryGenerator.cs",
     "range": {
       "startLine": 67,
       "startColumn": 25,
@@ -1071,21 +693,63 @@
     "isOverride": false
   },
   {
-    "id": "s:M:CodeIndex.Roslyn.CSharpSourceDocumentFilter.IsRelevantSourceDocument(System.String,System.String)",
-    "name": "IsRelevantSourceDocument",
-    "qualifiedName": "bool CodeIndex.Roslyn.CSharpSourceDocumentFilter.IsRelevantSourceDocument(string, string)",
+    "id": "s:M:CodeIndex.Roslyn.CSharpSourceDocumentFilter.IsGeneratedFile(System.String)",
+    "name": "IsGeneratedFile",
+    "qualifiedName": "bool CodeIndex.Roslyn.CSharpSourceDocumentFilter.IsGeneratedFile(string)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "fileId": "f:WorkspaceLoader.cs",
+    "range": {
+      "startLine": 181,
+      "startColumn": 25,
+      "endLine": 181,
+      "endColumn": 40
+    },
+    "signature": "CodeIndex.Roslyn.CSharpSourceDocumentFilter.IsGeneratedFile(string)",
+    "summary": "method IsGeneratedFile.",
+    "parentId": "s:T:CodeIndex.Roslyn.CSharpSourceDocumentFilter",
+    "accessibility": "private",
+    "isStatic": true,
+    "isAbstract": false,
+    "isVirtual": false,
+    "isOverride": false
+  },
+  {
+    "id": "s:M:CodeIndex.Roslyn.CSharpSourceDocumentFilter.IsRelevantSourceDocument(System.String,System.String,System.Boolean)",
+    "name": "IsRelevantSourceDocument",
+    "qualifiedName": "bool CodeIndex.Roslyn.CSharpSourceDocumentFilter.IsRelevantSourceDocument(string, string, bool)",
+    "kind": "method",
+    "fileId": "f:WorkspaceLoader.cs",
     "range": {
       "startLine": 148,
       "startColumn": 24,
       "endLine": 148,
       "endColumn": 48
     },
-    "signature": "CodeIndex.Roslyn.CSharpSourceDocumentFilter.IsRelevantSourceDocument(string, string?)",
+    "signature": "CodeIndex.Roslyn.CSharpSourceDocumentFilter.IsRelevantSourceDocument(string, string?, bool)",
     "summary": "method IsRelevantSourceDocument.",
     "parentId": "s:T:CodeIndex.Roslyn.CSharpSourceDocumentFilter",
     "accessibility": "public",
+    "isStatic": true,
+    "isAbstract": false,
+    "isVirtual": false,
+    "isOverride": false
+  },
+  {
+    "id": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.IsIndexableSymbol(Microsoft.CodeAnalysis.ISymbol)",
+    "name": "IsIndexableSymbol",
+    "qualifiedName": "bool CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.IsIndexableSymbol(Microsoft.CodeAnalysis.ISymbol)",
+    "kind": "method",
+    "fileId": "f:WorkspaceEdgeIndexBuilder.cs",
+    "range": {
+      "startLine": 154,
+      "startColumn": 25,
+      "endLine": 154,
+      "endColumn": 42
+    },
+    "signature": "CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.IsIndexableSymbol(Microsoft.CodeAnalysis.ISymbol)",
+    "summary": "method IsIndexableSymbol.",
+    "parentId": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "accessibility": "private",
     "isStatic": true,
     "isAbstract": false,
     "isVirtual": false,
@@ -1096,7 +760,7 @@
     "name": "_isMsBuildRegistered",
     "qualifiedName": "bool CodeIndex.Roslyn.WorkspaceLoader._isMsBuildRegistered",
     "kind": "field",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "fileId": "f:WorkspaceLoader.cs",
     "range": {
       "startLine": 34,
       "startColumn": 25,
@@ -1117,11 +781,11 @@
     "name": "TryCreateSymbolRecord",
     "qualifiedName": "bool CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.TryCreateSymbolRecord(Microsoft.CodeAnalysis.ISymbol, Microsoft.CodeAnalysis.SyntaxNode, string, out CodeIndex.Core.SymbolRecord)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
+    "fileId": "f:WorkspaceSymbolIndexBuilder.cs",
     "range": {
-      "startLine": 120,
+      "startLine": 121,
       "startColumn": 25,
-      "endLine": 120,
+      "endLine": 121,
       "endColumn": 46
     },
     "signature": "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.TryCreateSymbolRecord(Microsoft.CodeAnalysis.ISymbol, Microsoft.CodeAnalysis.SyntaxNode, string, out CodeIndex.Core.SymbolRecord)",
@@ -1134,95 +798,11 @@
     "isOverride": false
   },
   {
-    "id": "s:M:CodeIndex.Core.DeterministicId.CreateFileId(System.String)",
-    "name": "CreateFileId",
-    "qualifiedName": "string CodeIndex.Core.DeterministicId.CreateFileId(string)",
-    "kind": "method",
-    "fileId": "f:src/CodeIndex.Core/FileIndexing.cs",
-    "range": {
-      "startLine": 8,
-      "startColumn": 26,
-      "endLine": 8,
-      "endColumn": 38
-    },
-    "signature": "CodeIndex.Core.DeterministicId.CreateFileId(string)",
-    "summary": "method CreateFileId.",
-    "parentId": "s:T:CodeIndex.Core.DeterministicId",
-    "accessibility": "public",
-    "isStatic": true,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:M:CodeIndex.Core.DeterministicId.CreateSymbolId(System.String)",
-    "name": "CreateSymbolId",
-    "qualifiedName": "string CodeIndex.Core.DeterministicId.CreateSymbolId(string)",
-    "kind": "method",
-    "fileId": "f:src/CodeIndex.Core/FileIndexing.cs",
-    "range": {
-      "startLine": 10,
-      "startColumn": 26,
-      "endLine": 10,
-      "endColumn": 40
-    },
-    "signature": "CodeIndex.Core.DeterministicId.CreateSymbolId(string)",
-    "summary": "method CreateSymbolId.",
-    "parentId": "s:T:CodeIndex.Core.DeterministicId",
-    "accessibility": "public",
-    "isStatic": true,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:M:CodeIndex.Core.FileSummaryGenerator.CreateSummary(System.String,System.String)",
-    "name": "CreateSummary",
-    "qualifiedName": "string CodeIndex.Core.FileSummaryGenerator.CreateSummary(string, string)",
-    "kind": "method",
-    "fileId": "f:src/CodeIndex.Core/FileIndexing.cs",
-    "range": {
-      "startLine": 34,
-      "startColumn": 26,
-      "endLine": 34,
-      "endColumn": 39
-    },
-    "signature": "CodeIndex.Core.FileSummaryGenerator.CreateSummary(string, string)",
-    "summary": "method CreateSummary.",
-    "parentId": "s:T:CodeIndex.Core.FileSummaryGenerator",
-    "accessibility": "public",
-    "isStatic": true,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:M:CodeIndex.Core.PathNormalization.NormalizeRelativePath(System.String,System.String)",
-    "name": "NormalizeRelativePath",
-    "qualifiedName": "string CodeIndex.Core.PathNormalization.NormalizeRelativePath(string, string)",
-    "kind": "method",
-    "fileId": "f:src/CodeIndex.Core/FileIndexing.cs",
-    "range": {
-      "startLine": 15,
-      "startColumn": 26,
-      "endLine": 15,
-      "endColumn": 47
-    },
-    "signature": "CodeIndex.Core.PathNormalization.NormalizeRelativePath(string, string)",
-    "summary": "method NormalizeRelativePath.",
-    "parentId": "s:T:CodeIndex.Core.PathNormalization",
-    "accessibility": "public",
-    "isStatic": true,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
     "id": "s:P:CodeIndex.Roslyn.LoadedWorkspace.InputKind",
     "name": "InputKind",
     "qualifiedName": "string CodeIndex.Roslyn.LoadedWorkspace.InputKind",
     "kind": "property",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "fileId": "f:WorkspaceLoader.cs",
     "range": {
       "startLine": 21,
       "startColumn": 19,
@@ -1243,7 +823,7 @@
     "name": "InputPath",
     "qualifiedName": "string CodeIndex.Roslyn.LoadedWorkspace.InputPath",
     "kind": "property",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "fileId": "f:WorkspaceLoader.cs",
     "range": {
       "startLine": 19,
       "startColumn": 19,
@@ -1260,20 +840,41 @@
     "isOverride": false
   },
   {
-    "id": "s:M:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.GetSolutionPath",
-    "name": "GetSolutionPath",
-    "qualifiedName": "string CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.GetSolutionPath()",
+    "id": "s:M:CodeIndex.Roslyn.SymbolIdentity.CreateStableId(Microsoft.CodeAnalysis.ISymbol)",
+    "name": "CreateStableId",
+    "qualifiedName": "string CodeIndex.Roslyn.SymbolIdentity.CreateStableId(Microsoft.CodeAnalysis.ISymbol)",
     "kind": "method",
-    "fileId": "f:tests/CodeIndex.Roslyn.Tests/WorkspaceIndexBuildersTests.cs",
+    "fileId": "f:SymbolIdentity.cs",
     "range": {
-      "startLine": 33,
-      "startColumn": 27,
-      "endLine": 33,
-      "endColumn": 42
+      "startLine": 7,
+      "startColumn": 26,
+      "endLine": 7,
+      "endColumn": 40
     },
-    "signature": "CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.GetSolutionPath()",
-    "summary": "method GetSolutionPath.",
-    "parentId": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
+    "signature": "CodeIndex.Roslyn.SymbolIdentity.CreateStableId(Microsoft.CodeAnalysis.ISymbol)",
+    "summary": "method CreateStableId.",
+    "parentId": "s:T:CodeIndex.Roslyn.SymbolIdentity",
+    "accessibility": "public",
+    "isStatic": true,
+    "isAbstract": false,
+    "isVirtual": false,
+    "isOverride": false
+  },
+  {
+    "id": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.GetIndexedSymbolId(Microsoft.CodeAnalysis.ISymbol,System.Collections.Generic.IReadOnlyDictionary{System.String,Microsoft.CodeAnalysis.ISymbol})",
+    "name": "GetIndexedSymbolId",
+    "qualifiedName": "string CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.GetIndexedSymbolId(Microsoft.CodeAnalysis.ISymbol, System.Collections.Generic.IReadOnlyDictionary\u003Cstring, Microsoft.CodeAnalysis.ISymbol\u003E)",
+    "kind": "method",
+    "fileId": "f:WorkspaceEdgeIndexBuilder.cs",
+    "range": {
+      "startLine": 138,
+      "startColumn": 28,
+      "endLine": 138,
+      "endColumn": 46
+    },
+    "signature": "CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.GetIndexedSymbolId(Microsoft.CodeAnalysis.ISymbol?, System.Collections.Generic.IReadOnlyDictionary\u003Cstring, Microsoft.CodeAnalysis.ISymbol\u003E)",
+    "summary": "method GetIndexedSymbolId.",
+    "parentId": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
     "accessibility": "private",
     "isStatic": true,
     "isAbstract": false,
@@ -1285,7 +886,7 @@
     "name": "GetSourceRoot",
     "qualifiedName": "string CodeIndex.Roslyn.WorkspaceLoader.GetSourceRoot(string)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "fileId": "f:WorkspaceLoader.cs",
     "range": {
       "startLine": 81,
       "startColumn": 26,
@@ -1306,11 +907,11 @@
     "name": "GetAccessibility",
     "qualifiedName": "string CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetAccessibility(Microsoft.CodeAnalysis.ISymbol)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
+    "fileId": "f:WorkspaceSymbolIndexBuilder.cs",
     "range": {
-      "startLine": 215,
+      "startLine": 216,
       "startColumn": 27,
-      "endLine": 215,
+      "endLine": 216,
       "endColumn": 43
     },
     "signature": "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetAccessibility(Microsoft.CodeAnalysis.ISymbol)",
@@ -1327,11 +928,11 @@
     "name": "GetParentId",
     "qualifiedName": "string CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetParentId(Microsoft.CodeAnalysis.ISymbol, Microsoft.CodeAnalysis.ISymbol)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
+    "fileId": "f:WorkspaceSymbolIndexBuilder.cs",
     "range": {
-      "startLine": 161,
+      "startLine": 162,
       "startColumn": 28,
-      "endLine": 161,
+      "endLine": 162,
       "endColumn": 39
     },
     "signature": "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetParentId(Microsoft.CodeAnalysis.ISymbol, Microsoft.CodeAnalysis.ISymbol?)",
@@ -1348,11 +949,11 @@
     "name": "GetSummary",
     "qualifiedName": "string CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetSummary(Microsoft.CodeAnalysis.ISymbol, string)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
+    "fileId": "f:WorkspaceSymbolIndexBuilder.cs",
     "range": {
-      "startLine": 189,
+      "startLine": 190,
       "startColumn": 27,
-      "endLine": 189,
+      "endLine": 190,
       "endColumn": 37
     },
     "signature": "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetSummary(Microsoft.CodeAnalysis.ISymbol, string)",
@@ -1369,11 +970,11 @@
     "name": "GetSymbolKind",
     "qualifiedName": "string CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetSymbolKind(Microsoft.CodeAnalysis.ISymbol)",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
+    "fileId": "f:WorkspaceSymbolIndexBuilder.cs",
     "range": {
-      "startLine": 229,
+      "startLine": 230,
       "startColumn": 28,
-      "endLine": 229,
+      "endLine": 230,
       "endColumn": 41
     },
     "signature": "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetSymbolKind(Microsoft.CodeAnalysis.ISymbol)",
@@ -1386,74 +987,11 @@
     "isOverride": false
   },
   {
-    "id": "s:M:CodeIndex.Cli.Tests.UnitTest1.Test1",
-    "name": "Test1",
-    "qualifiedName": "void CodeIndex.Cli.Tests.UnitTest1.Test1()",
-    "kind": "method",
-    "fileId": "f:tests/CodeIndex.Cli.Tests/UnitTest1.cs",
-    "range": {
-      "startLine": 6,
-      "startColumn": 17,
-      "endLine": 6,
-      "endColumn": 22
-    },
-    "signature": "CodeIndex.Cli.Tests.UnitTest1.Test1()",
-    "summary": "method Test1.",
-    "parentId": "s:T:CodeIndex.Cli.Tests.UnitTest1",
-    "accessibility": "public",
-    "isStatic": false,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:M:CodeIndex.Core.Tests.FileIndexingTests.CreateSymbolId_PrefixesStableIdentifier",
-    "name": "CreateSymbolId_PrefixesStableIdentifier",
-    "qualifiedName": "void CodeIndex.Core.Tests.FileIndexingTests.CreateSymbolId_PrefixesStableIdentifier()",
-    "kind": "method",
-    "fileId": "f:tests/CodeIndex.Core.Tests/FileIndexingTests.cs",
-    "range": {
-      "startLine": 19,
-      "startColumn": 17,
-      "endLine": 19,
-      "endColumn": 56
-    },
-    "signature": "CodeIndex.Core.Tests.FileIndexingTests.CreateSymbolId_PrefixesStableIdentifier()",
-    "summary": "method CreateSymbolId_PrefixesStableIdentifier.",
-    "parentId": "s:T:CodeIndex.Core.Tests.FileIndexingTests",
-    "accessibility": "public",
-    "isStatic": false,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
-    "id": "s:M:CodeIndex.Core.Tests.FileIndexingTests.NormalizeRelativePath_UsesForwardSlashes",
-    "name": "NormalizeRelativePath_UsesForwardSlashes",
-    "qualifiedName": "void CodeIndex.Core.Tests.FileIndexingTests.NormalizeRelativePath_UsesForwardSlashes()",
-    "kind": "method",
-    "fileId": "f:tests/CodeIndex.Core.Tests/FileIndexingTests.cs",
-    "range": {
-      "startLine": 8,
-      "startColumn": 17,
-      "endLine": 8,
-      "endColumn": 57
-    },
-    "signature": "CodeIndex.Core.Tests.FileIndexingTests.NormalizeRelativePath_UsesForwardSlashes()",
-    "summary": "method NormalizeRelativePath_UsesForwardSlashes.",
-    "parentId": "s:T:CodeIndex.Core.Tests.FileIndexingTests",
-    "accessibility": "public",
-    "isStatic": false,
-    "isAbstract": false,
-    "isVirtual": false,
-    "isOverride": false
-  },
-  {
     "id": "s:M:CodeIndex.Roslyn.LoadedWorkspace.Dispose",
     "name": "Dispose",
     "qualifiedName": "void CodeIndex.Roslyn.LoadedWorkspace.Dispose()",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "fileId": "f:WorkspaceLoader.cs",
     "range": {
       "startLine": 25,
       "startColumn": 17,
@@ -1470,11 +1008,95 @@
     "isOverride": false
   },
   {
+    "id": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.AddContainsEdge(System.Collections.Generic.HashSet{CodeIndex.Core.EdgeRecord},System.String,Microsoft.CodeAnalysis.ISymbol,System.Collections.Generic.IReadOnlyDictionary{System.String,Microsoft.CodeAnalysis.ISymbol})",
+    "name": "AddContainsEdge",
+    "qualifiedName": "void CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.AddContainsEdge(System.Collections.Generic.HashSet\u003CCodeIndex.Core.EdgeRecord\u003E, string, Microsoft.CodeAnalysis.ISymbol, System.Collections.Generic.IReadOnlyDictionary\u003Cstring, Microsoft.CodeAnalysis.ISymbol\u003E)",
+    "kind": "method",
+    "fileId": "f:WorkspaceEdgeIndexBuilder.cs",
+    "range": {
+      "startLine": 67,
+      "startColumn": 25,
+      "endLine": 67,
+      "endColumn": 40
+    },
+    "signature": "CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.AddContainsEdge(System.Collections.Generic.HashSet\u003CCodeIndex.Core.EdgeRecord\u003E, string, Microsoft.CodeAnalysis.ISymbol, System.Collections.Generic.IReadOnlyDictionary\u003Cstring, Microsoft.CodeAnalysis.ISymbol\u003E)",
+    "summary": "method AddContainsEdge.",
+    "parentId": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "accessibility": "private",
+    "isStatic": true,
+    "isAbstract": false,
+    "isVirtual": false,
+    "isOverride": false
+  },
+  {
+    "id": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.AddImplementsEdges(System.Collections.Generic.HashSet{CodeIndex.Core.EdgeRecord},System.String,Microsoft.CodeAnalysis.ISymbol,System.Collections.Generic.IReadOnlyDictionary{System.String,Microsoft.CodeAnalysis.ISymbol})",
+    "name": "AddImplementsEdges",
+    "qualifiedName": "void CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.AddImplementsEdges(System.Collections.Generic.HashSet\u003CCodeIndex.Core.EdgeRecord\u003E, string, Microsoft.CodeAnalysis.ISymbol, System.Collections.Generic.IReadOnlyDictionary\u003Cstring, Microsoft.CodeAnalysis.ISymbol\u003E)",
+    "kind": "method",
+    "fileId": "f:WorkspaceEdgeIndexBuilder.cs",
+    "range": {
+      "startLine": 102,
+      "startColumn": 25,
+      "endLine": 102,
+      "endColumn": 43
+    },
+    "signature": "CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.AddImplementsEdges(System.Collections.Generic.HashSet\u003CCodeIndex.Core.EdgeRecord\u003E, string, Microsoft.CodeAnalysis.ISymbol, System.Collections.Generic.IReadOnlyDictionary\u003Cstring, Microsoft.CodeAnalysis.ISymbol\u003E)",
+    "summary": "method AddImplementsEdges.",
+    "parentId": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "accessibility": "private",
+    "isStatic": true,
+    "isAbstract": false,
+    "isVirtual": false,
+    "isOverride": false
+  },
+  {
+    "id": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.AddInheritanceEdges(System.Collections.Generic.HashSet{CodeIndex.Core.EdgeRecord},System.String,Microsoft.CodeAnalysis.ISymbol,System.Collections.Generic.IReadOnlyDictionary{System.String,Microsoft.CodeAnalysis.ISymbol})",
+    "name": "AddInheritanceEdges",
+    "qualifiedName": "void CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.AddInheritanceEdges(System.Collections.Generic.HashSet\u003CCodeIndex.Core.EdgeRecord\u003E, string, Microsoft.CodeAnalysis.ISymbol, System.Collections.Generic.IReadOnlyDictionary\u003Cstring, Microsoft.CodeAnalysis.ISymbol\u003E)",
+    "kind": "method",
+    "fileId": "f:WorkspaceEdgeIndexBuilder.cs",
+    "range": {
+      "startLine": 82,
+      "startColumn": 25,
+      "endLine": 82,
+      "endColumn": 44
+    },
+    "signature": "CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.AddInheritanceEdges(System.Collections.Generic.HashSet\u003CCodeIndex.Core.EdgeRecord\u003E, string, Microsoft.CodeAnalysis.ISymbol, System.Collections.Generic.IReadOnlyDictionary\u003Cstring, Microsoft.CodeAnalysis.ISymbol\u003E)",
+    "summary": "method AddInheritanceEdges.",
+    "parentId": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "accessibility": "private",
+    "isStatic": true,
+    "isAbstract": false,
+    "isVirtual": false,
+    "isOverride": false
+  },
+  {
+    "id": "s:M:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.AddOverrideEdges(System.Collections.Generic.HashSet{CodeIndex.Core.EdgeRecord},System.String,Microsoft.CodeAnalysis.ISymbol,System.Collections.Generic.IReadOnlyDictionary{System.String,Microsoft.CodeAnalysis.ISymbol})",
+    "name": "AddOverrideEdges",
+    "qualifiedName": "void CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.AddOverrideEdges(System.Collections.Generic.HashSet\u003CCodeIndex.Core.EdgeRecord\u003E, string, Microsoft.CodeAnalysis.ISymbol, System.Collections.Generic.IReadOnlyDictionary\u003Cstring, Microsoft.CodeAnalysis.ISymbol\u003E)",
+    "kind": "method",
+    "fileId": "f:WorkspaceEdgeIndexBuilder.cs",
+    "range": {
+      "startLine": 120,
+      "startColumn": 25,
+      "endLine": 120,
+      "endColumn": 41
+    },
+    "signature": "CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder.AddOverrideEdges(System.Collections.Generic.HashSet\u003CCodeIndex.Core.EdgeRecord\u003E, string, Microsoft.CodeAnalysis.ISymbol, System.Collections.Generic.IReadOnlyDictionary\u003Cstring, Microsoft.CodeAnalysis.ISymbol\u003E)",
+    "summary": "method AddOverrideEdges.",
+    "parentId": "s:T:CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder",
+    "accessibility": "private",
+    "isStatic": true,
+    "isAbstract": false,
+    "isVirtual": false,
+    "isOverride": false
+  },
+  {
     "id": "s:M:CodeIndex.Roslyn.WorkspaceLoader.EnsureMsBuildRegistered",
     "name": "EnsureMsBuildRegistered",
     "qualifiedName": "void CodeIndex.Roslyn.WorkspaceLoader.EnsureMsBuildRegistered()",
     "kind": "method",
-    "fileId": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "fileId": "f:WorkspaceLoader.cs",
     "range": {
       "startLine": 87,
       "startColumn": 25,

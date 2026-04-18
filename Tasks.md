@@ -53,21 +53,21 @@ The tool should help AI agents:
 - [x] Create `FileRecord`
 - [x] Create `TextRangeRecord`
 - [x] Create `SymbolRecord`
-- [ ] Create `EdgeRecord`
+- [x] Create `EdgeRecord`
 - [ ] Create enums or constants for:
   - [ ] symbol kinds
-  - [ ] edge types
+  - [x] edge types
 - [x] Create JSON serialization helpers
 - [x] Create path normalization helper
 - [x] Create deterministic ID generation helper
-- [ ] Create validation service for output consistency
+- [x] Create validation service for output consistency
 
 ### Done Criteria
 
 - [x] Models serialize correctly with `System.Text.Json`
 - [x] Paths normalize to `/`
 - [x] IDs are deterministic
-- [ ] Validation catches broken references and duplicates
+- [x] Validation catches broken references and duplicates
 
 ---
 
@@ -102,7 +102,7 @@ The tool should help AI agents:
 - [x] Record project name
 - [x] Record language as `C#`
 - [x] Add default file summary strategy
-- [ ] Filter generated files by default:
+- [x] Filter generated files by default:
   - [x] `bin/**`
   - [x] `obj/**`
   - [ ] `*.g.cs`
@@ -114,7 +114,7 @@ The tool should help AI agents:
 
 - [x] `code-index.files.json` is generated
 - [x] File IDs are stable
-- [ ] Generated-file filtering works
+- [x] Generated-file filtering works
 
 ---
 
@@ -189,19 +189,19 @@ The tool should help AI agents:
 
 ### Tasks
 
-- [ ] Implement `contains` edges
-- [ ] Implement `inherits` edges
-- [ ] Implement `implements` edges
-- [ ] Implement `overrides` edges
-- [ ] Avoid duplicate edges
-- [ ] Sort edges deterministically
+- [x] Implement `contains` edges
+- [x] Implement `inherits` edges
+- [x] Implement `implements` edges
+- [x] Implement `overrides` edges
+- [x] Avoid duplicate edges
+- [x] Sort edges deterministically
 
 ### Done Criteria
 
-- [ ] `code-index.edges.json` is generated
-- [ ] Parent-child edges are accurate
-- [ ] Base type and interface edges are accurate
-- [ ] Override edges are accurate
+- [x] `code-index.edges.json` is generated
+- [x] Parent-child edges are accurate
+- [x] Base type and interface edges are accurate
+- [x] Override edges are accurate
 
 ---
 
@@ -212,21 +212,21 @@ The tool should help AI agents:
 - [x] Implement `build` CLI command
 - [x] Accept `.sln` or `.csproj`
 - [x] Add `--out <path>`
-- [ ] Add `--include-generated true|false`
-- [ ] Add `--verbose`
-- [ ] Write output files:
+- [x] Add `--include-generated true|false`
+- [x] Add `--verbose`
+- [x] Write output files:
   - [x] `code-index.meta.json`
   - [x] `code-index.files.json`
   - [x] `code-index.symbols.json`
-  - [ ] `code-index.edges.json`
+  - [x] `code-index.edges.json`
 - [x] Ensure deterministic ordering before writing
-- [ ] Run validation before final write
+- [x] Run validation before final write
 
 ### Done Criteria
 
 - [x] `build` works end-to-end
 - [ ] Output is deterministic across repeated runs
-- [ ] Output validates successfully
+- [x] Output validates successfully
 
 ---
 
@@ -234,21 +234,24 @@ The tool should help AI agents:
 
 ### Tasks
 
-- [ ] Implement index reader
-- [ ] Implement `find-symbol`
-- [ ] Implement `get-symbol`
-- [ ] Implement `get-children`
-- [ ] Implement `get-excerpt`
-- [ ] Return compact JSON by default
-- [ ] Support lookup by qualified name
-- [ ] Support lookup by symbol ID where practical
+- [x] Implement index reader
+- [x] Implement `find-symbol`
+- [x] Implement `get-symbol`
+- [x] Implement `get-children`
+- [x] Implement `get-excerpt`
+- [x] Return compact JSON by default
+- [x] Support lookup by qualified name
+- [x] Support lookup by symbol ID where practical
+- [x] Add query filters and limits for symbol lookups
+- [x] Add query sort controls for symbol and child results
 
 ### Done Criteria
 
-- [ ] AI-friendly queries return small JSON results
-- [ ] `find-symbol` works for name and qualified name
-- [ ] `get-symbol` returns one clear symbol payload
-- [ ] `get-excerpt` returns exact file lines
+- [x] AI-friendly queries return small JSON results
+- [x] `find-symbol` works for name and qualified name
+- [x] `get-symbol` returns one clear symbol payload
+- [x] `get-children` supports compact filtering and sorting
+- [x] `get-excerpt` returns exact file lines
 
 ---
 
@@ -256,8 +259,8 @@ The tool should help AI agents:
 
 ### Tasks
 
-- [ ] Validate file references
-- [ ] Validate parent references
+- [x] Validate file references
+- [x] Validate parent references
 - [ ] Validate edge references
 - [ ] Validate range values
 - [ ] Validate duplicate IDs
@@ -295,17 +298,17 @@ The tool should help AI agents:
 
 ### CLI Tests
 
-- [ ] `build` command test
-- [ ] `find-symbol` command test
-- [ ] `get-symbol` command test
-- [ ] `get-children` command test
-- [ ] `get-excerpt` command test
-- [ ] invalid input error tests
+- [x] `build` command test
+- [x] `find-symbol` command test
+- [x] `get-symbol` command test
+- [x] `get-children` command test
+- [x] `get-excerpt` command test
+- [x] invalid input error tests
 
 ### Done Criteria
 
 - [ ] Core behavior is covered
-- [ ] Main CLI flows are covered
+- [x] Main CLI flows are covered
 - [ ] Sample solution can be indexed in tests
 
 ---

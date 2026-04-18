@@ -30,6 +30,35 @@ public class WorkspaceIndexBuildersTests
         Assert.Contains(symbols, symbol => symbol.Name == "InspectAsync" && symbol.Kind == "method");
     }
 
+    [Fact]
+    public async Task BuildAsync_GeneratesContainsEdgesForIndexedSymbols()
+    {
+        var solutionPath = GetSolutionPath();
+        var builder = new WorkspaceEdgeIndexBuilder();
+
+        var edges = await builder.BuildAsync(solutionPath);
+
+        Assert.Contains(edges, edge =>
+            edge.Type == "contains" &&
+            edge.From == "s:T:CodeIndex.Roslyn.WorkspaceInspector" &&
+            edge.To == "s:M:CodeIndex.Roslyn.WorkspaceInspector.InspectAsync(System.String,System.Threading.CancellationToken)");
+
+        Assert.Equal(edges.OrderBy(edge => edge.Type, StringComparer.Ordinal)
+            .ThenBy(edge => edge.From, StringComparer.Ordinal)
+            .ThenBy(edge => edge.To, StringComparer.Ordinal), edges);
+    }
+
+    [Fact]
+    public async Task BuildAsync_IncludeGenerated_AddsObjDocuments()
+    {
+        var solutionPath = GetSolutionPath();
+        var builder = new WorkspaceFileIndexBuilder();
+
+        var files = await builder.BuildAsync(solutionPath, includeGenerated: true);
+
+        Assert.Contains(files, file => file.Path.Contains("/obj/", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static string GetSolutionPath()
     {
         return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../code-index.sln"));

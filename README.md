@@ -48,14 +48,17 @@ It does not aim to replace an IDE or full code intelligence platform.
 
 ## Current Status
 
-The repository is currently at the bootstrap stage:
+The current implementation supports:
 
-- solution and project structure exists
-- package references are in place
-- test projects are wired
-- indexing commands are not implemented yet
-
-The current CLI entry point is still a placeholder.
+- Roslyn/MSBuild loading for `.sln` and `.csproj`
+- `inspect` for project and source-document discovery
+- `build` for `meta`, `files`, `symbols`, and `edges` artifacts
+- validation before artifact write
+- artifact-backed query commands:
+  - `find-symbol`
+  - `get-symbol`
+  - `get-children`
+  - `get-excerpt`
 
 ## Project Layout
 
@@ -94,22 +97,31 @@ dotnet build code-index.sln
 
 ## Run
 
-### Planned: build an index from a solution
+### Build an index from a solution
 
 ```bash
 dotnet run --project src/CodeIndex.Cli -- build ./samples/SampleSolution/SampleSolution.sln --out ./artifacts/code-index
 ```
 
-### Planned: build an index from a project
+### Build an index from a project
 
 ```bash
 dotnet run --project src/CodeIndex.Cli -- build ./src/MyProject/MyProject.csproj --out ./artifacts/code-index
 ```
 
-## Planned Commands
+## CLI Commands
 
-The commands below describe the intended CLI surface. They are not implemented
-in the current bootstrap.
+The commands below reflect the current implemented CLI surface.
+
+### `inspect`
+
+Loads a `.sln` or `.csproj` and lists discovered C# projects and source documents.
+
+Example:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- inspect ./code-index.sln
+```
 
 ### `build`
 
@@ -124,8 +136,13 @@ dotnet run --project src/CodeIndex.Cli -- build ./MySolution.sln --out ./artifac
 Options:
 
 - `--out <path>`
-- `--include-generated true|false`
+- `--include-generated`
 - `--verbose`
+
+Notes:
+
+- generated files are excluded by default
+- validation runs before artifacts are written
 
 ### `find-symbol`
 
@@ -136,6 +153,15 @@ Example:
 ```bash
 dotnet run --project src/CodeIndex.Cli -- find-symbol "OrderService"
 dotnet run --project src/CodeIndex.Cli -- find-symbol "MyApp.Services.OrderService.SubmitOrder"
+dotnet run --project src/CodeIndex.Cli -- find-symbol "OrderService" --index ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- find-symbol "OrderService" --index ./artifacts/code-index --kind class --accessibility public --limit 5
+dotnet run --project src/CodeIndex.Cli -- find-symbol "OrderService" --index ./artifacts/code-index --sort accessibility --limit 5
+
+Sort modes:
+
+- `ranked` (default)
+- `name`
+- `accessibility`
 ```
 
 ### `get-symbol`
@@ -146,6 +172,7 @@ Example:
 
 ```bash
 dotnet run --project src/CodeIndex.Cli -- get-symbol "MyApp.Services.OrderService.SubmitOrder"
+dotnet run --project src/CodeIndex.Cli -- get-symbol "s:T:MyApp.Services.OrderService" --index ./artifacts/code-index
 ```
 
 ### `get-children`
@@ -156,6 +183,15 @@ Example:
 
 ```bash
 dotnet run --project src/CodeIndex.Cli -- get-children "MyApp.Services.OrderService"
+dotnet run --project src/CodeIndex.Cli -- get-children "MyApp.Services.OrderService" --index ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- get-children "MyApp.Services.OrderService" --index ./artifacts/code-index --kind method --limit 10
+dotnet run --project src/CodeIndex.Cli -- get-children "MyApp.Services.OrderService" --index ./artifacts/code-index --kind method --sort declaration --limit 10
+
+Sort modes:
+
+- `name` (default)
+- `accessibility`
+- `declaration`
 ```
 
 ### `get-excerpt`
@@ -166,6 +202,7 @@ Example:
 
 ```bash
 dotnet run --project src/CodeIndex.Cli -- get-excerpt "src/Services/OrderService.cs" --start 42 --end 78
+dotnet run --project src/CodeIndex.Cli -- get-excerpt "src/Services/OrderService.cs" --index ./artifacts/code-index --start 42 --end 78
 ```
 
 ## Output Files
