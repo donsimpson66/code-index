@@ -266,7 +266,7 @@ The tool should help AI agents:
 - [x] Validate duplicate IDs
 - [ ] Add partial class handling rule
 - [ ] Improve error messages
-- [ ] Add clear non-zero exit codes for failures
+- [x] Add clear non-zero exit codes for failures
 
 ### Done Criteria
 
@@ -304,6 +304,7 @@ The tool should help AI agents:
 - [x] `get-children` command test
 - [x] `get-excerpt` command test
 - [x] invalid input error tests
+- [x] query command test using current repository solution index
 
 ### Done Criteria
 

@@ -147,6 +147,25 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
     }
 
     [Fact]
+    public async Task FindSymbol_UsingRepositorySolutionIndex_ReturnsCliApplication()
+    {
+        var output = await fixture.RunCliAsync(
+            "find-symbol",
+            "CodeIndex.Cli.CliApplication",
+            "--index",
+            await fixture.GetSolutionIndexDirectoryAsync(),
+            "--limit",
+            "1");
+
+        using var document = JsonDocument.Parse(output);
+        var results = document.RootElement.EnumerateArray().ToArray();
+
+        Assert.Single(results);
+        Assert.Equal("CliApplication", results[0].GetProperty("name").GetString());
+        Assert.Equal("CodeIndex.Cli.CliApplication", results[0].GetProperty("qualifiedName").GetString());
+    }
+
+    [Fact]
     public async Task FindSymbol_WithoutIndex_ReturnsClearError()
     {
         var result = await fixture.RunCliExpectFailureAsync("find-symbol", "WorkspaceInspector");
@@ -204,6 +223,8 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
 public sealed class IndexFixture : IAsyncLifetime
 {
     private readonly SemaphoreSlim consoleLock = new(1, 1);
+    private readonly SemaphoreSlim solutionIndexLock = new(1, 1);
+    private string? solutionIndexDirectory;
 
     public string RepoRoot { get; } = FindRepoRoot();
 
@@ -226,8 +247,55 @@ public sealed class IndexFixture : IAsyncLifetime
     public Task DisposeAsync()
     {
         consoleLock.Dispose();
+        solutionIndexLock.Dispose();
+
+        if (!string.IsNullOrWhiteSpace(solutionIndexDirectory) && Directory.Exists(solutionIndexDirectory))
+        {
+            Directory.Delete(solutionIndexDirectory, recursive: true);
+        }
 
         return Task.CompletedTask;
+    }
+
+    public async Task<string> GetSolutionIndexDirectoryAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(solutionIndexDirectory) && Directory.Exists(solutionIndexDirectory))
+        {
+            return solutionIndexDirectory;
+        }
+
+        await solutionIndexLock.WaitAsync();
+
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(solutionIndexDirectory) && Directory.Exists(solutionIndexDirectory))
+            {
+                return solutionIndexDirectory;
+            }
+
+            solutionIndexDirectory = Path.Combine(Path.GetTempPath(), $"code-index-cli-solution-{Guid.NewGuid():N}");
+            var fileBuilder = new global::CodeIndex.Roslyn.WorkspaceFileIndexBuilder();
+            var symbolBuilder = new global::CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder();
+            var edgeBuilder = new global::CodeIndex.Roslyn.WorkspaceEdgeIndexBuilder();
+            var files = await fileBuilder.BuildAsync(SolutionPath);
+            var symbols = await symbolBuilder.BuildAsync(SolutionPath, files);
+            var edges = await edgeBuilder.BuildAsync(SolutionPath);
+            var meta = global::CodeIndex.Core.CodeIndexMetaFactory.Create(SolutionPath, "solution");
+            var snapshot = new global::CodeIndex.Core.CodeIndexSnapshot(meta, files, symbols, edges);
+            var validator = new global::CodeIndex.Core.CodeIndexValidator();
+            validator.ValidateOrThrow(snapshot);
+
+            await global::CodeIndex.Core.CodeIndexJson.WriteToFileAsync(Path.Combine(solutionIndexDirectory, "code-index.meta.json"), meta);
+            await global::CodeIndex.Core.CodeIndexJson.WriteToFileAsync(Path.Combine(solutionIndexDirectory, "code-index.files.json"), files);
+            await global::CodeIndex.Core.CodeIndexJson.WriteToFileAsync(Path.Combine(solutionIndexDirectory, "code-index.symbols.json"), symbols);
+            await global::CodeIndex.Core.CodeIndexJson.WriteToFileAsync(Path.Combine(solutionIndexDirectory, "code-index.edges.json"), edges);
+
+            return solutionIndexDirectory;
+        }
+        finally
+        {
+            solutionIndexLock.Release();
+        }
     }
 
     public async Task<string> RunCliAsync(params string[] arguments)
@@ -279,16 +347,8 @@ public sealed class IndexFixture : IAsyncLifetime
             Console.SetOut(outputWriter);
             Console.SetError(errorWriter);
 
-            try
-            {
-                var exitCode = await global::CodeIndex.Cli.CliApplication.RunAsync(arguments, runtime);
-                return new CliInvocationResult(exitCode, outputWriter.ToString(), errorWriter.ToString());
-            }
-            catch (Exception exception)
-            {
-                errorWriter.WriteLine(exception.Message);
-                return new CliInvocationResult(1, outputWriter.ToString(), errorWriter.ToString());
-            }
+            var exitCode = await global::CodeIndex.Cli.CliApplication.RunAsync(arguments, runtime);
+            return new CliInvocationResult(exitCode, outputWriter.ToString(), errorWriter.ToString());
         }
         finally
         {

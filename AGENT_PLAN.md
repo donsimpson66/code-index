@@ -24,8 +24,10 @@ Completed today:
 - query commands are implemented: `find-symbol`, `get-symbol`, `get-children`, and `get-excerpt`
 - query commands now support filtering, limits, and explicit sort modes for smaller result sets
 - CLI tests now cover `inspect`, `build`, `find-symbol`, `get-symbol`, `get-children`, `get-excerpt`, and invalid-input error paths
+- CLI now owns non-zero exit code behavior for failures instead of relying on the test harness
 - `build` now supports `--out`, `--include-generated`, and `--verbose`
 - Roslyn tests now cover deterministic repeated indexing of the current repository solution and explicit generated-file suffix filtering
+- CLI tests now cover querying an index built from the current repository solution
 
 Still pending:
 

@@ -48,8 +48,21 @@ public static class CliApplication
 {
 	public static async Task<int> RunAsync(string[] args, CliRuntime? runtime = null)
 	{
-		var parseResult = CreateRootCommand(runtime).Parse(args);
-		return await parseResult.InvokeAsync();
+		try
+		{
+			var parseResult = CreateRootCommand(runtime).Parse(args);
+			return await parseResult.InvokeAsync();
+		}
+		catch (OperationCanceledException)
+		{
+			Console.Error.WriteLine("The operation was canceled.");
+			return 2;
+		}
+		catch (Exception exception)
+		{
+			Console.Error.WriteLine(exception.Message);
+			return 1;
+		}
 	}
 
 	public static RootCommand CreateRootCommand(CliRuntime? runtime = null)
