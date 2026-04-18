@@ -204,3 +204,4 @@
 /home/don/Projects/code-index/tests/CodeIndex.Roslyn.Tests/obj/Debug/net10.0/CodeIndex.Roslyn.Tests.pdb
 /home/don/Projects/code-index/tests/CodeIndex.Roslyn.Tests/obj/Debug/net10.0/CodeIndex.Roslyn.Tests.genruntimeconfig.cache
 /home/don/Projects/code-index/tests/CodeIndex.Roslyn.Tests/obj/Debug/net10.0/ref/CodeIndex.Roslyn.Tests.dll
+/home/don/Projects/code-index/tests/CodeIndex.Roslyn.Tests/obj/Debug/net10.0/CodeIndex.Roslyn.Tests.sourcelink.json

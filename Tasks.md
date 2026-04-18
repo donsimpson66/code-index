@@ -16,32 +16,32 @@ The tool should help AI agents:
 
 ### Tasks
 
-- [ ] Create solution `CodeIndex.sln`
-- [ ] Create projects:
-  - [ ] `CodeIndex.Core`
-  - [ ] `CodeIndex.Roslyn`
-  - [ ] `CodeIndex.Cli`
-  - [ ] `CodeIndex.Core.Tests`
-  - [ ] `CodeIndex.Roslyn.Tests`
-  - [ ] `CodeIndex.Cli.Tests`
-- [ ] Set all projects to target `net10.0`
-- [ ] Add project references:
-  - [ ] `CodeIndex.Roslyn -> CodeIndex.Core`
-  - [ ] `CodeIndex.Cli -> CodeIndex.Core`
-  - [ ] `CodeIndex.Cli -> CodeIndex.Roslyn`
-  - [ ] test projects -> corresponding production projects
-- [ ] Add NuGet packages:
-  - [ ] `Microsoft.CodeAnalysis.CSharp.Workspaces`
-  - [ ] `Microsoft.CodeAnalysis.Workspaces.MSBuild`
-  - [ ] `Microsoft.Build.Locator`
-  - [ ] `System.CommandLine`
-- [ ] Verify `dotnet build` passes
+- [x] Create solution `code-index.sln`
+- [x] Create projects:
+  - [x] `CodeIndex.Core`
+  - [x] `CodeIndex.Roslyn`
+  - [x] `CodeIndex.Cli`
+  - [x] `CodeIndex.Core.Tests`
+  - [x] `CodeIndex.Roslyn.Tests`
+  - [x] `CodeIndex.Cli.Tests`
+- [x] Set all projects to target `net10.0`
+- [x] Add project references:
+  - [x] `CodeIndex.Roslyn -> CodeIndex.Core`
+  - [x] `CodeIndex.Cli -> CodeIndex.Core`
+  - [x] `CodeIndex.Cli -> CodeIndex.Roslyn`
+  - [x] test projects -> corresponding production projects
+- [x] Add NuGet packages:
+  - [x] `Microsoft.CodeAnalysis.CSharp.Workspaces`
+  - [x] `Microsoft.CodeAnalysis.Workspaces.MSBuild`
+  - [x] `Microsoft.Build.Locator`
+  - [x] `System.CommandLine`
+- [x] Verify `dotnet build` passes
 
 ### Done Criteria
 
-- [ ] Solution builds successfully
-- [ ] Tests compile
-- [ ] CLI project can run
+- [x] Solution builds successfully
+- [x] Tests compile
+- [x] CLI project can run
 
 ---
 
@@ -49,24 +49,24 @@ The tool should help AI agents:
 
 ### Tasks
 
-- [ ] Create `CodeIndexMeta`
-- [ ] Create `FileRecord`
-- [ ] Create `TextRangeRecord`
-- [ ] Create `SymbolRecord`
+- [x] Create `CodeIndexMeta`
+- [x] Create `FileRecord`
+- [x] Create `TextRangeRecord`
+- [x] Create `SymbolRecord`
 - [ ] Create `EdgeRecord`
 - [ ] Create enums or constants for:
   - [ ] symbol kinds
   - [ ] edge types
-- [ ] Create JSON serialization helpers
-- [ ] Create path normalization helper
-- [ ] Create deterministic ID generation helper
+- [x] Create JSON serialization helpers
+- [x] Create path normalization helper
+- [x] Create deterministic ID generation helper
 - [ ] Create validation service for output consistency
 
 ### Done Criteria
 
-- [ ] Models serialize correctly with `System.Text.Json`
-- [ ] Paths normalize to `/`
-- [ ] IDs are deterministic
+- [x] Models serialize correctly with `System.Text.Json`
+- [x] Paths normalize to `/`
+- [x] IDs are deterministic
 - [ ] Validation catches broken references and duplicates
 
 ---
@@ -75,20 +75,20 @@ The tool should help AI agents:
 
 ### Tasks
 
-- [ ] Register MSBuild using `Microsoft.Build.Locator`
-- [ ] Implement solution loader
-- [ ] Implement project loader
-- [ ] Enumerate C# projects
-- [ ] Enumerate Roslyn documents
-- [ ] Print project and document paths from CLI spike command
-- [ ] Handle load failures clearly
+- [x] Register MSBuild using `Microsoft.Build.Locator`
+- [x] Implement solution loader
+- [x] Implement project loader
+- [x] Enumerate C# projects
+- [x] Enumerate Roslyn documents
+- [x] Print project and document paths from CLI spike command
+- [x] Handle load failures clearly
 
 ### Done Criteria
 
-- [ ] Can open a real `.sln`
-- [ ] Can open a real `.csproj`
-- [ ] Can enumerate C# source documents
-- [ ] Errors are concise and actionable
+- [x] Can open a real `.sln`
+- [x] Can open a real `.csproj`
+- [x] Can enumerate C# source documents
+- [x] Errors are concise and actionable
 
 ---
 
@@ -96,15 +96,15 @@ The tool should help AI agents:
 
 ### Tasks
 
-- [ ] Create file indexing service
-- [ ] Normalize relative file paths
-- [ ] Compute file hashes
-- [ ] Record project name
-- [ ] Record language as `C#`
-- [ ] Add default file summary strategy
+- [x] Create file indexing service
+- [x] Normalize relative file paths
+- [x] Compute file hashes
+- [x] Record project name
+- [x] Record language as `C#`
+- [x] Add default file summary strategy
 - [ ] Filter generated files by default:
-  - [ ] `bin/**`
-  - [ ] `obj/**`
+  - [x] `bin/**`
+  - [x] `obj/**`
   - [ ] `*.g.cs`
   - [ ] `*.g.i.cs`
   - [ ] `*.designer.cs`
@@ -112,8 +112,8 @@ The tool should help AI agents:
 
 ### Done Criteria
 
-- [ ] `code-index.files.json` is generated
-- [ ] File IDs are stable
+- [x] `code-index.files.json` is generated
+- [x] File IDs are stable
 - [ ] Generated-file filtering works
 
 ---
@@ -122,42 +122,42 @@ The tool should help AI agents:
 
 ### Tasks
 
-- [ ] Implement declaration walker
-- [ ] Extract namespaces
-- [ ] Extract classes
-- [ ] Extract interfaces
-- [ ] Extract structs
-- [ ] Extract records
-- [ ] Extract enums
-- [ ] Extract delegates
-- [ ] Extract constructors
-- [ ] Extract methods
-- [ ] Extract properties
-- [ ] Extract fields
-- [ ] Extract events
-- [ ] Map Roslyn symbols to internal symbol records
-- [ ] Capture:
-  - [ ] `Id`
-  - [ ] `Name`
-  - [ ] `QualifiedName`
-  - [ ] `Kind`
-  - [ ] `FileId`
-  - [ ] `Range`
-  - [ ] `Signature`
-  - [ ] `Summary`
-  - [ ] `ParentId`
-  - [ ] `Accessibility`
-  - [ ] `IsStatic`
-  - [ ] `IsAbstract`
-  - [ ] `IsVirtual`
-  - [ ] `IsOverride`
+- [x] Implement declaration walker
+- [x] Extract namespaces
+- [x] Extract classes
+- [x] Extract interfaces
+- [x] Extract structs
+- [x] Extract records
+- [x] Extract enums
+- [x] Extract delegates
+- [x] Extract constructors
+- [x] Extract methods
+- [x] Extract properties
+- [x] Extract fields
+- [x] Extract events
+- [x] Map Roslyn symbols to internal symbol records
+- [x] Capture:
+  - [x] `Id`
+  - [x] `Name`
+  - [x] `QualifiedName`
+  - [x] `Kind`
+  - [x] `FileId`
+  - [x] `Range`
+  - [x] `Signature`
+  - [x] `Summary`
+  - [x] `ParentId`
+  - [x] `Accessibility`
+  - [x] `IsStatic`
+  - [x] `IsAbstract`
+  - [x] `IsVirtual`
+  - [x] `IsOverride`
 
 ### Done Criteria
 
-- [ ] `code-index.symbols.json` is generated
-- [ ] Supported symbol kinds appear correctly
-- [ ] File/range information is valid
-- [ ] Signatures are useful and readable
+- [x] `code-index.symbols.json` is generated
+- [x] Supported symbol kinds appear correctly
+- [x] File/range information is valid
+- [x] Signatures are useful and readable
 
 ---
 
@@ -165,10 +165,10 @@ The tool should help AI agents:
 
 ### Tasks
 
-- [ ] Extract XML documentation via Roslyn
-- [ ] Parse `<summary>`
-- [ ] Trim and normalize summary whitespace
-- [ ] Add fallback summary generator if no XML docs exist
+- [x] Extract XML documentation via Roslyn
+- [x] Parse `<summary>`
+- [x] Trim and normalize summary whitespace
+- [x] Add fallback summary generator if no XML docs exist
 - [ ] Implement normalized signature formatter for:
   - [ ] types
   - [ ] methods
@@ -179,8 +179,8 @@ The tool should help AI agents:
 
 ### Done Criteria
 
-- [ ] XML summaries appear when available
-- [ ] Fallback summaries are short and useful
+- [x] XML summaries appear when available
+- [x] Fallback summaries are short and useful
 - [ ] Signatures reduce need to inspect full source
 
 ---
@@ -209,22 +209,22 @@ The tool should help AI agents:
 
 ### Tasks
 
-- [ ] Implement `build` CLI command
-- [ ] Accept `.sln` or `.csproj`
-- [ ] Add `--out <path>`
+- [x] Implement `build` CLI command
+- [x] Accept `.sln` or `.csproj`
+- [x] Add `--out <path>`
 - [ ] Add `--include-generated true|false`
 - [ ] Add `--verbose`
 - [ ] Write output files:
-  - [ ] `code-index.meta.json`
-  - [ ] `code-index.files.json`
-  - [ ] `code-index.symbols.json`
+  - [x] `code-index.meta.json`
+  - [x] `code-index.files.json`
+  - [x] `code-index.symbols.json`
   - [ ] `code-index.edges.json`
-- [ ] Ensure deterministic ordering before writing
+- [x] Ensure deterministic ordering before writing
 - [ ] Run validation before final write
 
 ### Done Criteria
 
-- [ ] `build` works end-to-end
+- [x] `build` works end-to-end
 - [ ] Output is deterministic across repeated runs
 - [ ] Output validates successfully
 

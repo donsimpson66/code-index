@@ -33,3 +33,4 @@
 /home/don/Projects/code-index/src/CodeIndex.Roslyn/obj/Debug/net10.0/refint/CodeIndex.Roslyn.dll
 /home/don/Projects/code-index/src/CodeIndex.Roslyn/obj/Debug/net10.0/CodeIndex.Roslyn.pdb
 /home/don/Projects/code-index/src/CodeIndex.Roslyn/obj/Debug/net10.0/ref/CodeIndex.Roslyn.dll
+/home/don/Projects/code-index/src/CodeIndex.Roslyn/obj/Debug/net10.0/CodeIndex.Roslyn.sourcelink.json

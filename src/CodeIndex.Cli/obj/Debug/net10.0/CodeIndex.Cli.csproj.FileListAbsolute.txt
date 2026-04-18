@@ -137,3 +137,4 @@
 /home/don/Projects/code-index/src/CodeIndex.Cli/obj/Debug/net10.0/CodeIndex.Cli.pdb
 /home/don/Projects/code-index/src/CodeIndex.Cli/obj/Debug/net10.0/CodeIndex.Cli.genruntimeconfig.cache
 /home/don/Projects/code-index/src/CodeIndex.Cli/obj/Debug/net10.0/ref/CodeIndex.Cli.dll
+/home/don/Projects/code-index/src/CodeIndex.Cli/obj/Debug/net10.0/CodeIndex.Cli.sourcelink.json

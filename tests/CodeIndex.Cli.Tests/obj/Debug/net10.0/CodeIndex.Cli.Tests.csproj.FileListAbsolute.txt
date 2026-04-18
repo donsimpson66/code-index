@@ -223,3 +223,4 @@
 /home/don/Projects/code-index/tests/CodeIndex.Cli.Tests/obj/Debug/net10.0/CodeIndex.Cli.Tests.pdb
 /home/don/Projects/code-index/tests/CodeIndex.Cli.Tests/obj/Debug/net10.0/CodeIndex.Cli.Tests.genruntimeconfig.cache
 /home/don/Projects/code-index/tests/CodeIndex.Cli.Tests/obj/Debug/net10.0/ref/CodeIndex.Cli.Tests.dll
+/home/don/Projects/code-index/tests/CodeIndex.Cli.Tests/obj/Debug/net10.0/CodeIndex.Cli.Tests.sourcelink.json

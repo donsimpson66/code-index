@@ -97,3 +97,4 @@
 /home/don/Projects/code-index/tests/CodeIndex.Core.Tests/obj/Debug/net10.0/CodeIndex.Core.Tests.pdb
 /home/don/Projects/code-index/tests/CodeIndex.Core.Tests/obj/Debug/net10.0/CodeIndex.Core.Tests.genruntimeconfig.cache
 /home/don/Projects/code-index/tests/CodeIndex.Core.Tests/obj/Debug/net10.0/ref/CodeIndex.Core.Tests.dll
+/home/don/Projects/code-index/tests/CodeIndex.Core.Tests/obj/Debug/net10.0/CodeIndex.Core.Tests.sourcelink.json

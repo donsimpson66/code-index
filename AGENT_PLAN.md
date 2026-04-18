@@ -4,6 +4,28 @@
 
 Build a C#-first code indexing tool that creates a compact JSON project index optimized for AI agents.
 
+## Current Status
+
+Completed today:
+
+- repository bootstrap is complete and the solution builds/tests on .NET 10
+- Roslyn/MSBuild loading works for real `.sln` and `.csproj` inputs
+- CLI `inspect` command lists C# projects and relevant source documents
+- CLI `build` command writes:
+  - `code-index.meta.json`
+  - `code-index.files.json`
+  - `code-index.symbols.json`
+- file indexing is implemented with normalized paths, stable file IDs, hashes, and improved source-aware summaries
+- initial symbol extraction is implemented for namespaces, types, delegates, constructors, methods, properties, fields, and events
+- XML doc `<summary>` extraction and fallback summaries are implemented
+
+Still pending:
+
+- edge extraction and `code-index.edges.json`
+- validation service for output consistency
+- `--include-generated` and `--verbose` build options
+- query commands (`find-symbol`, `get-symbol`, `get-children`, `get-excerpt`)
+
 The tool must help AI agents:
 
 - find symbols quickly
@@ -107,7 +129,7 @@ Use the following unless there is a strong reason to change:
 
 ```text
 /code-index
-  CodeIndex.sln
+  code-index.sln
   /src
     /CodeIndex.Core
     /CodeIndex.Roslyn
@@ -160,6 +182,11 @@ Contains:
 
 Implement these commands.
 
+Currently implemented:
+
+- `inspect`
+- `build` (partial MVP: meta/files/symbols artifacts only)
+
 ### `build`
 
 Build the index from a `.sln` or `.csproj`.
@@ -173,9 +200,10 @@ dotnet run --project src/CodeIndex.Cli -- build ./MySolution.sln --out ./artifac
 Options:
 
 - `--out <path>`
-- `--format json`
 - `--include-generated false|true`
 - `--verbose`
+
+Current implementation supports `--out <path>`.
 
 ### `find-symbol`
 
@@ -226,6 +254,8 @@ Write these files into the output directory.
 - `code-index.files.json`
 - `code-index.symbols.json`
 - `code-index.edges.json`
+
+Current implementation writes the first three files. `code-index.edges.json` is still pending.
 
 ## JSON Schema Design
 
