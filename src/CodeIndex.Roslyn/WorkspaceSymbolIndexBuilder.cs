@@ -7,6 +7,63 @@ namespace CodeIndex.Roslyn;
 
 public sealed class WorkspaceSymbolIndexBuilder
 {
+    private static readonly SymbolDisplayFormat TypeNameFormat = new(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
+        miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes |
+                              SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers);
+
+    private static readonly SymbolDisplayFormat MethodSignatureFormat = new(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
+        memberOptions: SymbolDisplayMemberOptions.IncludeContainingType |
+                       SymbolDisplayMemberOptions.IncludeParameters |
+                       SymbolDisplayMemberOptions.IncludeType,
+        parameterOptions: SymbolDisplayParameterOptions.IncludeType |
+                          SymbolDisplayParameterOptions.IncludeName |
+                          SymbolDisplayParameterOptions.IncludeParamsRefOut |
+                          SymbolDisplayParameterOptions.IncludeOptionalBrackets,
+        miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes |
+                              SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers);
+
+    private static readonly SymbolDisplayFormat ConstructorSignatureFormat = new(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
+        memberOptions: SymbolDisplayMemberOptions.IncludeContainingType |
+                       SymbolDisplayMemberOptions.IncludeParameters,
+        parameterOptions: SymbolDisplayParameterOptions.IncludeType |
+                          SymbolDisplayParameterOptions.IncludeName |
+                          SymbolDisplayParameterOptions.IncludeParamsRefOut |
+                          SymbolDisplayParameterOptions.IncludeOptionalBrackets,
+        miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes |
+                              SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers);
+
+    private static readonly SymbolDisplayFormat PropertySignatureFormat = new(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
+        memberOptions: SymbolDisplayMemberOptions.IncludeContainingType |
+                       SymbolDisplayMemberOptions.IncludeParameters |
+                       SymbolDisplayMemberOptions.IncludeType,
+        parameterOptions: SymbolDisplayParameterOptions.IncludeType |
+                          SymbolDisplayParameterOptions.IncludeName |
+                          SymbolDisplayParameterOptions.IncludeParamsRefOut |
+                          SymbolDisplayParameterOptions.IncludeOptionalBrackets,
+        miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes |
+                              SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers);
+
+    private static readonly SymbolDisplayFormat FieldSignatureFormat = new(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
+        memberOptions: SymbolDisplayMemberOptions.IncludeContainingType |
+                       SymbolDisplayMemberOptions.IncludeType,
+        miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes |
+                              SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers);
+
     private static readonly SymbolDisplayFormat QualifiedNameFormat = new(
         globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
@@ -67,7 +124,7 @@ public sealed class WorkspaceSymbolIndexBuilder
                         continue;
                     }
 
-                    if (!TryCreateSymbolRecord(symbol, declaration, fileId, out var record))
+                    if (!TryCreateSymbolRecord(symbol, declaration, fileId, fileIdByPath, out var record))
                     {
                         continue;
                     }
@@ -118,7 +175,12 @@ public sealed class WorkspaceSymbolIndexBuilder
         };
     }
 
-    private static bool TryCreateSymbolRecord(ISymbol symbol, SyntaxNode declaration, string fileId, out SymbolRecord record)
+    private static bool TryCreateSymbolRecord(
+        ISymbol symbol,
+        SyntaxNode declaration,
+        string fileId,
+        IReadOnlyDictionary<string, string> fileIdByPath,
+        out SymbolRecord record)
     {
         var symbolKind = GetSymbolKind(symbol);
 
@@ -129,11 +191,10 @@ public sealed class WorkspaceSymbolIndexBuilder
         }
 
         var stableId = SymbolIdentity.CreateStableId(symbol);
-        var location = symbol.Locations.FirstOrDefault(candidate => candidate.IsInSource) ?? declaration.GetLocation();
-        var lineSpan = location.GetLineSpan();
+        var sourceLocation = GetCanonicalSourceLocation(symbol, declaration, fileId, fileIdByPath);
 
         var parentId = GetParentId(symbol, symbol.ContainingSymbol);
-        var signature = symbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
+        var signature = FormatSignature(symbol, symbolKind);
         var qualifiedName = symbol.ToDisplayString(QualifiedNameFormat);
 
         record = new SymbolRecord(
@@ -141,12 +202,12 @@ public sealed class WorkspaceSymbolIndexBuilder
             symbol.Name,
             qualifiedName,
             symbolKind,
-            fileId,
+            sourceLocation.FileId,
             new TextRangeRecord(
-                lineSpan.StartLinePosition.Line + 1,
-                lineSpan.StartLinePosition.Character + 1,
-                lineSpan.EndLinePosition.Line + 1,
-                lineSpan.EndLinePosition.Character + 1),
+                sourceLocation.LineSpan.StartLinePosition.Line + 1,
+                sourceLocation.LineSpan.StartLinePosition.Character + 1,
+                sourceLocation.LineSpan.EndLinePosition.Line + 1,
+                sourceLocation.LineSpan.EndLinePosition.Character + 1),
             signature,
             GetSummary(symbol, symbolKind),
             parentId,
@@ -157,6 +218,102 @@ public sealed class WorkspaceSymbolIndexBuilder
             symbol.IsOverride);
 
         return true;
+    }
+
+    private static (string FileId, FileLinePositionSpan LineSpan) GetCanonicalSourceLocation(
+        ISymbol symbol,
+        SyntaxNode declaration,
+        string currentFileId,
+        IReadOnlyDictionary<string, string> fileIdByPath)
+    {
+        var candidates = symbol.DeclaringSyntaxReferences
+            .Select(reference =>
+            {
+                var syntaxPath = reference.SyntaxTree.FilePath;
+
+                if (string.IsNullOrWhiteSpace(syntaxPath))
+                {
+                    return null;
+                }
+
+                var fullPath = Path.GetFullPath(syntaxPath);
+
+                if (!fileIdByPath.TryGetValue(fullPath, out var referenceFileId))
+                {
+                    return null;
+                }
+
+                return new
+                {
+                    FullPath = fullPath,
+                    FileId = referenceFileId,
+                    LineSpan = reference.SyntaxTree.GetLineSpan(reference.Span)
+                };
+            })
+            .Where(candidate => candidate is not null)
+            .Select(candidate => candidate!)
+            .OrderBy(candidate => candidate.FullPath, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(candidate => candidate.LineSpan.StartLinePosition.Line)
+            .ThenBy(candidate => candidate.LineSpan.StartLinePosition.Character)
+            .FirstOrDefault();
+
+        if (candidates is not null)
+        {
+            return (candidates.FileId, candidates.LineSpan);
+        }
+
+        var location = symbol.Locations.FirstOrDefault(candidate => candidate.IsInSource) ?? declaration.GetLocation();
+        return (currentFileId, location.GetLineSpan());
+    }
+
+    private static string FormatSignature(ISymbol symbol, string symbolKind)
+    {
+        return symbol switch
+        {
+            INamespaceSymbol => symbol.ToDisplayString(TypeNameFormat),
+            INamedTypeSymbol namedType when namedType.TypeKind == TypeKind.Delegate => FormatDelegateSignature(namedType),
+            INamedTypeSymbol => $"{symbolKind} {symbol.ToDisplayString(TypeNameFormat)}",
+            IMethodSymbol { MethodKind: MethodKind.Constructor } constructor => FormatConstructorSignature(constructor),
+            IMethodSymbol => symbol.ToDisplayString(MethodSignatureFormat),
+            IPropertySymbol => symbol.ToDisplayString(PropertySignatureFormat),
+            IFieldSymbol => symbol.ToDisplayString(FieldSignatureFormat),
+            IEventSymbol => symbol.ToDisplayString(FieldSignatureFormat),
+            _ => symbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)
+        };
+    }
+
+    private static string FormatConstructorSignature(IMethodSymbol constructor)
+    {
+        var containingType = constructor.ContainingType?.ToDisplayString(TypeNameFormat) ?? constructor.ContainingSymbol.ToDisplayString(TypeNameFormat);
+        var parameters = string.Join(", ", constructor.Parameters.Select(FormatParameter));
+        return $"{containingType}({parameters})";
+    }
+
+    private static string FormatDelegateSignature(INamedTypeSymbol delegateSymbol)
+    {
+        if (delegateSymbol.DelegateInvokeMethod is null)
+        {
+            return $"delegate {delegateSymbol.ToDisplayString(TypeNameFormat)}";
+        }
+
+        var returnType = delegateSymbol.DelegateInvokeMethod.ReturnType.ToDisplayString(TypeNameFormat);
+        var parameters = string.Join(", ",
+            delegateSymbol.DelegateInvokeMethod.Parameters.Select(FormatParameter));
+
+        return $"delegate {returnType} {delegateSymbol.ToDisplayString(TypeNameFormat)}({parameters})";
+    }
+
+    private static string FormatParameter(IParameterSymbol parameter)
+    {
+        var prefix = parameter.RefKind switch
+        {
+            RefKind.Ref => "ref ",
+            RefKind.Out => "out ",
+            RefKind.In => "in ",
+            _ => parameter.IsParams ? "params " : string.Empty
+        };
+
+        return $"{prefix}{parameter.Type.ToDisplayString(TypeNameFormat)} {parameter.Name}";
     }
 
     private static string? GetParentId(ISymbol symbol, ISymbol? containingSymbol)
@@ -210,7 +367,11 @@ public sealed class WorkspaceSymbolIndexBuilder
             }
         }
 
-        return $"{symbolKind} {symbol.Name}.";
+        var displayName = symbol is IMethodSymbol { MethodKind: MethodKind.Constructor } && symbol.ContainingType is not null
+            ? symbol.ContainingType.Name
+            : symbol.Name;
+
+        return $"{symbolKind} {displayName}.";
     }
 
     private static string GetAccessibility(ISymbol symbol)

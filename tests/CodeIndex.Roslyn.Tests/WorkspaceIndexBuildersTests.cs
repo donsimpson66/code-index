@@ -130,6 +130,119 @@ public class WorkspaceIndexBuildersTests
         }
     }
 
+    [Fact]
+    public async Task BuildAsync_FormatsSignatures_ExtractsXmlSummary_AndUsesCanonicalPartialDeclaration()
+    {
+        var projectPath = CreateTempProject(
+            ("AGreeter.Part1.cs", """
+namespace Sample;
+
+/// <summary>Main greeter type.</summary>
+public partial class Greeter : BaseGreeter, IGreeter
+{
+    public string Name { get; }
+    public event EventHandler? Renamed;
+
+    public Greeter(string name)
+    {
+        Name = name;
+    }
+
+    /// <summary>Returns a greeting.</summary>
+    public override string Greet(string person) => $"Hello {person}";
+}
+"""),
+            ("ZGreeter.Part2.cs", """
+namespace Sample;
+
+public partial class Greeter
+{
+    private readonly int count = 0;
+}
+
+public interface IGreeter
+{
+    string Greet(string person);
+}
+
+public class BaseGreeter
+{
+    public virtual string Greet(string person) => person;
+}
+"""));
+
+        try
+        {
+            var fileBuilder = new WorkspaceFileIndexBuilder();
+            var symbolBuilder = new WorkspaceSymbolIndexBuilder();
+
+            var files = await fileBuilder.BuildAsync(projectPath);
+            var symbols = await symbolBuilder.BuildAsync(projectPath, files);
+            var fileIdByPath = files.ToDictionary(file => file.Path, file => file.Id, StringComparer.Ordinal);
+
+            var greeter = Assert.Single(symbols, symbol => symbol.Kind == "class" && symbol.Name == "Greeter");
+            var constructor = Assert.Single(symbols, symbol => symbol.Kind == "constructor" && symbol.ParentId == greeter.Id);
+            var greetMethod = Assert.Single(symbols, symbol => symbol.Kind == "method" && symbol.Name == "Greet" && symbol.ParentId == greeter.Id);
+            var property = Assert.Single(symbols, symbol => symbol.Kind == "property" && symbol.Name == "Name");
+            var field = Assert.Single(symbols, symbol => symbol.Kind == "field" && symbol.Name == "count");
+            var eventSymbol = Assert.Single(symbols, symbol => symbol.Kind == "event" && symbol.Name == "Renamed");
+
+            Assert.Equal(fileIdByPath["AGreeter.Part1.cs"], greeter.FileId);
+            Assert.Equal(4, greeter.Range.StartLine);
+            Assert.Equal("Main greeter type.", greeter.Summary);
+            Assert.Equal("class Sample.Greeter", greeter.Signature);
+
+            Assert.Equal("Sample.Greeter(string name)", constructor.Signature);
+            Assert.Equal("string Sample.Greeter.Greet(string person)", greetMethod.Signature);
+            Assert.Equal("Returns a greeting.", greetMethod.Summary);
+            Assert.Equal("string Sample.Greeter.Name", property.Signature);
+            Assert.Equal("int Sample.Greeter.count", field.Signature);
+            Assert.Equal("System.EventHandler Sample.Greeter.Renamed", eventSymbol.Signature);
+        }
+        finally
+        {
+            DeleteTempProject(projectPath);
+        }
+    }
+
+    [Fact]
+    public async Task BuildAsync_ExtractsInheritanceImplementation_AndOverrideEdges()
+    {
+        var projectPath = CreateTempProject(
+            ("Greeter.cs", """
+namespace Sample;
+
+public interface IGreeter
+{
+    string Greet(string person);
+}
+
+public class BaseGreeter
+{
+    public virtual string Greet(string person) => person;
+}
+
+public class Greeter : BaseGreeter, IGreeter
+{
+    public override string Greet(string person) => $"Hello {person}";
+}
+"""));
+
+        try
+        {
+            var builder = new WorkspaceEdgeIndexBuilder();
+            var edges = await builder.BuildAsync(projectPath);
+
+            Assert.Contains(edges, edge => edge.Type == EdgeTypes.Inherits && edge.From == "s:T:Sample.Greeter" && edge.To == "s:T:Sample.BaseGreeter");
+            Assert.Contains(edges, edge => edge.Type == EdgeTypes.Implements && edge.From == "s:T:Sample.Greeter" && edge.To == "s:T:Sample.IGreeter");
+            Assert.Contains(edges, edge => edge.Type == EdgeTypes.Overrides && edge.From == "s:M:Sample.Greeter.Greet(System.String)" && edge.To == "s:M:Sample.BaseGreeter.Greet(System.String)");
+        }
+        finally
+        {
+            DeleteTempProject(projectPath);
+        }
+    }
+
     private static string GetSolutionPath()
     {
         return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../code-index.sln"));
@@ -157,5 +270,15 @@ public class WorkspaceIndexBuildersTests
         }
 
         return projectPath;
+    }
+
+    private static void DeleteTempProject(string projectPath)
+    {
+        var tempDirectory = Path.GetDirectoryName(projectPath);
+
+        if (tempDirectory is not null && Directory.Exists(tempDirectory))
+        {
+            Directory.Delete(tempDirectory, recursive: true);
+        }
     }
 }

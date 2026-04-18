@@ -22,4 +22,36 @@ public class FileIndexingTests
 
         Assert.Equal("s:T:CodeIndex.Core.FileRecord", symbolId);
     }
+
+    [Fact]
+    public async Task CodeIndexJson_RoundTripsSnapshot()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), $"code-index-core-tests-{Guid.NewGuid():N}");
+        var outputPath = Path.Combine(tempDirectory, "code-index.snapshot.json");
+
+        var snapshot = new CodeIndexSnapshot(
+            new CodeIndexMeta("1.0", "0.1.0", "repo", DateTimeOffset.UtcNow, "/repo", "/repo/repo.sln", "solution"),
+            [new FileRecord("f:file.cs", "file.cs", "Repo", "C#", "sha256:test", "summary")],
+            [new SymbolRecord("s:T:Repo.Type", "Type", "Repo.Type", "class", "f:file.cs", new TextRangeRecord(1, 1, 1, 10), "class Repo.Type", "summary", null, "public", false, false, false, false)],
+            [new EdgeRecord(EdgeTypes.Contains, "s:T:Repo.Type", "s:T:Repo.Type")]);
+
+        try
+        {
+            await CodeIndexJson.WriteToFileAsync(outputPath, snapshot);
+
+            var roundTripped = await CodeIndexJson.ReadFromFileAsync<CodeIndexSnapshot>(outputPath);
+
+            Assert.Equal(snapshot.Meta, roundTripped.Meta);
+            Assert.Equal(snapshot.Files, roundTripped.Files);
+            Assert.Equal(snapshot.Symbols, roundTripped.Symbols);
+            Assert.Equal(snapshot.Edges, roundTripped.Edges);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
 }

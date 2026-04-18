@@ -17,16 +17,18 @@ Completed today:
   - `code-index.symbols.json`
 - file indexing is implemented with normalized paths, stable file IDs, hashes, and improved source-aware summaries
 - initial symbol extraction is implemented for namespaces, types, delegates, constructors, methods, properties, fields, and events
-- XML doc `<summary>` extraction and fallback summaries are implemented
+- XML doc `<summary>` extraction, normalized signatures, and fallback summaries are implemented
 - structural edge extraction is implemented and `code-index.edges.json` is generated
 - validation service is implemented and runs before build artifacts are written
 - validation now correctly enforces tuple ordering for edges without false positives from concatenated string comparisons
+- partial types now use a canonical declaration for file/range selection across repeated runs
 - query commands are implemented: `find-symbol`, `get-symbol`, `get-children`, and `get-excerpt`
 - query commands now support filtering, limits, and explicit sort modes for smaller result sets
 - CLI tests now cover `inspect`, `build`, `find-symbol`, `get-symbol`, `get-children`, `get-excerpt`, and invalid-input error paths
 - CLI now owns non-zero exit code behavior for failures instead of relying on the test harness
 - `build` now supports `--out`, `--include-generated`, and `--verbose`
 - Roslyn tests now cover deterministic repeated indexing of the current repository solution and explicit generated-file suffix filtering
+- Roslyn tests now cover signature formatting, XML summary extraction, inheritance/interface/override edges, and canonical partial declaration handling
 - CLI tests now cover querying an index built from the current repository solution
 
 Still pending:

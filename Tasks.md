@@ -169,19 +169,19 @@ The tool should help AI agents:
 - [x] Parse `<summary>`
 - [x] Trim and normalize summary whitespace
 - [x] Add fallback summary generator if no XML docs exist
-- [ ] Implement normalized signature formatter for:
-  - [ ] types
-  - [ ] methods
-  - [ ] constructors
-  - [ ] properties
-  - [ ] fields
-  - [ ] events
+- [x] Implement normalized signature formatter for:
+  - [x] types
+  - [x] methods
+  - [x] constructors
+  - [x] properties
+  - [x] fields
+  - [x] events
 
 ### Done Criteria
 
 - [x] XML summaries appear when available
 - [x] Fallback summaries are short and useful
-- [ ] Signatures reduce need to inspect full source
+- [x] Signatures reduce need to inspect full source
 
 ---
 
@@ -264,7 +264,7 @@ The tool should help AI agents:
 - [x] Validate edge references
 - [x] Validate range values
 - [x] Validate duplicate IDs
-- [ ] Add partial class handling rule
+- [x] Add partial class handling rule
 - [ ] Improve error messages
 - [x] Add clear non-zero exit codes for failures
 
@@ -282,18 +282,18 @@ The tool should help AI agents:
 
 - [x] Path normalization tests
 - [x] ID generation tests
-- [ ] JSON serialization tests
+- [x] JSON serialization tests
 - [x] validation rule tests
 
 ### Roslyn Tests
 
 - [x] class extraction tests
-- [ ] method extraction tests
+- [x] method extraction tests
 - [x] namespace extraction tests
-- [ ] inheritance extraction tests
-- [ ] interface implementation tests
-- [ ] override extraction tests
-- [ ] XML summary extraction tests
+- [x] inheritance extraction tests
+- [x] interface implementation tests
+- [x] override extraction tests
+- [x] XML summary extraction tests
 - [x] generated-file filter tests
 
 ### CLI Tests
@@ -308,7 +308,7 @@ The tool should help AI agents:
 
 ### Done Criteria
 
-- [ ] Core behavior is broadly covered
+- [x] Core behavior is broadly covered
 - [x] Main CLI flows are covered
 - [x] Current repository solution can be indexed in tests
 
