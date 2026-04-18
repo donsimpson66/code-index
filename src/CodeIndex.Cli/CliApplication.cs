@@ -1,6 +1,7 @@
 using CodeIndex.Core;
 using CodeIndex.Roslyn;
 using System.CommandLine;
+using System.Text;
 using System.Text.Json;
 
 namespace CodeIndex.Cli;
@@ -46,6 +47,12 @@ public sealed class CliRuntime
 
 public static class CliApplication
 {
+	private static readonly JsonSerializerOptions OutputJsonOptions = new()
+	{
+		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+		WriteIndented = true
+	};
+
 	public static async Task<int> RunAsync(string[] args, CliRuntime? runtime = null)
 	{
 		try
@@ -122,6 +129,16 @@ public static class CliApplication
 		var filePathArgument = new Argument<string>("file")
 		{
 			Description = "A repository-relative file path from the index."
+		};
+
+		var benchmarkSymbolOption = new Option<string>("--symbol")
+		{
+			Description = "Representative symbol query to compare targeted index retrieval costs."
+		};
+
+		var benchmarkFileOption = new Option<string>("--file")
+		{
+			Description = "Repository-relative file path to compare excerpt retrieval costs."
 		};
 
 		var startOption = new Option<int>("--start")
@@ -391,9 +408,173 @@ public static class CliApplication
 			return 0;
 		});
 
+		var benchmarkCommand = new Command("benchmark", "Compare reading the indexed project directly versus using code-index artifacts first.");
+		benchmarkCommand.Add(indexOption);
+		benchmarkCommand.Add(benchmarkSymbolOption);
+		benchmarkCommand.Add(benchmarkFileOption);
+		benchmarkCommand.Add(startOption);
+		benchmarkCommand.Add(endOption);
+		benchmarkCommand.SetAction(async (parseResult, cancellationToken) =>
+		{
+			var indexDirectory = parseResult.GetValue(indexOption);
+			var symbolQuery = parseResult.GetValue(benchmarkSymbolOption);
+			var file = parseResult.GetValue(benchmarkFileOption);
+			var start = parseResult.GetValue(startOption);
+			var end = parseResult.GetValue(endOption);
+
+			if (string.IsNullOrWhiteSpace(file) && (start > 0 || end > 0))
+			{
+				throw new InvalidOperationException("Pass --file when using --start or --end with benchmark.");
+			}
+
+			if (!string.IsNullOrWhiteSpace(file) && (start <= 0 || end < start))
+			{
+				throw new InvalidOperationException("Use positive line numbers and ensure --end is greater than or equal to --start when benchmarking an excerpt.");
+			}
+
+			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
+			var fullIndexDirectory = Path.GetFullPath(indexDirectory!);
+
+			var sourceFiles = snapshot.Files
+				.Select(fileRecord => new
+				{
+					Record = fileRecord,
+					FullPath = Path.Combine(snapshot.Meta.SourceRoot, fileRecord.Path.Replace('/', Path.DirectorySeparatorChar))
+				})
+				.ToArray();
+
+			foreach (var sourceFile in sourceFiles)
+			{
+				if (!File.Exists(sourceFile.FullPath))
+				{
+					throw new InvalidOperationException($"Indexed source file no longer exists: {sourceFile.Record.Path}");
+				}
+			}
+
+			var totalSourceBytes = sourceFiles.Sum(sourceFile => new FileInfo(sourceFile.FullPath).Length);
+			var totalSourceLines = sourceFiles.Sum(sourceFile => File.ReadLines(sourceFile.FullPath).Count());
+
+			var metaPath = Path.Combine(fullIndexDirectory, "code-index.meta.json");
+			var filesPath = Path.Combine(fullIndexDirectory, "code-index.files.json");
+			var symbolsPath = Path.Combine(fullIndexDirectory, "code-index.symbols.json");
+			var edgesPath = Path.Combine(fullIndexDirectory, "code-index.edges.json");
+
+			var metaBytes = new FileInfo(metaPath).Length;
+			var filesBytes = new FileInfo(filesPath).Length;
+			var symbolsBytes = new FileInfo(symbolsPath).Length;
+			var edgesBytes = new FileInfo(edgesPath).Length;
+			var totalIndexBytes = metaBytes + filesBytes + symbolsBytes + edgesBytes;
+
+			object? symbolQueryMetrics = null;
+			long indexFirstFlowBytes = 0;
+
+			if (!string.IsNullOrWhiteSpace(symbolQuery))
+			{
+				var matches = LimitResults(OrderFindSymbolResults(snapshot.Symbols
+					.Where(symbol =>
+						string.Equals(symbol.Name, symbolQuery, StringComparison.OrdinalIgnoreCase) ||
+						string.Equals(symbol.QualifiedName, symbolQuery, StringComparison.OrdinalIgnoreCase) ||
+						symbol.QualifiedName.Contains(symbolQuery, StringComparison.OrdinalIgnoreCase)), symbolQuery, "ranked"), 5)
+					.ToArray();
+
+				var selected = matches.FirstOrDefault();
+				var children = selected is null
+					? Array.Empty<SymbolRecord>()
+					: OrderChildResults(snapshot.Edges
+						.Where(edge => edge.Type == EdgeTypes.Contains && edge.From == selected.Id)
+						.Join(snapshot.Symbols, edge => edge.To, symbol => symbol.Id, (_, symbol) => symbol), "declaration")
+						.ToArray();
+
+				var findSymbolBytes = GetSerializedByteCount(matches);
+				var getSymbolBytes = selected is null ? 0 : GetSerializedByteCount(selected);
+				var getChildrenBytes = children.Length == 0 ? 0 : GetSerializedByteCount(children);
+				indexFirstFlowBytes += findSymbolBytes + getSymbolBytes + getChildrenBytes;
+
+				symbolQueryMetrics = new
+				{
+					query = symbolQuery,
+					matchCount = matches.Length,
+					findSymbolBytes,
+					selectedSymbolId = selected?.Id,
+					selectedQualifiedName = selected?.QualifiedName,
+					getSymbolBytes,
+					getChildrenBytes
+				};
+			}
+
+			object? excerptMetrics = null;
+
+			if (!string.IsNullOrWhiteSpace(file))
+			{
+				var fileRecord = snapshot.Files.FirstOrDefault(candidate => string.Equals(candidate.Path, file, StringComparison.OrdinalIgnoreCase));
+
+				if (fileRecord is null)
+				{
+					throw new InvalidOperationException($"No indexed file found for path: {file}");
+				}
+
+				var fullFilePath = Path.Combine(snapshot.Meta.SourceRoot, fileRecord.Path.Replace('/', Path.DirectorySeparatorChar));
+				var lines = await File.ReadAllLinesAsync(fullFilePath, cancellationToken);
+				var excerpt = Enumerable.Range(start, Math.Min(end, lines.Length) - start + 1)
+					.Select(lineNumber => new { line = lineNumber, text = lines[lineNumber - 1] })
+					.ToArray();
+
+				var excerptBytes = GetSerializedByteCount(excerpt);
+				indexFirstFlowBytes += excerptBytes;
+
+				excerptMetrics = new
+				{
+					file = fileRecord.Path,
+					start,
+					end,
+					excerptBytes
+				};
+			}
+
+			var benchmark = new
+			{
+				inputPath = snapshot.Meta.InputPath,
+				inputKind = snapshot.Meta.InputKind,
+				sourceRoot = snapshot.Meta.SourceRoot,
+				rawSource = new
+				{
+					fileCount = snapshot.Files.Count,
+					totalBytes = totalSourceBytes,
+					totalLines = totalSourceLines,
+					averageBytesPerFile = snapshot.Files.Count == 0 ? 0 : totalSourceBytes / snapshot.Files.Count
+				},
+				indexArtifacts = new
+				{
+					directory = fullIndexDirectory,
+					metaBytes,
+					filesBytes,
+					symbolsBytes,
+					edgesBytes,
+					totalBytes = totalIndexBytes,
+					symbolCount = snapshot.Symbols.Count,
+					edgeCount = snapshot.Edges.Count
+				},
+				wholeProjectComparison = new
+				{
+					indexToSourceByteRatio = totalSourceBytes == 0 ? 0 : Math.Round((double)totalIndexBytes / totalSourceBytes, 3),
+					recommendation = totalIndexBytes <= totalSourceBytes
+						? "Reading the full index may be competitive, but index-first still works best when queries are selective."
+						: "Do not read the full index by default. Use the index selectively to narrow symbol and excerpt retrieval before opening source files."
+				},
+				symbolQuery = symbolQueryMetrics,
+				excerptQuery = excerptMetrics,
+				indexFirstFlowBytes = indexFirstFlowBytes == 0 ? (long?)null : indexFirstFlowBytes,
+				indexFirstVsFullSourceRatio = indexFirstFlowBytes == 0 || totalSourceBytes == 0 ? (double?)null : Math.Round((double)indexFirstFlowBytes / totalSourceBytes, 3)
+			};
+
+			WriteJson(benchmark);
+			return 0;
+		});
+
 		var rootCommand = new RootCommand("CodeIndex CLI");
 		rootCommand.Add(inspectCommand);
 		rootCommand.Add(buildCommand);
+		rootCommand.Add(benchmarkCommand);
 		rootCommand.Add(findSymbolCommand);
 		rootCommand.Add(getSymbolCommand);
 		rootCommand.Add(getChildrenCommand);
@@ -414,11 +595,12 @@ public static class CliApplication
 
 	private static void WriteJson<T>(T value)
 	{
-		Console.WriteLine(JsonSerializer.Serialize(value, new JsonSerializerOptions
-		{
-			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-			WriteIndented = true
-		}));
+		Console.WriteLine(JsonSerializer.Serialize(value, OutputJsonOptions));
+	}
+
+	private static int GetSerializedByteCount<T>(T value)
+	{
+		return Encoding.UTF8.GetByteCount(JsonSerializer.Serialize(value, OutputJsonOptions));
 	}
 
 	private static int GetMatchRank(SymbolRecord symbol, string query)

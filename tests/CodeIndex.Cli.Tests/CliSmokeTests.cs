@@ -138,7 +138,7 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
     {
         var output = await fixture.RunCliAsync(
             "get-excerpt",
-            "WorkspaceInspection.cs",
+            "src/CodeIndex.Roslyn/WorkspaceInspection.cs",
             "--index",
             fixture.IndexDirectory,
             "--start",
@@ -153,6 +153,36 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
         Assert.Equal(15, lines[0].GetProperty("line").GetInt32());
         Assert.Contains("WorkspaceInspector", lines[0].GetProperty("text").GetString());
         Assert.Equal(16, lines[1].GetProperty("line").GetInt32());
+    }
+
+    [Fact]
+    public async Task Benchmark_ReturnsProjectAndTargetedComparisonMetrics()
+    {
+        var output = await fixture.RunCliAsync(
+            "benchmark",
+            "--index",
+            fixture.IndexDirectory,
+            "--symbol",
+            "WorkspaceSymbolIndexBuilder",
+            "--file",
+            "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
+            "--start",
+            "1",
+            "--end",
+            "20");
+
+        using var document = JsonDocument.Parse(output);
+        var root = document.RootElement;
+
+        Assert.Equal("solution", root.GetProperty("inputKind").GetString());
+        Assert.True(root.GetProperty("rawSource").GetProperty("fileCount").GetInt32() > 0);
+        Assert.True(root.GetProperty("rawSource").GetProperty("totalBytes").GetInt64() > 0);
+        Assert.True(root.GetProperty("indexArtifacts").GetProperty("totalBytes").GetInt64() > 0);
+        Assert.Equal("WorkspaceSymbolIndexBuilder", root.GetProperty("symbolQuery").GetProperty("query").GetString());
+        Assert.Equal("CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder", root.GetProperty("symbolQuery").GetProperty("selectedQualifiedName").GetString());
+        Assert.Equal("src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs", root.GetProperty("excerptQuery").GetProperty("file").GetString());
+        Assert.True(root.GetProperty("excerptQuery").GetProperty("excerptBytes").GetInt32() > 0);
+        Assert.True(root.GetProperty("indexFirstFlowBytes").GetInt32() > 0);
     }
 
     [Fact]
@@ -201,7 +231,7 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
     {
         var result = await fixture.RunCliExpectFailureAsync(
             "get-excerpt",
-            "WorkspaceInspection.cs",
+            "src/CodeIndex.Roslyn/WorkspaceInspection.cs",
             "--index",
             fixture.IndexDirectory,
             "--start",
@@ -226,6 +256,22 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
 
         Assert.Equal(1, result.ExitCode);
         Assert.Contains("Unsupported --sort for get-children. Use name, accessibility, or declaration.", result.StandardError);
+    }
+
+    [Fact]
+    public async Task Benchmark_WithExcerptRangeButNoFile_ReturnsClearError()
+    {
+        var result = await fixture.RunCliExpectFailureAsync(
+            "benchmark",
+            "--index",
+            fixture.IndexDirectory,
+            "--start",
+            "1",
+            "--end",
+            "20");
+
+        Assert.Equal(1, result.ExitCode);
+        Assert.Contains("Pass --file when using --start or --end with benchmark.", result.StandardError);
     }
 }
 

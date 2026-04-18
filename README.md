@@ -53,6 +53,7 @@ The current implementation supports:
 - Roslyn/MSBuild loading for `.sln` and `.csproj`
 - `inspect` for project and source-document discovery
 - `build` for `meta`, `files`, `symbols`, and `edges` artifacts
+- `benchmark` for comparing full-source reading volume versus index-first retrieval volume
 - validation before artifact write
 - artifact-backed query commands:
   - `find-symbol`
@@ -212,6 +213,27 @@ Sort modes:
 - `name`
 - `accessibility`
 ```
+
+### `benchmark`
+
+Compare the indexed project corpus against its code-index artifacts, and
+optionally measure a representative symbol-plus-excerpt retrieval flow.
+
+Examples:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- benchmark --index ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- benchmark --index ./artifacts/code-index --symbol "WorkspaceSymbolIndexBuilder"
+dotnet run --project src/CodeIndex.Cli -- benchmark --index ./artifacts/code-index --symbol "WorkspaceSymbolIndexBuilder" --file "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs" --start 1 --end 80
+```
+
+The output includes:
+
+- raw source file count, byte count, and line count for the indexed project
+- total artifact bytes for `meta`, `files`, `symbols`, and `edges`
+- a whole-project ratio comparing index bytes to source bytes
+- optional targeted retrieval costs for a symbol query and excerpt flow
+- a recommendation indicating whether the index should be treated as a selective navigation tool or whether whole-index reads may be competitive
 
 ### `get-symbol`
 
