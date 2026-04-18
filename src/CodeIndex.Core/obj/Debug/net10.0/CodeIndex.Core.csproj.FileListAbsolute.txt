@@ -1,0 +1,11 @@
+/home/don/Projects/code-index/src/CodeIndex.Core/bin/Debug/net10.0/CodeIndex.Core.deps.json
+/home/don/Projects/code-index/src/CodeIndex.Core/bin/Debug/net10.0/CodeIndex.Core.dll
+/home/don/Projects/code-index/src/CodeIndex.Core/bin/Debug/net10.0/CodeIndex.Core.pdb
+/home/don/Projects/code-index/src/CodeIndex.Core/obj/Debug/net10.0/CodeIndex.Core.GeneratedMSBuildEditorConfig.editorconfig
+/home/don/Projects/code-index/src/CodeIndex.Core/obj/Debug/net10.0/CodeIndex.Core.AssemblyInfoInputs.cache
+/home/don/Projects/code-index/src/CodeIndex.Core/obj/Debug/net10.0/CodeIndex.Core.AssemblyInfo.cs
+/home/don/Projects/code-index/src/CodeIndex.Core/obj/Debug/net10.0/CodeIndex.Core.csproj.CoreCompileInputs.cache
+/home/don/Projects/code-index/src/CodeIndex.Core/obj/Debug/net10.0/CodeIndex.Core.dll
+/home/don/Projects/code-index/src/CodeIndex.Core/obj/Debug/net10.0/refint/CodeIndex.Core.dll
+/home/don/Projects/code-index/src/CodeIndex.Core/obj/Debug/net10.0/CodeIndex.Core.pdb
+/home/don/Projects/code-index/src/CodeIndex.Core/obj/Debug/net10.0/ref/CodeIndex.Core.dll
