@@ -32,9 +32,10 @@ The MVP is complete.
 Implemented and validated in the current repository:
 
 - solution and project indexing
-- deterministic JSON artifacts for `meta`, `files`, `symbols`, and `edges`
+- deterministic JSON artifacts for `meta`, `files`, `symbols`, `edges`, and `references`
+- deterministic embeddings for files and symbols
 - SQLite-backed build, query, and benchmark flows
-- AI-oriented query commands for symbol lookup and excerpt retrieval
+- AI-oriented query commands for symbol lookup, reference lookup, semantic search, call flow, test links, and excerpt retrieval
 - repository-scale tests and benchmark coverage
 
 ## Current Scope
@@ -45,6 +46,10 @@ Initial implementation focuses on:
 - Roslyn/MSBuild loading
 - symbol extraction
 - structural relationships
+- cached references
+- local variables
+- heuristic test links
+- deterministic vector embeddings
 - compact JSON output
 - SQLite-backed query storage
 - CLI query commands
@@ -65,13 +70,19 @@ The current implementation supports:
 
 - Roslyn/MSBuild loading for `.sln` and `.csproj`
 - `inspect` for project and source-document discovery
-- `build` for `meta`, `files`, `symbols`, and `edges` artifacts, plus optional SQLite output
+- `build` for `meta`, `files`, `symbols`, `edges`, `references`, and `embeddings` artifacts, plus optional SQLite output
 - `benchmark` for comparing full-source reading volume versus index-first retrieval volume
 - validation before artifact write
 - artifact-backed and SQLite-backed query commands:
   - `find-symbol`
+  - `semantic-search`
+  - `find-references`
   - `get-symbol`
   - `get-children`
+  - `get-callees`
+  - `get-callers`
+  - `get-test-targets`
+  - `get-tests`
   - `get-excerpt`
 
 ## Project Layout
@@ -173,7 +184,35 @@ dotnet run --project src/CodeIndex.Cli -- get-symbol "CodeIndex.Roslyn.Workspace
 dotnet run --project src/CodeIndex.Cli -- get-children "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --db ./artifacts/code-index/code-index.db --kind method --sort declaration
 ```
 
-4. read only the exact file lines you still need:
+4. fetch cached references when you need usage sites:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- find-references "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index --limit 20
+dotnet run --project src/CodeIndex.Cli -- find-references "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --db ./artifacts/code-index/code-index.db --limit 20
+```
+
+5. use semantic search when you know the concept but not the exact symbol name:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- semantic-search "workspace inspection" --index ./artifacts/code-index --type symbol --limit 10
+dotnet run --project src/CodeIndex.Cli -- semantic-search "sqlite storage" --db ./artifacts/code-index/code-index.db --type file --limit 10
+```
+
+6. inspect call relationships when behavior flow matters:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- get-callees "CodeIndex.Cli.CliApplication.RunAsync" --index ./artifacts/code-index --kind method --limit 20
+dotnet run --project src/CodeIndex.Cli -- get-callers "CodeIndex.Roslyn.WorkspaceLoader.LoadAsync" --db ./artifacts/code-index/code-index.db --kind method --limit 20
+```
+
+7. inspect likely test coverage when behavior matters:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- get-tests "CodeIndex.Roslyn.WorkspaceLoader.LoadAsync" --index ./artifacts/code-index --kind method --limit 20
+dotnet run --project src/CodeIndex.Cli -- get-test-targets "CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.BuildAsync_AddsHeuristicTestLinks" --db ./artifacts/code-index/code-index.db --limit 20
+```
+
+8. read only the exact file lines you still need:
 
 ```bash
 dotnet run --project src/CodeIndex.Cli -- get-excerpt "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs" --index ./artifacts/code-index --start 1 --end 80
@@ -185,6 +224,10 @@ Index-first guidance:
 - use `find-symbol` before broad text search when you know or suspect a symbol name
 - use `get-symbol` to confirm file, signature, summary, and parent relationship
 - use `get-children` to inspect a type or namespace surface before opening full files
+- use `find-references` when you need concrete usage sites before opening more files
+- use `semantic-search` when you know behavior or terminology but not the precise symbol spelling
+- use `get-callees` and `get-callers` to trace behavior flow before reading whole implementations
+- use `get-tests` and `get-test-targets` to estimate which behavior is covered before changing code
 - use `get-excerpt` for the smallest source slice that answers the current question
 - fall back to broad file or text search only when the index does not cover the needed detail
 
@@ -212,6 +255,8 @@ Options:
 
 - `--out <path>`
 - `--db-out <path>`
+- `--incremental-from-index <path>`
+- `--incremental-from-db <path>`
 - `--include-generated`
 - `--verbose`
 
@@ -220,6 +265,24 @@ Notes:
 - generated files are excluded by default
 - validation runs before artifacts are written
 - pass `--out`, `--db-out`, or both depending on which backing store you want
+- when an incremental baseline is provided and file paths and hashes are unchanged, the build reuses existing symbols, edges, and references instead of rebuilding them
+- embeddings are generated deterministically from file and symbol text and are reused when an incremental baseline is unchanged
+
+### `semantic-search`
+
+Searches file and symbol embeddings using deterministic cosine similarity over indexed text.
+
+Example:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- semantic-search "workspace inspection" --index ./artifacts/code-index --type symbol --limit 10
+```
+
+Options:
+
+- `--index <path>` or `--db <path>`
+- `--type <symbol|file>`
+- `--limit <n>`
 
 ### `find-symbol`
 
@@ -240,6 +303,18 @@ Sort modes:
 - `ranked` (default)
 - `name`
 - `accessibility`
+```
+
+### `find-references`
+
+Find cached reference locations for a symbol ID or qualified name.
+
+Example:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- find-references "SampleLibrary.FriendlyGreeter" --index ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- find-references "SampleLibrary.FriendlyGreeter" --db ./artifacts/code-index/code-index.db
+dotnet run --project src/CodeIndex.Cli -- find-references "SampleLibrary.FriendlyGreeter.CreateGreeting(System.String)" --index ./artifacts/code-index --limit 10
 ```
 
 ### `benchmark`
@@ -309,6 +384,52 @@ Sort modes:
 - `declaration`
 ```
 
+### `get-callees`
+
+Get direct call targets for a method or constructor.
+
+Example:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- get-callees "SampleLibrary.FriendlyGreeter.CreateGreeting" --index ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- get-callees "SampleLibrary.FriendlyGreeter.CreateGreeting" --db ./artifacts/code-index/code-index.db
+dotnet run --project src/CodeIndex.Cli -- get-callees "SampleLibrary.FriendlyGreeter.CreateGreeting" --index ./artifacts/code-index --kind method --sort declaration --limit 10
+```
+
+### `get-callers`
+
+Get direct callers for a method or constructor.
+
+Example:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- get-callers "SampleLibrary.FriendlyGreeter.CreateGreeting" --index ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- get-callers "SampleLibrary.FriendlyGreeter.CreateGreeting" --db ./artifacts/code-index/code-index.db
+dotnet run --project src/CodeIndex.Cli -- get-callers "SampleLibrary.FriendlyGreeter.CreateGreeting" --index ./artifacts/code-index --kind method --sort declaration --limit 10
+```
+
+### `get-test-targets`
+
+Get heuristic production targets for a test symbol.
+
+Example:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- get-test-targets "SampleLibrary.Tests.FriendlyGreeterTests.CreateGreeting_ReturnsGreeting" --index ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- get-test-targets "SampleLibrary.Tests.FriendlyGreeterTests.CreateGreeting_ReturnsGreeting" --db ./artifacts/code-index/code-index.db
+```
+
+### `get-tests`
+
+Get heuristic tests for a production symbol.
+
+Example:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- get-tests "SampleLibrary.FriendlyGreeter.CreateGreeting(System.String)" --index ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- get-tests "SampleLibrary.FriendlyGreeter.CreateGreeting(System.String)" --db ./artifacts/code-index/code-index.db
+```
+
 ### `get-excerpt`
 
 Get exact source lines from a file.
@@ -329,6 +450,7 @@ The `build` command writes:
 - `code-index.files.json`
 - `code-index.symbols.json`
 - `code-index.edges.json`
+- `code-index.references.json`
 - optional `code-index.db`
 
 ## Output Design
@@ -492,21 +614,16 @@ This project starts with a C# MVP first.
 
 Planned later, if needed:
 
-- references on demand
-- cached query index
-- incremental indexing
 - richer relationships
 - optional storage backends
 
 ## Non-Goals for MVP
 
 - full call graph
-- all references for all symbols
 - local variable indexing
 - vector embeddings
 - non-C# support
 - HTTP service
-- database backend
 
 ## Notes
 

@@ -342,16 +342,16 @@ The tool should help AI agents:
 
 Do not implement these until MVP is stable.
 
-- [ ] `FindReferencesAsync`
-- [ ] cached references index
-- [ ] caller/callee analysis
+- [x] `FindReferencesAsync`
+- [x] cached references index
+- [x] caller/callee analysis
 - [x] SQLite backend
-- [ ] incremental indexing
+- [x] incremental indexing
 - [ ] API server
 - [ ] multi-language support
-- [ ] local variable indexing
-- [ ] vector embeddings
-- [ ] test linking heuristics
+- [x] local variable indexing
+- [x] vector embeddings
+- [x] test linking heuristics
 
 ## Milestone 12 - SQLite Store and Query Path
 

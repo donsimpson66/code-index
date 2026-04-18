@@ -29,6 +29,8 @@ public sealed class SqliteCodeIndexStore
         await InsertFilesAsync(connection, transaction, snapshot.Files, cancellationToken);
         await InsertSymbolsAsync(connection, transaction, snapshot.Symbols, cancellationToken);
         await InsertEdgesAsync(connection, transaction, snapshot.Edges, cancellationToken);
+        await InsertReferencesAsync(connection, transaction, snapshot.References, cancellationToken);
+        await InsertEmbeddingsAsync(connection, transaction, snapshot.Embeddings, cancellationToken);
 
         await transaction.CommitAsync(cancellationToken);
     }
@@ -42,8 +44,10 @@ public sealed class SqliteCodeIndexStore
         var files = await ReadFilesAsync(connection, cancellationToken);
         var symbols = await ReadSymbolsAsync(connection, cancellationToken);
         var edges = await ReadEdgesAsync(connection, cancellationToken);
+        var references = await ReadReferencesAsync(connection, cancellationToken);
+        var embeddings = await ReadEmbeddingsAsync(connection, cancellationToken);
 
-        return new CodeIndexSnapshot(meta, files, symbols, edges);
+        return new CodeIndexSnapshot(meta, files, symbols, edges, references, embeddings);
     }
 
     public async Task<CodeIndexMeta> ReadMetaAsync(string databasePath, CancellationToken cancellationToken = default)
@@ -175,6 +179,64 @@ WHERE e.type = $contains
         return await ReadSymbolRowsAsync(command, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<ReferenceRecord>> FindReferencesAsync(string databasePath, string targetSymbolId, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(databasePath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetSymbolId);
+
+        await using var connection = await OpenConnectionAsync(databasePath, cancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+SELECT target_symbol_id, source_symbol_id, file_id, start_line, start_column, end_line, end_column, line_text
+FROM symbol_references
+WHERE target_symbol_id = $targetSymbolId
+ORDER BY target_symbol_id, file_id, start_line, start_column, source_symbol_id;
+""";
+        command.Parameters.AddWithValue("$targetSymbolId", targetSymbolId);
+
+        return await ReadReferenceRowsAsync(command, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<SymbolRecord>> GetCalleesAsync(
+        string databasePath,
+        string query,
+        string? kind,
+        string? accessibility,
+        CancellationToken cancellationToken = default)
+    {
+        return await GetRelatedSymbolsAsync(databasePath, query, EdgeTypes.Calls, outgoing: true, kind, accessibility, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<SymbolRecord>> GetCallersAsync(
+        string databasePath,
+        string query,
+        string? kind,
+        string? accessibility,
+        CancellationToken cancellationToken = default)
+    {
+        return await GetRelatedSymbolsAsync(databasePath, query, EdgeTypes.Calls, outgoing: false, kind, accessibility, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<SymbolRecord>> GetTestTargetsAsync(
+        string databasePath,
+        string query,
+        string? kind,
+        string? accessibility,
+        CancellationToken cancellationToken = default)
+    {
+        return await GetRelatedSymbolsAsync(databasePath, query, EdgeTypes.Tests, outgoing: true, kind, accessibility, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<SymbolRecord>> GetTestsAsync(
+        string databasePath,
+        string query,
+        string? kind,
+        string? accessibility,
+        CancellationToken cancellationToken = default)
+    {
+        return await GetRelatedSymbolsAsync(databasePath, query, EdgeTypes.Tests, outgoing: false, kind, accessibility, cancellationToken);
+    }
+
     private static async Task<SqliteConnection> OpenConnectionAsync(string databasePath, CancellationToken cancellationToken)
     {
         var connection = new SqliteConnection(new SqliteConnectionStringBuilder
@@ -237,14 +299,73 @@ CREATE TABLE edges (
     PRIMARY KEY (type, from_id, to_id)
 );
 
+CREATE TABLE symbol_references (
+    target_symbol_id TEXT NOT NULL,
+    source_symbol_id TEXT NOT NULL,
+    file_id TEXT NOT NULL,
+    start_line INTEGER NOT NULL,
+    start_column INTEGER NOT NULL,
+    end_line INTEGER NOT NULL,
+    end_column INTEGER NOT NULL,
+    line_text TEXT NOT NULL,
+    PRIMARY KEY (target_symbol_id, file_id, start_line, start_column, end_line, end_column, source_symbol_id)
+);
+
+CREATE TABLE embeddings (
+    item_type TEXT NOT NULL,
+    item_id TEXT NOT NULL,
+    vector_json TEXT NOT NULL,
+    PRIMARY KEY (item_type, item_id)
+);
+
 CREATE INDEX idx_files_path ON files(path);
 CREATE INDEX idx_symbols_name ON symbols(name);
 CREATE INDEX idx_symbols_qualified_name ON symbols(qualified_name);
 CREATE INDEX idx_symbols_parent_id ON symbols(parent_id);
 CREATE INDEX idx_edges_from_id ON edges(from_id);
+CREATE INDEX idx_symbol_references_target_symbol_id ON symbol_references(target_symbol_id);
+CREATE INDEX idx_symbol_references_file_id ON symbol_references(file_id);
+CREATE INDEX idx_embeddings_item_type ON embeddings(item_type);
 """;
 
         await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    private async Task<IReadOnlyList<SymbolRecord>> GetRelatedSymbolsAsync(
+        string databasePath,
+        string query,
+        string edgeType,
+        bool outgoing,
+        string? kind,
+        string? accessibility,
+        CancellationToken cancellationToken)
+    {
+        var symbol = await GetSymbolAsync(databasePath, query, cancellationToken);
+
+        if (symbol is null)
+        {
+            return Array.Empty<SymbolRecord>();
+        }
+
+        await using var connection = await OpenConnectionAsync(databasePath, cancellationToken);
+        await using var command = connection.CreateCommand();
+        var relatedColumn = outgoing ? "e.to_id" : "e.from_id";
+        var symbolColumn = outgoing ? "e.from_id" : "e.to_id";
+        command.CommandText = $"""
+SELECT s.id, s.name, s.qualified_name, s.kind, s.file_id, s.start_line, s.start_column, s.end_line, s.end_column, s.signature, s.summary, s.parent_id, s.accessibility, s.is_static, s.is_abstract, s.is_virtual, s.is_override
+FROM edges e
+JOIN symbols s ON s.id = {relatedColumn}
+WHERE e.type = $edgeType
+  AND {symbolColumn} = $symbolId
+  AND ($kind IS NULL OR s.kind = $kind COLLATE NOCASE)
+  AND ($accessibility IS NULL OR s.accessibility = $accessibility COLLATE NOCASE);
+""";
+        command.Parameters.AddWithValue("$edgeType", edgeType);
+        command.Parameters.AddWithValue("$symbolId", symbol.Id);
+        command.Parameters.AddWithValue("$kind", (object?)NormalizeOptional(kind) ?? DBNull.Value);
+        command.Parameters.AddWithValue("$accessibility", (object?)NormalizeOptional(accessibility) ?? DBNull.Value);
+
+        return await ReadSymbolRowsAsync(command, cancellationToken);
     }
 
     private static async Task InsertMetaAsync(SqliteConnection connection, SqliteTransaction transaction, CodeIndexMeta meta, CancellationToken cancellationToken)
@@ -362,6 +483,58 @@ VALUES ($type, $fromId, $toId);
         }
     }
 
+    private static async Task InsertReferencesAsync(SqliteConnection connection, SqliteTransaction transaction, IReadOnlyList<ReferenceRecord> references, CancellationToken cancellationToken)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = """
+INSERT INTO symbol_references(target_symbol_id, source_symbol_id, file_id, start_line, start_column, end_line, end_column, line_text)
+VALUES ($targetSymbolId, $sourceSymbolId, $fileId, $startLine, $startColumn, $endLine, $endColumn, $lineText);
+""";
+        var targetSymbolId = command.Parameters.Add("$targetSymbolId", SqliteType.Text);
+        var sourceSymbolId = command.Parameters.Add("$sourceSymbolId", SqliteType.Text);
+        var fileId = command.Parameters.Add("$fileId", SqliteType.Text);
+        var startLine = command.Parameters.Add("$startLine", SqliteType.Integer);
+        var startColumn = command.Parameters.Add("$startColumn", SqliteType.Integer);
+        var endLine = command.Parameters.Add("$endLine", SqliteType.Integer);
+        var endColumn = command.Parameters.Add("$endColumn", SqliteType.Integer);
+        var lineText = command.Parameters.Add("$lineText", SqliteType.Text);
+
+        foreach (var reference in references)
+        {
+            targetSymbolId.Value = reference.TargetSymbolId;
+            sourceSymbolId.Value = reference.SourceSymbolId ?? string.Empty;
+            fileId.Value = reference.FileId;
+            startLine.Value = reference.Range.StartLine;
+            startColumn.Value = reference.Range.StartColumn;
+            endLine.Value = reference.Range.EndLine;
+            endColumn.Value = reference.Range.EndColumn;
+            lineText.Value = reference.LineText;
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+    }
+
+    private static async Task InsertEmbeddingsAsync(SqliteConnection connection, SqliteTransaction transaction, IReadOnlyList<EmbeddingRecord> embeddings, CancellationToken cancellationToken)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = """
+INSERT INTO embeddings(item_type, item_id, vector_json)
+VALUES ($itemType, $itemId, $vectorJson);
+""";
+        var itemType = command.Parameters.Add("$itemType", SqliteType.Text);
+        var itemId = command.Parameters.Add("$itemId", SqliteType.Text);
+        var vectorJson = command.Parameters.Add("$vectorJson", SqliteType.Text);
+
+        foreach (var embedding in embeddings)
+        {
+            itemType.Value = embedding.ItemType;
+            itemId.Value = embedding.ItemId;
+            vectorJson.Value = System.Text.Json.JsonSerializer.Serialize(embedding.Vector);
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+    }
+
     private static async Task<CodeIndexMeta> ReadMetaAsync(SqliteConnection connection, CancellationToken cancellationToken)
     {
         await using var command = connection.CreateCommand();
@@ -440,6 +613,40 @@ ORDER BY type, from_id, to_id;
         return results;
     }
 
+    private static async Task<IReadOnlyList<ReferenceRecord>> ReadReferencesAsync(SqliteConnection connection, CancellationToken cancellationToken)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+SELECT target_symbol_id, source_symbol_id, file_id, start_line, start_column, end_line, end_column, line_text
+FROM symbol_references
+ORDER BY target_symbol_id, file_id, start_line, start_column, source_symbol_id;
+""";
+
+        return await ReadReferenceRowsAsync(command, cancellationToken);
+    }
+
+    private static async Task<IReadOnlyList<EmbeddingRecord>> ReadEmbeddingsAsync(SqliteConnection connection, CancellationToken cancellationToken)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+SELECT item_type, item_id, vector_json
+FROM embeddings
+ORDER BY item_type, item_id;
+""";
+
+        var results = new List<EmbeddingRecord>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            var vector = System.Text.Json.JsonSerializer.Deserialize<float[]>(reader.GetString(2))
+                ?? throw new InvalidOperationException("SQLite embedding row has invalid vector payload.");
+            results.Add(new EmbeddingRecord(reader.GetString(0), reader.GetString(1), vector));
+        }
+
+        return results;
+    }
+
     private static async Task<int> CountRowsAsync(SqliteConnection connection, string tableName, CancellationToken cancellationToken)
     {
         await using var command = connection.CreateCommand();
@@ -461,6 +668,19 @@ ORDER BY type, from_id, to_id;
         while (await reader.ReadAsync(cancellationToken))
         {
             results.Add(ReadSymbol(reader));
+        }
+
+        return results;
+    }
+
+    private static async Task<IReadOnlyList<ReferenceRecord>> ReadReferenceRowsAsync(SqliteCommand command, CancellationToken cancellationToken)
+    {
+        var results = new List<ReferenceRecord>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            results.Add(ReadReference(reader));
         }
 
         return results;
@@ -494,6 +714,16 @@ ORDER BY type, from_id, to_id;
             reader.GetInt32(14) != 0,
             reader.GetInt32(15) != 0,
             reader.GetInt32(16) != 0);
+    }
+
+    private static ReferenceRecord ReadReference(SqliteDataReader reader)
+    {
+        return new ReferenceRecord(
+            reader.GetString(0),
+            reader.GetString(1).Length == 0 ? null : reader.GetString(1),
+            reader.GetString(2),
+            new TextRangeRecord(reader.GetInt32(3), reader.GetInt32(4), reader.GetInt32(5), reader.GetInt32(6)),
+            reader.GetString(7));
     }
 
     private static string? NormalizeOptional(string? value)

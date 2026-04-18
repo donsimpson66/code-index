@@ -11,4 +11,6 @@ public static class EdgeTypes
     public const string Inherits = "inherits";
     public const string Implements = "implements";
     public const string Overrides = "overrides";
+    public const string Calls = "calls";
+    public const string Tests = "tests";
 }

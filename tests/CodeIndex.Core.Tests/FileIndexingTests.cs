@@ -33,7 +33,9 @@ public class FileIndexingTests
             new CodeIndexMeta("1.0", "0.1.0", "repo", DateTimeOffset.UtcNow, "/repo", "/repo/repo.sln", "solution"),
             [new FileRecord("f:file.cs", "file.cs", "Repo", "C#", "sha256:test", "summary")],
             [new SymbolRecord("s:T:Repo.Type", "Type", "Repo.Type", "class", "f:file.cs", new TextRangeRecord(1, 1, 1, 10), "class Repo.Type", "summary", null, "public", false, false, false, false)],
-            [new EdgeRecord(EdgeTypes.Contains, "s:T:Repo.Type", "s:T:Repo.Type")]);
+            [new EdgeRecord(EdgeTypes.Contains, "s:T:Repo.Type", "s:T:Repo.Type")],
+            Array.Empty<ReferenceRecord>(),
+            [new EmbeddingRecord(EmbeddingItemTypes.File, "f:file.cs", [1f, 0f])]);
 
         try
         {
@@ -45,6 +47,11 @@ public class FileIndexingTests
             Assert.Equal(snapshot.Files, roundTripped.Files);
             Assert.Equal(snapshot.Symbols, roundTripped.Symbols);
             Assert.Equal(snapshot.Edges, roundTripped.Edges);
+            Assert.Equal(snapshot.References, roundTripped.References);
+            Assert.Single(roundTripped.Embeddings);
+            Assert.Equal(snapshot.Embeddings[0].ItemType, roundTripped.Embeddings[0].ItemType);
+            Assert.Equal(snapshot.Embeddings[0].ItemId, roundTripped.Embeddings[0].ItemId);
+            Assert.Equal(snapshot.Embeddings[0].Vector, roundTripped.Embeddings[0].Vector);
         }
         finally
         {
@@ -63,7 +70,9 @@ public class FileIndexingTests
             new CodeIndexMeta("1.0", "0.1.0", "repo", DateTimeOffset.UtcNow, "/repo", "/repo/repo.sln", "solution"),
             [new FileRecord("f:file.cs", "file.cs", "Repo", "C#", "sha256:test", "summary")],
             [new SymbolRecord("s:T:Repo.Type", "Type", "Repo.Type", "class", "f:file.cs", new TextRangeRecord(1, 1, 1, 10), "class Repo.Type", "summary", null, "public", false, false, false, false)],
-            [new EdgeRecord(EdgeTypes.Contains, "s:T:Repo.Type", "s:T:Repo.Type")]);
+            [new EdgeRecord(EdgeTypes.Contains, "s:T:Repo.Type", "s:T:Repo.Type")],
+            Array.Empty<ReferenceRecord>(),
+            [new EmbeddingRecord(EmbeddingItemTypes.File, "f:file.cs", [1f, 0f])]);
 
         try
         {

@@ -82,12 +82,25 @@ public sealed class WorkspaceSymbolIndexBuilder
         bool includeGenerated = false,
         CancellationToken cancellationToken = default)
     {
+        return await BuildAsync(inputPath, files, indexedFilePaths: null, includeGenerated, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<SymbolRecord>> BuildAsync(
+        string inputPath,
+        IReadOnlyList<FileRecord> files,
+        IReadOnlyCollection<string>? indexedFilePaths,
+        bool includeGenerated = false,
+        CancellationToken cancellationToken = default)
+    {
         using var loadedWorkspace = await WorkspaceLoader.LoadAsync(inputPath, cancellationToken);
         var sourceRoot = WorkspaceLoader.GetSourceRoot(loadedWorkspace.InputPath);
         var fileIdByPath = files.ToDictionary(
-            record => Path.GetFullPath(Path.Combine(sourceRoot, record.Path)),
+            record => record.Path,
             record => record.Id,
-            StringComparer.OrdinalIgnoreCase);
+            StringComparer.Ordinal);
+        var indexedPaths = indexedFilePaths is null
+            ? null
+            : new HashSet<string>(indexedFilePaths, StringComparer.Ordinal);
 
         var symbolRecords = new Dictionary<string, SymbolRecord>(StringComparer.Ordinal);
 
@@ -102,7 +115,14 @@ public sealed class WorkspaceSymbolIndexBuilder
                     continue;
                 }
 
-                if (!fileIdByPath.TryGetValue(Path.GetFullPath(document.FilePath), out var fileId))
+                var normalizedPath = PathNormalization.NormalizeRelativePath(sourceRoot, document.FilePath);
+
+                if (indexedPaths is not null && !indexedPaths.Contains(normalizedPath))
+                {
+                    continue;
+                }
+
+                if (!fileIdByPath.TryGetValue(normalizedPath, out var fileId))
                 {
                     continue;
                 }
@@ -124,7 +144,7 @@ public sealed class WorkspaceSymbolIndexBuilder
                         continue;
                     }
 
-                    if (!TryCreateSymbolRecord(symbol, declaration, fileId, fileIdByPath, out var record))
+                    if (!TryCreateSymbolRecord(symbol, declaration, fileId, sourceRoot, fileIdByPath, out var record))
                     {
                         continue;
                     }
@@ -179,6 +199,7 @@ public sealed class WorkspaceSymbolIndexBuilder
         ISymbol symbol,
         SyntaxNode declaration,
         string fileId,
+        string sourceRoot,
         IReadOnlyDictionary<string, string> fileIdByPath,
         out SymbolRecord record)
     {
@@ -191,7 +212,7 @@ public sealed class WorkspaceSymbolIndexBuilder
         }
 
         var stableId = SymbolIdentity.CreateStableId(symbol);
-        var sourceLocation = GetCanonicalSourceLocation(symbol, declaration, fileId, fileIdByPath);
+        var sourceLocation = GetCanonicalSourceLocation(symbol, declaration, fileId, sourceRoot, fileIdByPath);
 
         var parentId = GetParentId(symbol, symbol.ContainingSymbol);
         var signature = FormatSignature(symbol, symbolKind);
@@ -224,6 +245,7 @@ public sealed class WorkspaceSymbolIndexBuilder
         ISymbol symbol,
         SyntaxNode declaration,
         string currentFileId,
+        string sourceRoot,
         IReadOnlyDictionary<string, string> fileIdByPath)
     {
         var candidates = symbol.DeclaringSyntaxReferences
@@ -236,23 +258,23 @@ public sealed class WorkspaceSymbolIndexBuilder
                     return null;
                 }
 
-                var fullPath = Path.GetFullPath(syntaxPath);
+                var normalizedPath = PathNormalization.NormalizeRelativePath(sourceRoot, syntaxPath);
 
-                if (!fileIdByPath.TryGetValue(fullPath, out var referenceFileId))
+                if (!fileIdByPath.TryGetValue(normalizedPath, out var referenceFileId))
                 {
                     return null;
                 }
 
                 return new
                 {
-                    FullPath = fullPath,
+                    Path = normalizedPath,
                     FileId = referenceFileId,
                     LineSpan = reference.SyntaxTree.GetLineSpan(reference.Span)
                 };
             })
             .Where(candidate => candidate is not null)
             .Select(candidate => candidate!)
-            .OrderBy(candidate => candidate.FullPath, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(candidate => candidate.Path, StringComparer.Ordinal)
             .ThenBy(candidate => candidate.LineSpan.StartLinePosition.Line)
             .ThenBy(candidate => candidate.LineSpan.StartLinePosition.Character)
             .FirstOrDefault();
@@ -278,8 +300,21 @@ public sealed class WorkspaceSymbolIndexBuilder
             IPropertySymbol => symbol.ToDisplayString(PropertySignatureFormat),
             IFieldSymbol => symbol.ToDisplayString(FieldSignatureFormat),
             IEventSymbol => symbol.ToDisplayString(FieldSignatureFormat),
+            ILocalSymbol localSymbol => FormatLocalSignature(localSymbol),
             _ => symbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)
         };
+    }
+
+    private static string FormatLocalSignature(ILocalSymbol localSymbol)
+    {
+        var containingSymbol = localSymbol.ContainingSymbol is null
+            ? string.Empty
+            : localSymbol.ContainingSymbol is IMethodSymbol { MethodKind: MethodKind.Constructor } constructor
+                ? FormatConstructorSignature(constructor)
+                : localSymbol.ContainingSymbol.ToDisplayString(QualifiedNameFormat);
+        return string.IsNullOrWhiteSpace(containingSymbol)
+            ? $"{localSymbol.Type.ToDisplayString(TypeNameFormat)} {localSymbol.Name}"
+            : $"{localSymbol.Type.ToDisplayString(TypeNameFormat)} {containingSymbol}.{localSymbol.Name}";
     }
 
     private static string FormatConstructorSignature(IMethodSymbol constructor)
@@ -376,6 +411,11 @@ public sealed class WorkspaceSymbolIndexBuilder
 
     private static string GetAccessibility(ISymbol symbol)
     {
+        if (symbol is ILocalSymbol)
+        {
+            return "local";
+        }
+
         return symbol.DeclaredAccessibility switch
         {
             Accessibility.Public => "public",
@@ -404,6 +444,7 @@ public sealed class WorkspaceSymbolIndexBuilder
             IPropertySymbol => SymbolKinds.Property,
             IFieldSymbol => SymbolKinds.Field,
             IEventSymbol => SymbolKinds.Event,
+            ILocalSymbol => SymbolKinds.Local,
             _ => null
         };
     }

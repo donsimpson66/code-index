@@ -32,6 +32,52 @@ public class WorkspaceIndexBuildersTests
     }
 
     [Fact]
+    public async Task BuildAsync_IndexesLocalVariables_AndContainsEdges()
+    {
+        var projectPath = CreateTempProject(
+            ("Greeter.cs", """
+namespace Sample;
+
+public class Greeter
+{
+    public string Run()
+    {
+        var total = 1;
+        string message = total.ToString();
+        return message;
+    }
+}
+"""));
+
+        try
+        {
+            var fileBuilder = new WorkspaceFileIndexBuilder();
+            var symbolBuilder = new WorkspaceSymbolIndexBuilder();
+            var edgeBuilder = new WorkspaceEdgeIndexBuilder();
+
+            var files = await fileBuilder.BuildAsync(projectPath);
+            var symbols = await symbolBuilder.BuildAsync(projectPath, files);
+            var edges = await edgeBuilder.BuildAsync(projectPath);
+
+            var runMethod = Assert.Single(symbols, symbol => symbol.Kind == SymbolKinds.Method && symbol.Name == "Run");
+            var totalLocal = Assert.Single(symbols, symbol => symbol.Kind == SymbolKinds.Local && symbol.Name == "total");
+            var messageLocal = Assert.Single(symbols, symbol => symbol.Kind == SymbolKinds.Local && symbol.Name == "message");
+
+            Assert.Equal(runMethod.Id, totalLocal.ParentId);
+            Assert.Equal(runMethod.Id, messageLocal.ParentId);
+            Assert.Equal("local", totalLocal.Accessibility);
+            Assert.Contains("total", totalLocal.Signature, StringComparison.Ordinal);
+
+            Assert.Contains(edges, edge => edge.Type == EdgeTypes.Contains && edge.From == runMethod.Id && edge.To == totalLocal.Id);
+            Assert.Contains(edges, edge => edge.Type == EdgeTypes.Contains && edge.From == runMethod.Id && edge.To == messageLocal.Id);
+        }
+        finally
+        {
+            DeleteTempProject(projectPath);
+        }
+    }
+
+    [Fact]
     public async Task BuildAsync_GeneratesContainsEdgesForIndexedSymbols()
     {
         var solutionPath = GetSolutionPath();
@@ -84,7 +130,9 @@ public class WorkspaceIndexBuildersTests
             new CodeIndexMeta("1.0", "0.1.0", "code-index", DateTimeOffset.UtcNow, Path.GetDirectoryName(solutionPath)!, solutionPath, "solution"),
             firstFiles,
             firstSymbols,
-            firstEdges);
+            firstEdges,
+            Array.Empty<ReferenceRecord>(),
+            Array.Empty<EmbeddingRecord>());
 
         var validator = new CodeIndexValidator();
         validator.ValidateOrThrow(snapshot);
@@ -236,6 +284,142 @@ public class Greeter : BaseGreeter, IGreeter
             Assert.Contains(edges, edge => edge.Type == EdgeTypes.Inherits && edge.From == "s:T:Sample.Greeter" && edge.To == "s:T:Sample.BaseGreeter");
             Assert.Contains(edges, edge => edge.Type == EdgeTypes.Implements && edge.From == "s:T:Sample.Greeter" && edge.To == "s:T:Sample.IGreeter");
             Assert.Contains(edges, edge => edge.Type == EdgeTypes.Overrides && edge.From == "s:M:Sample.Greeter.Greet(System.String)" && edge.To == "s:M:Sample.BaseGreeter.Greet(System.String)");
+        }
+        finally
+        {
+            DeleteTempProject(projectPath);
+        }
+    }
+
+    [Fact]
+    public async Task BuildAsync_ExtractsCallerAndCalleeEdges()
+    {
+        var projectPath = CreateTempProject(
+            ("Greeter.cs", """
+namespace Sample;
+
+public class Greeter
+{
+    public Greeter() {}
+
+    public string Greet(string person) => $"Hello {person}";
+}
+
+public class Caller
+{
+    public string Run()
+    {
+        var greeter = new Greeter();
+        return greeter.Greet("World");
+    }
+}
+"""));
+
+        try
+        {
+            var builder = new WorkspaceEdgeIndexBuilder();
+            var edges = await builder.BuildAsync(projectPath);
+
+            Assert.Contains(edges, edge => edge.Type == EdgeTypes.Calls && edge.From == "s:M:Sample.Caller.Run" && edge.To == "s:M:Sample.Greeter.Greet(System.String)");
+            Assert.Contains(edges, edge => edge.Type == EdgeTypes.Calls && edge.From == "s:M:Sample.Caller.Run" && edge.To == "s:M:Sample.Greeter.#ctor");
+        }
+        finally
+        {
+            DeleteTempProject(projectPath);
+        }
+    }
+
+    [Fact]
+    public async Task BuildAsync_AddsHeuristicTestLinks()
+    {
+        var projectPath = CreateTempProject(
+            ("Greeter.cs", """
+namespace Sample;
+
+public class FriendlyGreeter
+{
+    public string CreateGreeting(string name) => $"Hello {name}";
+}
+"""),
+            ("FriendlyGreeterTests.cs", """
+namespace Xunit;
+
+public sealed class FactAttribute : System.Attribute {}
+"""),
+            ("FriendlyGreeterBehaviorTests.cs", """
+using Xunit;
+
+namespace Sample.Tests;
+
+public class FriendlyGreeterTests
+{
+    [Fact]
+    public void CreateGreeting_ReturnsGreeting()
+    {
+        var greeter = new Sample.FriendlyGreeter();
+        _ = greeter.CreateGreeting("World");
+    }
+}
+"""));
+
+        try
+        {
+            var builder = new WorkspaceEdgeIndexBuilder();
+            var edges = await builder.BuildAsync(projectPath);
+
+            Assert.Contains(edges, edge => edge.Type == EdgeTypes.Tests && edge.From == "s:M:Sample.Tests.FriendlyGreeterTests.CreateGreeting_ReturnsGreeting" && edge.To == "s:M:Sample.FriendlyGreeter.CreateGreeting(System.String)");
+            Assert.Contains(edges, edge => edge.Type == EdgeTypes.Tests && edge.From == "s:M:Sample.Tests.FriendlyGreeterTests.CreateGreeting_ReturnsGreeting" && edge.To == "s:T:Sample.FriendlyGreeter");
+        }
+        finally
+        {
+            DeleteTempProject(projectPath);
+        }
+    }
+
+    [Fact]
+    public async Task BuildAsync_ExtractsReferencesForIndexedSymbols()
+    {
+        var projectPath = CreateTempProject(
+            ("Greeter.cs", """
+namespace Sample;
+
+public class Greeter
+{
+    public string Greet(string name) => $"Hello {name}";
+}
+"""),
+            ("Program.cs", """
+namespace Sample;
+
+public class Caller
+{
+    public string Run()
+    {
+        var greeter = new Greeter();
+        return greeter.Greet("World");
+    }
+}
+"""));
+
+        try
+        {
+            var fileBuilder = new WorkspaceFileIndexBuilder();
+            var symbolBuilder = new WorkspaceSymbolIndexBuilder();
+            var referenceBuilder = new WorkspaceReferenceIndexBuilder();
+
+            var files = await fileBuilder.BuildAsync(projectPath);
+            var symbols = await symbolBuilder.BuildAsync(projectPath, files);
+            var references = await referenceBuilder.BuildAsync(projectPath, files, symbols);
+
+            var greetMethod = Assert.Single(symbols, symbol => symbol.Kind == SymbolKinds.Method && symbol.Name == "Greet");
+            var callerMethod = Assert.Single(symbols, symbol => symbol.Kind == SymbolKinds.Method && symbol.Name == "Run");
+            var programFile = Assert.Single(files, file => file.Path == "Program.cs");
+
+            Assert.Contains(references, reference =>
+                reference.TargetSymbolId == greetMethod.Id &&
+                reference.SourceSymbolId == callerMethod.Id &&
+                reference.FileId == programFile.Id &&
+                reference.LineText.Contains("greeter.Greet", StringComparison.Ordinal));
         }
         finally
         {

@@ -34,6 +34,51 @@ public sealed class CodeIndexValidator
         return StringComparer.Ordinal.Compare(left.To, right.To);
     });
 
+    private static readonly IComparer<ReferenceRecord> ReferenceComparer = Comparer<ReferenceRecord>.Create(static (left, right) =>
+    {
+        var targetComparison = StringComparer.Ordinal.Compare(left.TargetSymbolId, right.TargetSymbolId);
+
+        if (targetComparison != 0)
+        {
+            return targetComparison;
+        }
+
+        var fileComparison = StringComparer.Ordinal.Compare(left.FileId, right.FileId);
+
+        if (fileComparison != 0)
+        {
+            return fileComparison;
+        }
+
+        var lineComparison = left.Range.StartLine.CompareTo(right.Range.StartLine);
+
+        if (lineComparison != 0)
+        {
+            return lineComparison;
+        }
+
+        var columnComparison = left.Range.StartColumn.CompareTo(right.Range.StartColumn);
+
+        if (columnComparison != 0)
+        {
+            return columnComparison;
+        }
+
+        return StringComparer.Ordinal.Compare(left.SourceSymbolId, right.SourceSymbolId);
+    });
+
+    private static readonly IComparer<EmbeddingRecord> EmbeddingComparer = Comparer<EmbeddingRecord>.Create(static (left, right) =>
+    {
+        var itemTypeComparison = StringComparer.Ordinal.Compare(left.ItemType, right.ItemType);
+
+        if (itemTypeComparison != 0)
+        {
+            return itemTypeComparison;
+        }
+
+        return StringComparer.Ordinal.Compare(left.ItemId, right.ItemId);
+    });
+
     public IReadOnlyList<ValidationIssue> Validate(CodeIndexSnapshot snapshot)
     {
         var issues = new List<ValidationIssue>();
@@ -68,10 +113,22 @@ public sealed class CodeIndexValidator
             issues.Add(new ValidationIssue("edges-not-sorted", "Edges must be sorted by type, from, then to using ordinal ordering."));
         }
 
+        if (!IsSorted(snapshot.References, ReferenceComparer))
+        {
+            issues.Add(new ValidationIssue("references-not-sorted", "References must be sorted by target symbol, file, and range using ordinal ordering."));
+        }
+
+        if (!IsSorted(snapshot.Embeddings, EmbeddingComparer))
+        {
+            issues.Add(new ValidationIssue("embeddings-not-sorted", "Embeddings must be sorted by item type and item ID using ordinal ordering."));
+        }
+
         AddDuplicateIssues(issues, snapshot.Files.Select(file => file.Id), "file-id-duplicate", "Duplicate file ID");
         AddDuplicateIssues(issues, snapshot.Files.Select(file => file.Path), "file-path-duplicate", "Duplicate file path");
         AddDuplicateIssues(issues, snapshot.Symbols.Select(symbol => symbol.Id), "symbol-id-duplicate", "Duplicate symbol ID");
         AddDuplicateEdgeIssues(issues, snapshot.Edges);
+        AddDuplicateReferenceIssues(issues, snapshot.References);
+        AddDuplicateEmbeddingIssues(issues, snapshot.Embeddings);
 
         var fileIds = snapshot.Files.Select(file => file.Id).ToHashSet(StringComparer.Ordinal);
         var filesById = snapshot.Files.ToDictionary(file => file.Id, StringComparer.Ordinal);
@@ -82,7 +139,9 @@ public sealed class CodeIndexValidator
             EdgeTypes.Contains,
             EdgeTypes.Inherits,
             EdgeTypes.Implements,
-            EdgeTypes.Overrides
+            EdgeTypes.Overrides,
+            EdgeTypes.Calls,
+            EdgeTypes.Tests
         };
 
         foreach (var file in snapshot.Files)
@@ -154,6 +213,57 @@ public sealed class CodeIndexValidator
 			}
         }
 
+        foreach (var reference in snapshot.References)
+        {
+            if (!symbolIds.Contains(reference.TargetSymbolId))
+            {
+                issues.Add(new ValidationIssue("reference-target-missing", $"Reference targets missing symbol {reference.TargetSymbolId}."));
+            }
+
+            if (reference.SourceSymbolId is not null && !symbolIds.Contains(reference.SourceSymbolId))
+            {
+                issues.Add(new ValidationIssue("reference-source-missing", $"Reference references missing source symbol {reference.SourceSymbolId}."));
+            }
+
+            if (!fileIds.Contains(reference.FileId))
+            {
+                issues.Add(new ValidationIssue("reference-file-missing", $"Reference targets missing file {reference.FileId}."));
+            }
+
+            if (reference.Range.StartLine <= 0 ||
+                reference.Range.StartColumn <= 0 ||
+                reference.Range.EndLine < reference.Range.StartLine ||
+                (reference.Range.EndLine == reference.Range.StartLine && reference.Range.EndColumn < reference.Range.StartColumn))
+            {
+                issues.Add(new ValidationIssue("reference-range-invalid", $"Reference for target {reference.TargetSymbolId} has invalid range values."));
+            }
+        }
+
+        foreach (var embedding in snapshot.Embeddings)
+        {
+            if (embedding.Vector.Count == 0)
+            {
+                issues.Add(new ValidationIssue("embedding-vector-empty", $"Embedding {embedding.ItemType}:{embedding.ItemId} must have at least one dimension."));
+            }
+
+            if (embedding.Vector.Any(static value => float.IsNaN(value) || float.IsInfinity(value)))
+            {
+                issues.Add(new ValidationIssue("embedding-vector-invalid", $"Embedding {embedding.ItemType}:{embedding.ItemId} contains non-finite values."));
+            }
+
+            var itemExists = embedding.ItemType switch
+            {
+                EmbeddingItemTypes.File => fileIds.Contains(embedding.ItemId),
+                EmbeddingItemTypes.Symbol => symbolIds.Contains(embedding.ItemId),
+                _ => false
+            };
+
+            if (!itemExists)
+            {
+                issues.Add(new ValidationIssue("embedding-item-missing", $"Embedding {embedding.ItemType}:{embedding.ItemId} does not reference an indexed file or symbol."));
+            }
+        }
+
         return issues;
     }
 
@@ -188,6 +298,31 @@ public sealed class CodeIndexValidator
                      .OrderBy(edge => edge, EdgeComparer))
         {
             issues.Add(new ValidationIssue("edge-duplicate", $"Duplicate edge: {duplicate.Type} {duplicate.From} -> {duplicate.To}."));
+        }
+    }
+
+    private static void AddDuplicateReferenceIssues(List<ValidationIssue> issues, IEnumerable<ReferenceRecord> references)
+    {
+        foreach (var duplicate in references
+                     .GroupBy(reference => reference)
+                     .Where(group => group.Count() > 1)
+                     .Select(group => group.Key)
+                     .OrderBy(reference => reference, ReferenceComparer))
+        {
+            issues.Add(new ValidationIssue("reference-duplicate", $"Duplicate reference: {duplicate.TargetSymbolId} in {duplicate.FileId} at {duplicate.Range.StartLine}:{duplicate.Range.StartColumn}."));
+        }
+    }
+
+    private static void AddDuplicateEmbeddingIssues(List<ValidationIssue> issues, IEnumerable<EmbeddingRecord> embeddings)
+    {
+        foreach (var duplicate in embeddings
+                     .GroupBy(embedding => (embedding.ItemType, embedding.ItemId))
+                     .Where(group => group.Count() > 1)
+                     .Select(group => group.Key)
+                     .OrderBy(key => key.ItemType, StringComparer.Ordinal)
+                     .ThenBy(key => key.ItemId, StringComparer.Ordinal))
+        {
+            issues.Add(new ValidationIssue("embedding-duplicate", $"Duplicate embedding: {duplicate.ItemType}:{duplicate.ItemId}."));
         }
     }
 

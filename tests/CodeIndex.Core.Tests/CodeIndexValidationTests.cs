@@ -11,7 +11,9 @@ public class CodeIndexValidationTests
             new CodeIndexMeta("1.0", "0.1.0", "repo", DateTimeOffset.UtcNow, "/repo", "/repo/repo.sln", "solution"),
             new[] { new FileRecord("f:file.cs", "file.cs", "Repo", "C#", "sha256:test", "summary") },
             new[] { new SymbolRecord("s:T:Repo.Type", "Type", "Repo.Type", "class", "f:file.cs", new TextRangeRecord(1, 1, 1, 10), "Repo.Type", "summary", null, "public", false, false, false, false) },
-            Array.Empty<EdgeRecord>());
+            Array.Empty<EdgeRecord>(),
+            Array.Empty<ReferenceRecord>(),
+            new[] { new EmbeddingRecord(EmbeddingItemTypes.File, "f:file.cs", [1f, 0f]) });
 
         var validator = new CodeIndexValidator();
 
@@ -25,7 +27,9 @@ public class CodeIndexValidationTests
             new CodeIndexMeta("1.0", "0.1.0", "repo", DateTimeOffset.UtcNow, "/repo", "/repo/repo.sln", "solution"),
             Array.Empty<FileRecord>(),
             new[] { new SymbolRecord("s:T:Repo.Type", "Type", "Repo.Type", "class", "f:file.cs", new TextRangeRecord(1, 1, 1, 10), "Repo.Type", "summary", null, "public", false, false, false, false) },
-            Array.Empty<EdgeRecord>());
+            Array.Empty<EdgeRecord>(),
+            Array.Empty<ReferenceRecord>(),
+            Array.Empty<EmbeddingRecord>());
 
         var validator = new CodeIndexValidator();
         var issues = validator.Validate(snapshot);
@@ -50,7 +54,9 @@ public class CodeIndexValidationTests
             new[]
             {
                 new EdgeRecord(EdgeTypes.Contains, "s:T:Repo.Parent", "s:M:Repo.Parent.Child()")
-            });
+            },
+            Array.Empty<ReferenceRecord>(),
+            Array.Empty<EmbeddingRecord>());
 
         var validator = new CodeIndexValidator();
         var issues = validator.Validate(snapshot);
@@ -79,7 +85,9 @@ public class CodeIndexValidationTests
             {
                 new EdgeRecord(EdgeTypes.Contains, "s:T:Repo.Zed", "s:T:Repo.Alpha"),
                 new EdgeRecord(EdgeTypes.Contains, "s:T:Repo.Alpha", "s:T:Repo.Zed")
-            });
+            },
+            Array.Empty<ReferenceRecord>(),
+            Array.Empty<EmbeddingRecord>());
 
         var validator = new CodeIndexValidator();
         var issues = validator.Validate(snapshot);
@@ -88,5 +96,22 @@ public class CodeIndexValidationTests
         Assert.Contains(issues, issue => issue.Code == "files-not-sorted");
         Assert.Contains(issues, issue => issue.Code == "symbols-not-sorted");
         Assert.Contains(issues, issue => issue.Code == "edges-not-sorted");
+    }
+
+    [Fact]
+    public void Validate_FindsMissingEmbeddingItem()
+    {
+        var snapshot = new CodeIndexSnapshot(
+            new CodeIndexMeta("1.0", "0.1.0", "repo", DateTimeOffset.UtcNow, "/repo", "/repo/repo.sln", "solution"),
+            Array.Empty<FileRecord>(),
+            Array.Empty<SymbolRecord>(),
+            Array.Empty<EdgeRecord>(),
+            Array.Empty<ReferenceRecord>(),
+            new[] { new EmbeddingRecord(EmbeddingItemTypes.Symbol, "s:T:Repo.Missing", [1f]) });
+
+        var validator = new CodeIndexValidator();
+        var issues = validator.Validate(snapshot);
+
+        Assert.Contains(issues, issue => issue.Code == "embedding-item-missing");
     }
 }

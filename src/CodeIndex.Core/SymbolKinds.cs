@@ -14,6 +14,7 @@ public static class SymbolKinds
     public const string Property = "property";
     public const string Field = "field";
     public const string Event = "event";
+    public const string Local = "local";
 
     public static int GetRank(string? kind)
     {
@@ -31,7 +32,8 @@ public static class SymbolKinds
             Property => 9,
             Field => 10,
             Event => 11,
-            _ => 12
+            Local => 12,
+            _ => 13
         };
     }
 }
