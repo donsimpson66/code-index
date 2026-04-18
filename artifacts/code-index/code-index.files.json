@@ -1,58 +1,170 @@
 [
   {
-    "id": "f:CSharpFileSummaryGenerator.cs",
-    "path": "CSharpFileSummaryGenerator.cs",
+    "id": "f:src/CodeIndex.Cli/CliApplication.cs",
+    "path": "src/CodeIndex.Cli/CliApplication.cs",
+    "projectName": "CodeIndex.Cli",
+    "language": "C#",
+    "hash": "sha256:1b7dce85384938f0982b47eda756e7cd6d253f1ba3d7b96d6a67fb7a0229a325",
+    "summary": "Defines 2 declarations in namespace CodeIndex.Cli, including CliRuntime, CliApplication."
+  },
+  {
+    "id": "f:src/CodeIndex.Cli/Program.cs",
+    "path": "src/CodeIndex.Cli/Program.cs",
+    "projectName": "CodeIndex.Cli",
+    "language": "C#",
+    "hash": "sha256:fad2db5212cdec1347730f9ab9208b19c9fc7cc17ea7e6b5304134937e6b167d",
+    "summary": "Contains top-level statements for project CodeIndex.Cli."
+  },
+  {
+    "id": "f:src/CodeIndex.Core/CodeIndexMeta.cs",
+    "path": "src/CodeIndex.Core/CodeIndexMeta.cs",
+    "projectName": "CodeIndex.Core",
+    "language": "C#",
+    "hash": "sha256:a336d10a67bd632d3b3a58b89349619e460e391814462c0c9318b0575f52b091",
+    "summary": "Defines record CodeIndexMeta in namespace CodeIndex.Core."
+  },
+  {
+    "id": "f:src/CodeIndex.Core/CodeIndexReader.cs",
+    "path": "src/CodeIndex.Core/CodeIndexReader.cs",
+    "projectName": "CodeIndex.Core",
+    "language": "C#",
+    "hash": "sha256:2954fd3bf11001cf74b5f1de123cfddf0f713312ff55cfa06ff633583cd4e76e",
+    "summary": "Defines class CodeIndexReader in namespace CodeIndex.Core."
+  },
+  {
+    "id": "f:src/CodeIndex.Core/CodeIndexSnapshot.cs",
+    "path": "src/CodeIndex.Core/CodeIndexSnapshot.cs",
+    "projectName": "CodeIndex.Core",
+    "language": "C#",
+    "hash": "sha256:081570c7641379791df25ae41610df9104ab04b0485c16ab87a027b6c8ebe767",
+    "summary": "Defines record CodeIndexSnapshot in namespace CodeIndex.Core."
+  },
+  {
+    "id": "f:src/CodeIndex.Core/CodeIndexValidation.cs",
+    "path": "src/CodeIndex.Core/CodeIndexValidation.cs",
+    "projectName": "CodeIndex.Core",
+    "language": "C#",
+    "hash": "sha256:6c540ac38352cbac972523c3ad48cb84429a3d0972f20311264ec3b0c5711b39",
+    "summary": "Defines 3 declarations in namespace CodeIndex.Core, including ValidationIssue, CodeIndexValidationException, CodeIndexValidator."
+  },
+  {
+    "id": "f:src/CodeIndex.Core/EdgeRecord.cs",
+    "path": "src/CodeIndex.Core/EdgeRecord.cs",
+    "projectName": "CodeIndex.Core",
+    "language": "C#",
+    "hash": "sha256:3560516fd0ea8ce26ae8a5a77c626285c1a2787a947b66df7a25a03308c5be2b",
+    "summary": "Defines 2 declarations in namespace CodeIndex.Core, including EdgeRecord, EdgeTypes."
+  },
+  {
+    "id": "f:src/CodeIndex.Core/FileIndexing.cs",
+    "path": "src/CodeIndex.Core/FileIndexing.cs",
+    "projectName": "CodeIndex.Core",
+    "language": "C#",
+    "hash": "sha256:92dbfc84627fe83521fcc301c6c419b95c221de2a7bcc9d7e1d34368f9728d9f",
+    "summary": "Defines 6 declarations in namespace CodeIndex.Core, including DeterministicId, PathNormalization, FileHashProvider."
+  },
+  {
+    "id": "f:src/CodeIndex.Core/FileRecord.cs",
+    "path": "src/CodeIndex.Core/FileRecord.cs",
+    "projectName": "CodeIndex.Core",
+    "language": "C#",
+    "hash": "sha256:4a0a83f4488e76c30bde8ab02efad7f2963e2752ecfa4c36b6681eed6e96de6a",
+    "summary": "Defines record FileRecord in namespace CodeIndex.Core."
+  },
+  {
+    "id": "f:src/CodeIndex.Core/SymbolRecord.cs",
+    "path": "src/CodeIndex.Core/SymbolRecord.cs",
+    "projectName": "CodeIndex.Core",
+    "language": "C#",
+    "hash": "sha256:49bd157e04150d01dc5bc184629c3d0de48cdb3ef37de2e3294e6028238962b8",
+    "summary": "Defines 2 declarations in namespace CodeIndex.Core, including TextRangeRecord, SymbolRecord."
+  },
+  {
+    "id": "f:src/CodeIndex.Roslyn/CSharpFileSummaryGenerator.cs",
+    "path": "src/CodeIndex.Roslyn/CSharpFileSummaryGenerator.cs",
     "projectName": "CodeIndex.Roslyn",
     "language": "C#",
     "hash": "sha256:7ffef6228b67313f84c85b91100195e78e99761434be6687f9cd6728d8715837",
     "summary": "Defines class CSharpFileSummaryGenerator in namespace CodeIndex.Roslyn."
   },
   {
-    "id": "f:SymbolIdentity.cs",
-    "path": "SymbolIdentity.cs",
+    "id": "f:src/CodeIndex.Roslyn/SymbolIdentity.cs",
+    "path": "src/CodeIndex.Roslyn/SymbolIdentity.cs",
     "projectName": "CodeIndex.Roslyn",
     "language": "C#",
     "hash": "sha256:d88109870da655874705077475c723fe1d19c323ec01f970068f460dcfea7dfb",
     "summary": "Defines class SymbolIdentity in namespace CodeIndex.Roslyn."
   },
   {
-    "id": "f:WorkspaceEdgeIndexBuilder.cs",
-    "path": "WorkspaceEdgeIndexBuilder.cs",
+    "id": "f:src/CodeIndex.Roslyn/WorkspaceEdgeIndexBuilder.cs",
+    "path": "src/CodeIndex.Roslyn/WorkspaceEdgeIndexBuilder.cs",
     "projectName": "CodeIndex.Roslyn",
     "language": "C#",
     "hash": "sha256:beacda1760010e23da697ac7463d1d14603e6d41f12d1d9d28951b2b3a54334c",
     "summary": "Defines class WorkspaceEdgeIndexBuilder in namespace CodeIndex.Roslyn."
   },
   {
-    "id": "f:WorkspaceFileIndexBuilder.cs",
-    "path": "WorkspaceFileIndexBuilder.cs",
+    "id": "f:src/CodeIndex.Roslyn/WorkspaceFileIndexBuilder.cs",
+    "path": "src/CodeIndex.Roslyn/WorkspaceFileIndexBuilder.cs",
     "projectName": "CodeIndex.Roslyn",
     "language": "C#",
     "hash": "sha256:382f9263ae183612e60fe05df494cd93da0869daac2008a9f098f8419433bdef",
     "summary": "Defines class WorkspaceFileIndexBuilder in namespace CodeIndex.Roslyn."
   },
   {
-    "id": "f:WorkspaceInspection.cs",
-    "path": "WorkspaceInspection.cs",
+    "id": "f:src/CodeIndex.Roslyn/WorkspaceInspection.cs",
+    "path": "src/CodeIndex.Roslyn/WorkspaceInspection.cs",
     "projectName": "CodeIndex.Roslyn",
     "language": "C#",
     "hash": "sha256:f3ef048aeac63bc38f1fbaafb97b075435662daa600a0f776b0a055d0264f3e2",
     "summary": "Defines 3 declarations in namespace CodeIndex.Roslyn, including ProjectInspectionResult, WorkspaceInspectionResult, WorkspaceInspector."
   },
   {
-    "id": "f:WorkspaceLoader.cs",
-    "path": "WorkspaceLoader.cs",
+    "id": "f:src/CodeIndex.Roslyn/WorkspaceLoader.cs",
+    "path": "src/CodeIndex.Roslyn/WorkspaceLoader.cs",
     "projectName": "CodeIndex.Roslyn",
     "language": "C#",
     "hash": "sha256:9dd9613c252feabf62971a8f6d7dcca9f3bae24736d6269f03720cfebe5cdbec",
     "summary": "Defines 3 declarations in namespace CodeIndex.Roslyn, including LoadedWorkspace, WorkspaceLoader, CSharpSourceDocumentFilter."
   },
   {
-    "id": "f:WorkspaceSymbolIndexBuilder.cs",
-    "path": "WorkspaceSymbolIndexBuilder.cs",
+    "id": "f:src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
+    "path": "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
     "projectName": "CodeIndex.Roslyn",
     "language": "C#",
-    "hash": "sha256:bc65b9a1b42346b353aff39a7d6b9944e8f44d2a8ae47f70e47791e56606ee51",
+    "hash": "sha256:b66dadaa3f90320ad196a81ff6b304125293a863e0869aa1a68248f9bde0786a",
     "summary": "Defines class WorkspaceSymbolIndexBuilder in namespace CodeIndex.Roslyn."
+  },
+  {
+    "id": "f:tests/CodeIndex.Cli.Tests/CliSmokeTests.cs",
+    "path": "tests/CodeIndex.Cli.Tests/CliSmokeTests.cs",
+    "projectName": "CodeIndex.Cli.Tests",
+    "language": "C#",
+    "hash": "sha256:7333d3e69c83d437d212c91b846f8838fa95d7ff997e5e780978e0ef138cd78d",
+    "summary": "Defines 3 declarations in namespace CodeIndex.Cli.Tests, including CliInvocationResult, CliSmokeTests, IndexFixture."
+  },
+  {
+    "id": "f:tests/CodeIndex.Core.Tests/CodeIndexValidationTests.cs",
+    "path": "tests/CodeIndex.Core.Tests/CodeIndexValidationTests.cs",
+    "projectName": "CodeIndex.Core.Tests",
+    "language": "C#",
+    "hash": "sha256:4096d9ed07b32b70cb7b963e3c7c3f39e21c4c2d10b6280fe22890894f29fb61",
+    "summary": "Defines class CodeIndexValidationTests in namespace CodeIndex.Core.Tests."
+  },
+  {
+    "id": "f:tests/CodeIndex.Core.Tests/FileIndexingTests.cs",
+    "path": "tests/CodeIndex.Core.Tests/FileIndexingTests.cs",
+    "projectName": "CodeIndex.Core.Tests",
+    "language": "C#",
+    "hash": "sha256:49e9b259f819861406d2cca0087b453c59266d8289b572268f518eceebd73b45",
+    "summary": "Defines class FileIndexingTests in namespace CodeIndex.Core.Tests."
+  },
+  {
+    "id": "f:tests/CodeIndex.Roslyn.Tests/WorkspaceIndexBuildersTests.cs",
+    "path": "tests/CodeIndex.Roslyn.Tests/WorkspaceIndexBuildersTests.cs",
+    "projectName": "CodeIndex.Roslyn.Tests",
+    "language": "C#",
+    "hash": "sha256:bd1401c7d909db34aa27fda3734d2541698028664928c7bdb3937854c652889c",
+    "summary": "Defines class WorkspaceIndexBuildersTests in namespace CodeIndex.Roslyn.Tests."
   }
 ]

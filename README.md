@@ -97,6 +97,15 @@ dotnet build code-index.sln
 
 ## Run
 
+### Build the index for this repository
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- build ./code-index.sln --out ./artifacts/code-index
+```
+
+This repository keeps a current index in `artifacts/code-index`.
+Rebuild it after structural code changes so queries stay aligned with source.
+
 ### Build an index from a solution
 
 ```bash
@@ -112,6 +121,46 @@ dotnet run --project src/CodeIndex.Cli -- build ./src/MyProject/MyProject.csproj
 ## CLI Commands
 
 The commands below reflect the current implemented CLI surface.
+
+## Agent Workflow
+
+Before searching through source files directly, an agent should consult the
+index for this repository in `./artifacts/code-index`.
+
+Recommended flow:
+
+1. rebuild the repository index if it may be stale:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- build ./code-index.sln --out ./artifacts/code-index
+```
+
+2. find likely symbols first:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- find-symbol "WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index
+```
+
+3. fetch one symbol record or its children:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- get-symbol "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- get-children "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index --kind method --sort declaration
+```
+
+4. read only the exact file lines you still need:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- get-excerpt "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs" --index ./artifacts/code-index --start 1 --end 80
+```
+
+Index-first guidance:
+
+- use `find-symbol` before broad text search when you know or suspect a symbol name
+- use `get-symbol` to confirm file, signature, summary, and parent relationship
+- use `get-children` to inspect a type or namespace surface before opening full files
+- use `get-excerpt` for the smallest source slice that answers the current question
+- fall back to broad file or text search only when the index does not cover the needed detail
 
 ### `inspect`
 

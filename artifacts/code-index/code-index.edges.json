@@ -1,6 +1,126 @@
 [
   {
     "type": "contains",
+    "from": "s:N:CodeIndex.Cli",
+    "to": "s:T:CodeIndex.Cli.CliApplication"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Cli",
+    "to": "s:T:CodeIndex.Cli.CliRuntime"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Cli.Tests",
+    "to": "s:T:CodeIndex.Cli.Tests.CliInvocationResult"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Cli.Tests",
+    "to": "s:T:CodeIndex.Cli.Tests.CliSmokeTests"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Cli.Tests",
+    "to": "s:T:CodeIndex.Cli.Tests.IndexFixture"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core",
+    "to": "s:T:CodeIndex.Core.CodeIndexJson"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core",
+    "to": "s:T:CodeIndex.Core.CodeIndexMeta"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core",
+    "to": "s:T:CodeIndex.Core.CodeIndexMetaFactory"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core",
+    "to": "s:T:CodeIndex.Core.CodeIndexReader"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core",
+    "to": "s:T:CodeIndex.Core.CodeIndexSnapshot"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core",
+    "to": "s:T:CodeIndex.Core.CodeIndexValidationException"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core",
+    "to": "s:T:CodeIndex.Core.CodeIndexValidator"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core",
+    "to": "s:T:CodeIndex.Core.DeterministicId"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core",
+    "to": "s:T:CodeIndex.Core.EdgeRecord"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core",
+    "to": "s:T:CodeIndex.Core.EdgeTypes"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core",
+    "to": "s:T:CodeIndex.Core.FileHashProvider"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core",
+    "to": "s:T:CodeIndex.Core.FileRecord"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core",
+    "to": "s:T:CodeIndex.Core.FileSummaryGenerator"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core",
+    "to": "s:T:CodeIndex.Core.PathNormalization"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core",
+    "to": "s:T:CodeIndex.Core.SymbolRecord"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core",
+    "to": "s:T:CodeIndex.Core.TextRangeRecord"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core",
+    "to": "s:T:CodeIndex.Core.ValidationIssue"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core.Tests",
+    "to": "s:T:CodeIndex.Core.Tests.CodeIndexValidationTests"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Core.Tests",
+    "to": "s:T:CodeIndex.Core.Tests.FileIndexingTests"
+  },
+  {
+    "type": "contains",
     "from": "s:N:CodeIndex.Roslyn",
     "to": "s:T:CodeIndex.Roslyn.CSharpFileSummaryGenerator"
   },
@@ -53,6 +173,386 @@
     "type": "contains",
     "from": "s:N:CodeIndex.Roslyn",
     "to": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Roslyn.Tests",
+    "to": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.CliApplication",
+    "to": "s:M:CodeIndex.Cli.CliApplication.CreateRootCommand(CodeIndex.Cli.CliRuntime)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.CliApplication",
+    "to": "s:M:CodeIndex.Cli.CliApplication.GetAccessibilityRank(System.String)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.CliApplication",
+    "to": "s:M:CodeIndex.Cli.CliApplication.GetKindRank(System.String)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.CliApplication",
+    "to": "s:M:CodeIndex.Cli.CliApplication.GetMatchRank(CodeIndex.Core.SymbolRecord,System.String)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.CliApplication",
+    "to": "s:M:CodeIndex.Cli.CliApplication.LimitResults\u0060\u00601(System.Collections.Generic.IEnumerable{\u0060\u00600},System.Int32)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.CliApplication",
+    "to": "s:M:CodeIndex.Cli.CliApplication.NormalizeSort(System.String,System.String)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.CliApplication",
+    "to": "s:M:CodeIndex.Cli.CliApplication.OrderChildResults(System.Collections.Generic.IEnumerable{CodeIndex.Core.SymbolRecord},System.String)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.CliApplication",
+    "to": "s:M:CodeIndex.Cli.CliApplication.OrderFindSymbolResults(System.Collections.Generic.IEnumerable{CodeIndex.Core.SymbolRecord},System.String,System.String)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.CliApplication",
+    "to": "s:M:CodeIndex.Cli.CliApplication.ReadSnapshotAsync(CodeIndex.Cli.CliRuntime,System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.CliApplication",
+    "to": "s:M:CodeIndex.Cli.CliApplication.RunAsync(System.String[],CodeIndex.Cli.CliRuntime)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.CliApplication",
+    "to": "s:M:CodeIndex.Cli.CliApplication.WriteJson\u0060\u00601(\u0060\u00600)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.CliRuntime",
+    "to": "s:P:CodeIndex.Cli.CliRuntime.BuildEdgesAsync"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.CliRuntime",
+    "to": "s:P:CodeIndex.Cli.CliRuntime.BuildFilesAsync"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.CliRuntime",
+    "to": "s:P:CodeIndex.Cli.CliRuntime.BuildSymbolsAsync"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.CliRuntime",
+    "to": "s:P:CodeIndex.Cli.CliRuntime.InspectAsync"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.CliRuntime",
+    "to": "s:P:CodeIndex.Cli.CliRuntime.ReadSnapshotAsync"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.CliRuntime",
+    "to": "s:P:CodeIndex.Cli.CliRuntime.ValidateSnapshot"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.CliSmokeTests",
+    "to": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForRoslynProject"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.CliSmokeTests",
+    "to": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_ReturnsLimitedFilteredResults"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.CliSmokeTests",
+    "to": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_UsingRepositorySolutionIndex_ReturnsCliApplication"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.CliSmokeTests",
+    "to": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_WithoutIndex_ReturnsClearError"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.CliSmokeTests",
+    "to": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetChildren_SupportsDeclarationSort"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.CliSmokeTests",
+    "to": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetChildren_UnsupportedSort_ReturnsClearError"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.CliSmokeTests",
+    "to": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetExcerpt_InvalidRange_ReturnsClearError"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.CliSmokeTests",
+    "to": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetExcerpt_ReturnsRequestedLines"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.CliSmokeTests",
+    "to": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetSymbol_ReturnsExactSymbol"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.CliSmokeTests",
+    "to": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetSymbol_UnknownQuery_ReturnsClearError"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.CliSmokeTests",
+    "to": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Inspect_ListsRoslynProject"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.CliSmokeTests",
+    "to": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Inspect_ListsSampleProject"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
+    "to": "s:F:CodeIndex.Cli.Tests.IndexFixture.consoleLock"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
+    "to": "s:F:CodeIndex.Cli.Tests.IndexFixture.solutionIndexDirectory"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
+    "to": "s:F:CodeIndex.Cli.Tests.IndexFixture.solutionIndexLock"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
+    "to": "s:M:CodeIndex.Cli.Tests.IndexFixture.DisposeAsync"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
+    "to": "s:M:CodeIndex.Cli.Tests.IndexFixture.FindRepoRoot"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
+    "to": "s:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
+    "to": "s:M:CodeIndex.Cli.Tests.IndexFixture.InitializeAsync"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
+    "to": "s:M:CodeIndex.Cli.Tests.IndexFixture.InvokeCliAsync(CodeIndex.Cli.CliRuntime,System.String[])"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
+    "to": "s:M:CodeIndex.Cli.Tests.IndexFixture.RunCliAsync(CodeIndex.Cli.CliRuntime,System.String[])"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
+    "to": "s:M:CodeIndex.Cli.Tests.IndexFixture.RunCliAsync(System.String[])"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
+    "to": "s:M:CodeIndex.Cli.Tests.IndexFixture.RunCliExpectFailureAsync(System.String[])"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
+    "to": "s:P:CodeIndex.Cli.Tests.IndexFixture.IndexDirectory"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
+    "to": "s:P:CodeIndex.Cli.Tests.IndexFixture.RepoRoot"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
+    "to": "s:P:CodeIndex.Cli.Tests.IndexFixture.RoslynProjectPath"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
+    "to": "s:P:CodeIndex.Cli.Tests.IndexFixture.SampleSolutionPath"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
+    "to": "s:P:CodeIndex.Cli.Tests.IndexFixture.SolutionPath"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.CodeIndexJson",
+    "to": "s:F:CodeIndex.Core.CodeIndexJson.SerializerOptions"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.CodeIndexJson",
+    "to": "s:M:CodeIndex.Core.CodeIndexJson.ReadFromFileAsync\u0060\u00601(System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.CodeIndexJson",
+    "to": "s:M:CodeIndex.Core.CodeIndexJson.WriteToFileAsync\u0060\u00601(System.String,\u0060\u00600,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.CodeIndexMetaFactory",
+    "to": "s:M:CodeIndex.Core.CodeIndexMetaFactory.Create(System.String,System.String)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.CodeIndexReader",
+    "to": "s:M:CodeIndex.Core.CodeIndexReader.ReadAsync(System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.CodeIndexValidationException",
+    "to": "s:M:CodeIndex.Core.CodeIndexValidationException.#ctor(System.Collections.Generic.IReadOnlyList{CodeIndex.Core.ValidationIssue})"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.CodeIndexValidationException",
+    "to": "s:P:CodeIndex.Core.CodeIndexValidationException.Issues"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.CodeIndexValidator",
+    "to": "s:F:CodeIndex.Core.CodeIndexValidator.EdgeComparer"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.CodeIndexValidator",
+    "to": "s:M:CodeIndex.Core.CodeIndexValidator.AddDuplicateEdgeIssues(System.Collections.Generic.List{CodeIndex.Core.ValidationIssue},System.Collections.Generic.IEnumerable{CodeIndex.Core.EdgeRecord})"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.CodeIndexValidator",
+    "to": "s:M:CodeIndex.Core.CodeIndexValidator.AddDuplicateIssues(System.Collections.Generic.List{CodeIndex.Core.ValidationIssue},System.Collections.Generic.IEnumerable{System.String},System.String,System.String)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.CodeIndexValidator",
+    "to": "s:M:CodeIndex.Core.CodeIndexValidator.IsSorted(System.Collections.Generic.IEnumerable{System.String},System.StringComparer)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.CodeIndexValidator",
+    "to": "s:M:CodeIndex.Core.CodeIndexValidator.IsSorted\u0060\u00601(System.Collections.Generic.IEnumerable{\u0060\u00600},System.Collections.Generic.IComparer{\u0060\u00600})"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.CodeIndexValidator",
+    "to": "s:M:CodeIndex.Core.CodeIndexValidator.Validate(CodeIndex.Core.CodeIndexSnapshot)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.CodeIndexValidator",
+    "to": "s:M:CodeIndex.Core.CodeIndexValidator.ValidateOrThrow(CodeIndex.Core.CodeIndexSnapshot)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.DeterministicId",
+    "to": "s:M:CodeIndex.Core.DeterministicId.CreateFileId(System.String)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.DeterministicId",
+    "to": "s:M:CodeIndex.Core.DeterministicId.CreateSymbolId(System.String)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.EdgeTypes",
+    "to": "s:F:CodeIndex.Core.EdgeTypes.Contains"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.EdgeTypes",
+    "to": "s:F:CodeIndex.Core.EdgeTypes.Implements"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.EdgeTypes",
+    "to": "s:F:CodeIndex.Core.EdgeTypes.Inherits"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.EdgeTypes",
+    "to": "s:F:CodeIndex.Core.EdgeTypes.Overrides"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.FileHashProvider",
+    "to": "s:M:CodeIndex.Core.FileHashProvider.ComputeSha256Async(System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.FileSummaryGenerator",
+    "to": "s:M:CodeIndex.Core.FileSummaryGenerator.CreateSummary(System.String,System.String)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.PathNormalization",
+    "to": "s:M:CodeIndex.Core.PathNormalization.NormalizeRelativePath(System.String,System.String)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.Tests.CodeIndexValidationTests",
+    "to": "s:M:CodeIndex.Core.Tests.CodeIndexValidationTests.ValidateOrThrow_AllowsConsistentSnapshot"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.Tests.CodeIndexValidationTests",
+    "to": "s:M:CodeIndex.Core.Tests.CodeIndexValidationTests.Validate_FindsMissingFileReference"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.Tests.CodeIndexValidationTests",
+    "to": "s:M:CodeIndex.Core.Tests.CodeIndexValidationTests.Validate_FindsNonNormalizedFilePath_And_InvalidContainsEdge"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.Tests.CodeIndexValidationTests",
+    "to": "s:M:CodeIndex.Core.Tests.CodeIndexValidationTests.Validate_FindsNonUtcTimestamp_And_UnsortedArtifacts"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.Tests.FileIndexingTests",
+    "to": "s:M:CodeIndex.Core.Tests.FileIndexingTests.CodeIndexJson_RoundTripsSnapshot"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.Tests.FileIndexingTests",
+    "to": "s:M:CodeIndex.Core.Tests.FileIndexingTests.CreateSymbolId_PrefixesStableIdentifier"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Core.Tests.FileIndexingTests",
+    "to": "s:M:CodeIndex.Core.Tests.FileIndexingTests.NormalizeRelativePath_UsesForwardSlashes"
   },
   {
     "type": "contains",
@@ -113,6 +613,71 @@
     "type": "contains",
     "from": "s:T:CodeIndex.Roslyn.SymbolIdentity",
     "to": "s:M:CodeIndex.Roslyn.SymbolIdentity.CreateStableId(Microsoft.CodeAnalysis.ISymbol)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
+    "to": "s:M:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.BuildAsync_CurrentSolution_IsDeterministic_AndValidates"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
+    "to": "s:M:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.BuildAsync_ExtractsInheritanceImplementation_AndOverrideEdges"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
+    "to": "s:M:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.BuildAsync_ExtractsWorkspaceInspectorSymbol"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
+    "to": "s:M:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.BuildAsync_FiltersGeneratedSuffixFiles_ByDefault"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
+    "to": "s:M:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.BuildAsync_FormatsSignatures_ExtractsXmlSummary_AndUsesCanonicalPartialDeclaration"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
+    "to": "s:M:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.BuildAsync_GeneratesContainsEdgesForIndexedSymbols"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
+    "to": "s:M:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.BuildAsync_GeneratesStructuredFileSummaries"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
+    "to": "s:M:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.BuildAsync_IncludeGenerated_AddsObjDocuments"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
+    "to": "s:M:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.BuildAsync_SampleSolution_IndexesExpectedSymbolsAndEdges"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
+    "to": "s:M:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.CreateTempProject(System.ValueTuple{System.String,System.String}[])"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
+    "to": "s:M:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.DeleteTempProject(System.String)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
+    "to": "s:M:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.GetSampleSolutionPath"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests",
+    "to": "s:M:CodeIndex.Roslyn.Tests.WorkspaceIndexBuildersTests.GetSolutionPath"
   },
   {
     "type": "contains",
@@ -217,7 +782,32 @@
   {
     "type": "contains",
     "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:F:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.ConstructorSignatureFormat"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:F:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FieldSignatureFormat"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:F:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.MethodSignatureFormat"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:F:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.PropertySignatureFormat"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
     "to": "s:F:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.QualifiedNameFormat"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:F:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.TypeNameFormat"
   },
   {
     "type": "contains",
@@ -232,7 +822,32 @@
   {
     "type": "contains",
     "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatConstructorSignature(Microsoft.CodeAnalysis.IMethodSymbol)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatDelegateSignature(Microsoft.CodeAnalysis.INamedTypeSymbol)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatParameter(Microsoft.CodeAnalysis.IParameterSymbol)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatSignature(Microsoft.CodeAnalysis.ISymbol,System.String)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
     "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetAccessibility(Microsoft.CodeAnalysis.ISymbol)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetCanonicalSourceLocation(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.SyntaxNode,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})"
   },
   {
     "type": "contains",
@@ -257,6 +872,6 @@
   {
     "type": "contains",
     "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
-    "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.TryCreateSymbolRecord(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.SyntaxNode,System.String,CodeIndex.Core.SymbolRecord@)"
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.TryCreateSymbolRecord(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.SyntaxNode,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},CodeIndex.Core.SymbolRecord@)"
   }
 ]

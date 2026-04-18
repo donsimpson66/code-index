@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CodeIndex.Roslyn.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8fecb28fbba2e607225bfb3af8b7d2dd845054e1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7576b910e5d7171f513244dd6ad8395c2e588e81")]
 [assembly: System.Reflection.AssemblyProductAttribute("CodeIndex.Roslyn.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CodeIndex.Roslyn.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
