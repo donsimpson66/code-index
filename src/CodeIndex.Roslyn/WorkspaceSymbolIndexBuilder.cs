@@ -392,18 +392,18 @@ public sealed class WorkspaceSymbolIndexBuilder
     {
         return symbol switch
         {
-            INamespaceSymbol namespaceSymbol when !namespaceSymbol.IsGlobalNamespace => "namespace",
-            INamedTypeSymbol namedType when namedType.IsRecord => "record",
-            INamedTypeSymbol { TypeKind: TypeKind.Class } => "class",
-            INamedTypeSymbol { TypeKind: TypeKind.Interface } => "interface",
-            INamedTypeSymbol { TypeKind: TypeKind.Struct } => "struct",
-            INamedTypeSymbol { TypeKind: TypeKind.Enum } => "enum",
-            INamedTypeSymbol { TypeKind: TypeKind.Delegate } => "delegate",
-            IMethodSymbol { MethodKind: MethodKind.Constructor } => "constructor",
-            IMethodSymbol { MethodKind: MethodKind.Ordinary } => "method",
-            IPropertySymbol => "property",
-            IFieldSymbol => "field",
-            IEventSymbol => "event",
+            INamespaceSymbol namespaceSymbol when !namespaceSymbol.IsGlobalNamespace => SymbolKinds.Namespace,
+            INamedTypeSymbol namedType when namedType.IsRecord => SymbolKinds.Record,
+            INamedTypeSymbol { TypeKind: TypeKind.Class } => SymbolKinds.Class,
+            INamedTypeSymbol { TypeKind: TypeKind.Interface } => SymbolKinds.Interface,
+            INamedTypeSymbol { TypeKind: TypeKind.Struct } => SymbolKinds.Struct,
+            INamedTypeSymbol { TypeKind: TypeKind.Enum } => SymbolKinds.Enum,
+            INamedTypeSymbol { TypeKind: TypeKind.Delegate } => SymbolKinds.Delegate,
+            IMethodSymbol { MethodKind: MethodKind.Constructor } => SymbolKinds.Constructor,
+            IMethodSymbol { MethodKind: MethodKind.Ordinary } => SymbolKinds.Method,
+            IPropertySymbol => SymbolKinds.Property,
+            IFieldSymbol => SymbolKinds.Field,
+            IEventSymbol => SymbolKinds.Event,
             _ => null
         };
     }

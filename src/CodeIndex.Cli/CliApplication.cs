@@ -775,22 +775,7 @@ public static class CliApplication
 
 	private static int GetKindRank(string kind)
 	{
-		return kind switch
-		{
-			"class" => 0,
-			"record" => 1,
-			"interface" => 2,
-			"struct" => 3,
-			"enum" => 4,
-			"delegate" => 5,
-			"namespace" => 6,
-			"constructor" => 7,
-			"method" => 8,
-			"property" => 9,
-			"field" => 10,
-			"event" => 11,
-			_ => 12
-		};
+		return SymbolKinds.GetRank(kind);
 	}
 
 	private static int GetAccessibilityRank(string accessibility)

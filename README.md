@@ -25,6 +25,18 @@ They work better when they can first ask:
 
 This tool generates deterministic JSON artifacts and an optional SQLite index to support that workflow.
 
+## MVP Status
+
+The MVP is complete.
+
+Implemented and validated in the current repository:
+
+- solution and project indexing
+- deterministic JSON artifacts for `meta`, `files`, `symbols`, and `edges`
+- SQLite-backed build, query, and benchmark flows
+- AI-oriented query commands for symbol lookup and excerpt retrieval
+- repository-scale tests and benchmark coverage
+
 ## Current Scope
 
 Initial implementation focuses on:

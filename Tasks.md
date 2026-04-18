@@ -55,8 +55,8 @@ The tool should help AI agents:
 - [x] Create `TextRangeRecord`
 - [x] Create `SymbolRecord`
 - [x] Create `EdgeRecord`
-- [ ] Create enums or constants for:
-  - [ ] symbol kinds
+- [x] Create enums or constants for:
+  - [x] symbol kinds
   - [x] edge types
 - [x] Create JSON serialization helpers
 - [x] Create path normalization helper
@@ -266,12 +266,12 @@ The tool should help AI agents:
 - [x] Validate range values
 - [x] Validate duplicate IDs
 - [x] Add partial class handling rule
-- [ ] Improve error messages
+- [x] Improve error messages
 - [x] Add clear non-zero exit codes for failures
 
 ### Done Criteria
 
-- [ ] Invalid output is blocked
+- [x] Invalid output is blocked
 - [x] Errors explain what failed and where
 - [x] Partial-class behavior is documented
 
@@ -402,11 +402,11 @@ Implement in this order:
 
 MVP is done when all of the following are true:
 
-- [ ] A `.sln` or `.csproj` can be indexed
-- [ ] The four JSON files are produced
-- [ ] Supported C# symbol kinds are indexed
-- [ ] Structural edges are produced correctly
-- [ ] Query commands return compact JSON
-- [ ] Output is deterministic
-- [ ] Basic tests pass
-- [ ] README usage examples work
+- [x] A `.sln` or `.csproj` can be indexed
+- [x] The four JSON files are produced
+- [x] Supported C# symbol kinds are indexed
+- [x] Structural edges are produced correctly
+- [x] Query commands return compact JSON
+- [x] Output is deterministic
+- [x] Basic tests pass
+- [x] README usage examples work

@@ -54,12 +54,12 @@ internal static class CSharpFileSummaryGenerator
     {
         return node switch
         {
-            ClassDeclarationSyntax declaration when IsTopLevelDeclaration(declaration) => ("class", declaration.Identifier.ValueText),
-            InterfaceDeclarationSyntax declaration when IsTopLevelDeclaration(declaration) => ("interface", declaration.Identifier.ValueText),
-            StructDeclarationSyntax declaration when IsTopLevelDeclaration(declaration) => ("struct", declaration.Identifier.ValueText),
-            RecordDeclarationSyntax declaration when IsTopLevelDeclaration(declaration) => ("record", declaration.Identifier.ValueText),
-            EnumDeclarationSyntax declaration when IsTopLevelDeclaration(declaration) => ("enum", declaration.Identifier.ValueText),
-            DelegateDeclarationSyntax declaration when IsTopLevelDeclaration(declaration) => ("delegate", declaration.Identifier.ValueText),
+            ClassDeclarationSyntax declaration when IsTopLevelDeclaration(declaration) => (SymbolKinds.Class, declaration.Identifier.ValueText),
+            InterfaceDeclarationSyntax declaration when IsTopLevelDeclaration(declaration) => (SymbolKinds.Interface, declaration.Identifier.ValueText),
+            StructDeclarationSyntax declaration when IsTopLevelDeclaration(declaration) => (SymbolKinds.Struct, declaration.Identifier.ValueText),
+            RecordDeclarationSyntax declaration when IsTopLevelDeclaration(declaration) => (SymbolKinds.Record, declaration.Identifier.ValueText),
+            EnumDeclarationSyntax declaration when IsTopLevelDeclaration(declaration) => (SymbolKinds.Enum, declaration.Identifier.ValueText),
+            DelegateDeclarationSyntax declaration when IsTopLevelDeclaration(declaration) => (SymbolKinds.Delegate, declaration.Identifier.ValueText),
             _ => null
         };
     }

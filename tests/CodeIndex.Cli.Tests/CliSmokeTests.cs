@@ -6,6 +6,31 @@ public sealed record CliInvocationResult(int ExitCode, string StandardOutput, st
 
 public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFixture>
 {
+    public static TheoryData<string, string, string, int, int> CommonAgentBenchmarkSearches => new()
+    {
+        {
+            "WorkspaceSymbolIndexBuilder",
+            "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+            "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
+            1,
+            20
+        },
+        {
+            "CliApplication",
+            "CodeIndex.Cli.CliApplication",
+            "src/CodeIndex.Cli/CliApplication.cs",
+            1,
+            20
+        },
+        {
+            "SqliteCodeIndexStore",
+            "CodeIndex.Core.SqliteCodeIndexStore",
+            "src/CodeIndex.Core/SqliteCodeIndexStore.cs",
+            1,
+            20
+        }
+    };
+
     [Fact]
     public async Task Build_WritesExpectedArtifacts_ForRoslynProject()
     {
@@ -155,21 +180,27 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
         Assert.Equal(16, lines[1].GetProperty("line").GetInt32());
     }
 
-    [Fact]
-    public async Task Benchmark_ReturnsProjectAndTargetedComparisonMetrics()
+    [Theory]
+    [MemberData(nameof(CommonAgentBenchmarkSearches))]
+    public async Task Benchmark_ReturnsProjectAndTargetedComparisonMetrics_ForCommonAgentSearches(
+        string symbolQuery,
+        string selectedQualifiedName,
+        string filePath,
+        int start,
+        int end)
     {
         var output = await fixture.RunCliAsync(
             "benchmark",
             "--index",
-            fixture.IndexDirectory,
+            await fixture.GetSolutionIndexDirectoryAsync(),
             "--symbol",
-            "WorkspaceSymbolIndexBuilder",
+            symbolQuery,
             "--file",
-            "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
+            filePath,
             "--start",
-            "1",
+            start.ToString(),
             "--end",
-            "20");
+            end.ToString());
 
         using var document = JsonDocument.Parse(output);
         var root = document.RootElement;
@@ -178,11 +209,12 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
         Assert.True(root.GetProperty("rawSource").GetProperty("fileCount").GetInt32() > 0);
         Assert.True(root.GetProperty("rawSource").GetProperty("totalBytes").GetInt64() > 0);
         Assert.True(root.GetProperty("indexArtifacts").GetProperty("totalBytes").GetInt64() > 0);
-        Assert.Equal("WorkspaceSymbolIndexBuilder", root.GetProperty("symbolQuery").GetProperty("query").GetString());
-        Assert.Equal("CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder", root.GetProperty("symbolQuery").GetProperty("selectedQualifiedName").GetString());
-        Assert.Equal("src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs", root.GetProperty("excerptQuery").GetProperty("file").GetString());
+        Assert.Equal(symbolQuery, root.GetProperty("symbolQuery").GetProperty("query").GetString());
+        Assert.Equal(selectedQualifiedName, root.GetProperty("symbolQuery").GetProperty("selectedQualifiedName").GetString());
+        Assert.Equal(filePath, root.GetProperty("excerptQuery").GetProperty("file").GetString());
         Assert.True(root.GetProperty("excerptQuery").GetProperty("excerptBytes").GetInt32() > 0);
         Assert.True(root.GetProperty("indexFirstFlowBytes").GetInt32() > 0);
+        Assert.True(root.GetProperty("indexFirstVsFullSourceRatio").GetDouble() > 0);
     }
 
     [Fact]
@@ -223,29 +255,38 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
         Assert.Equal("CodeIndex.Cli.CliApplication", results[0].GetProperty("qualifiedName").GetString());
     }
 
-    [Fact]
-    public async Task Benchmark_UsingRepositorySolutionDatabase_ReturnsDatabaseMetrics()
+    [Theory]
+    [MemberData(nameof(CommonAgentBenchmarkSearches))]
+    public async Task Benchmark_UsingRepositorySolutionDatabase_ReturnsDatabaseMetrics_ForCommonAgentSearches(
+        string symbolQuery,
+        string selectedQualifiedName,
+        string filePath,
+        int start,
+        int end)
     {
         var output = await fixture.RunCliAsync(
             "benchmark",
             "--db",
             await fixture.GetSolutionDatabasePathAsync(),
             "--symbol",
-            "WorkspaceSymbolIndexBuilder",
+            symbolQuery,
             "--file",
-            "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
+            filePath,
             "--start",
-            "1",
+            start.ToString(),
             "--end",
-            "20");
+            end.ToString());
 
         using var document = JsonDocument.Parse(output);
         var root = document.RootElement;
 
         Assert.Equal("solution", root.GetProperty("inputKind").GetString());
         Assert.True(root.GetProperty("database").GetProperty("totalBytes").GetInt64() > 0);
-        Assert.Equal("WorkspaceSymbolIndexBuilder", root.GetProperty("symbolQuery").GetProperty("query").GetString());
+        Assert.Equal(symbolQuery, root.GetProperty("symbolQuery").GetProperty("query").GetString());
+        Assert.Equal(selectedQualifiedName, root.GetProperty("symbolQuery").GetProperty("selectedQualifiedName").GetString());
+        Assert.Equal(filePath, root.GetProperty("excerptQuery").GetProperty("file").GetString());
         Assert.True(root.GetProperty("indexFirstFlowBytes").GetInt32() > 0);
+        Assert.True(root.GetProperty("indexFirstVsFullSourceRatio").GetDouble() > 0);
     }
 
     [Fact]
