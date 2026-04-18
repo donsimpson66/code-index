@@ -120,7 +120,7 @@ Loads a `.sln` or `.csproj` and lists discovered C# projects and source document
 Example:
 
 ```bash
-dotnet run --project src/CodeIndex.Cli -- inspect ./code-index.sln
+dotnet run --project src/CodeIndex.Cli -- inspect ./samples/SampleSolution/SampleSolution.sln
 ```
 
 ### `build`
@@ -130,7 +130,7 @@ Creates JSON index artifacts from a `.sln` or `.csproj`.
 Example:
 
 ```bash
-dotnet run --project src/CodeIndex.Cli -- build ./MySolution.sln --out ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- build ./samples/SampleSolution/SampleSolution.sln --out ./artifacts/code-index
 ```
 
 Options:
@@ -151,11 +151,11 @@ Find symbols by simple name or qualified name.
 Example:
 
 ```bash
-dotnet run --project src/CodeIndex.Cli -- find-symbol "OrderService"
-dotnet run --project src/CodeIndex.Cli -- find-symbol "MyApp.Services.OrderService.SubmitOrder"
-dotnet run --project src/CodeIndex.Cli -- find-symbol "OrderService" --index ./artifacts/code-index
-dotnet run --project src/CodeIndex.Cli -- find-symbol "OrderService" --index ./artifacts/code-index --kind class --accessibility public --limit 5
-dotnet run --project src/CodeIndex.Cli -- find-symbol "OrderService" --index ./artifacts/code-index --sort accessibility --limit 5
+dotnet run --project src/CodeIndex.Cli -- find-symbol "FriendlyGreeter"
+dotnet run --project src/CodeIndex.Cli -- find-symbol "SampleLibrary.FriendlyGreeter.CreateGreeting"
+dotnet run --project src/CodeIndex.Cli -- find-symbol "FriendlyGreeter" --index ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- find-symbol "FriendlyGreeter" --index ./artifacts/code-index --kind class --accessibility public --limit 5
+dotnet run --project src/CodeIndex.Cli -- find-symbol "FriendlyGreeter" --index ./artifacts/code-index --sort accessibility --limit 5
 
 Sort modes:
 
@@ -171,8 +171,8 @@ Get one symbol by ID or qualified name.
 Example:
 
 ```bash
-dotnet run --project src/CodeIndex.Cli -- get-symbol "MyApp.Services.OrderService.SubmitOrder"
-dotnet run --project src/CodeIndex.Cli -- get-symbol "s:T:MyApp.Services.OrderService" --index ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- get-symbol "SampleLibrary.FriendlyGreeter.CreateGreeting"
+dotnet run --project src/CodeIndex.Cli -- get-symbol "s:T:SampleLibrary.FriendlyGreeter" --index ./artifacts/code-index
 ```
 
 ### `get-children`
@@ -182,10 +182,10 @@ Get child members of a symbol.
 Example:
 
 ```bash
-dotnet run --project src/CodeIndex.Cli -- get-children "MyApp.Services.OrderService"
-dotnet run --project src/CodeIndex.Cli -- get-children "MyApp.Services.OrderService" --index ./artifacts/code-index
-dotnet run --project src/CodeIndex.Cli -- get-children "MyApp.Services.OrderService" --index ./artifacts/code-index --kind method --limit 10
-dotnet run --project src/CodeIndex.Cli -- get-children "MyApp.Services.OrderService" --index ./artifacts/code-index --kind method --sort declaration --limit 10
+dotnet run --project src/CodeIndex.Cli -- get-children "SampleLibrary.FriendlyGreeter"
+dotnet run --project src/CodeIndex.Cli -- get-children "SampleLibrary.FriendlyGreeter" --index ./artifacts/code-index
+dotnet run --project src/CodeIndex.Cli -- get-children "SampleLibrary.FriendlyGreeter" --index ./artifacts/code-index --kind method --limit 10
+dotnet run --project src/CodeIndex.Cli -- get-children "SampleLibrary.FriendlyGreeter" --index ./artifacts/code-index --kind method --sort declaration --limit 10
 
 Sort modes:
 
@@ -201,8 +201,8 @@ Get exact source lines from a file.
 Example:
 
 ```bash
-dotnet run --project src/CodeIndex.Cli -- get-excerpt "src/Services/OrderService.cs" --start 42 --end 78
-dotnet run --project src/CodeIndex.Cli -- get-excerpt "src/Services/OrderService.cs" --index ./artifacts/code-index --start 42 --end 78
+dotnet run --project src/CodeIndex.Cli -- get-excerpt "SampleLibrary/FriendlyGreeter.cs" --start 1 --end 20
+dotnet run --project src/CodeIndex.Cli -- get-excerpt "SampleLibrary/FriendlyGreeter.cs" --index ./artifacts/code-index --start 1 --end 20
 ```
 
 ## Output Files

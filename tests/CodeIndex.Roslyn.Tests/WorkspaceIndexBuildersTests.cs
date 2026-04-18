@@ -243,9 +243,36 @@ public class Greeter : BaseGreeter, IGreeter
         }
     }
 
+    [Fact]
+    public async Task BuildAsync_SampleSolution_IndexesExpectedSymbolsAndEdges()
+    {
+        var solutionPath = GetSampleSolutionPath();
+        var fileBuilder = new WorkspaceFileIndexBuilder();
+        var symbolBuilder = new WorkspaceSymbolIndexBuilder();
+        var edgeBuilder = new WorkspaceEdgeIndexBuilder();
+
+        var files = await fileBuilder.BuildAsync(solutionPath);
+        var symbols = await symbolBuilder.BuildAsync(solutionPath, files);
+        var edges = await edgeBuilder.BuildAsync(solutionPath);
+
+        Assert.Contains(files, file => file.Path == "SampleLibrary/FriendlyGreeter.cs");
+        Assert.Contains(symbols, symbol => symbol.Kind == "interface" && symbol.QualifiedName == "SampleLibrary.IGreeter");
+        Assert.Contains(symbols, symbol => symbol.Kind == "class" && symbol.QualifiedName == "SampleLibrary.BaseGreeter");
+        Assert.Contains(symbols, symbol => symbol.Kind == "class" && symbol.QualifiedName == "SampleLibrary.FriendlyGreeter");
+        Assert.Contains(symbols, symbol => symbol.Kind == "method" && symbol.QualifiedName == "string SampleLibrary.FriendlyGreeter.CreateGreeting(string)" && symbol.Summary == "Creates an enthusiastic greeting and tracks how many times it has been used.");
+        Assert.Contains(edges, edge => edge.Type == EdgeTypes.Inherits && edge.From == "s:T:SampleLibrary.FriendlyGreeter" && edge.To == "s:T:SampleLibrary.BaseGreeter");
+        Assert.Contains(edges, edge => edge.Type == EdgeTypes.Implements && edge.From == "s:T:SampleLibrary.BaseGreeter" && edge.To == "s:T:SampleLibrary.IGreeter");
+        Assert.Contains(edges, edge => edge.Type == EdgeTypes.Overrides && edge.From == "s:M:SampleLibrary.FriendlyGreeter.CreateGreeting(System.String)" && edge.To == "s:M:SampleLibrary.BaseGreeter.CreateGreeting(System.String)");
+    }
+
     private static string GetSolutionPath()
     {
         return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../code-index.sln"));
+    }
+
+    private static string GetSampleSolutionPath()
+    {
+        return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../samples/SampleSolution/SampleSolution.sln"));
     }
 
     private static string CreateTempProject(params (string FileName, string Content)[] files)

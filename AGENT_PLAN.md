@@ -30,6 +30,9 @@ Completed today:
 - Roslyn tests now cover deterministic repeated indexing of the current repository solution and explicit generated-file suffix filtering
 - Roslyn tests now cover signature formatting, XML summary extraction, inheritance/interface/override edges, and canonical partial declaration handling
 - CLI tests now cover querying an index built from the current repository solution
+- a real `samples/SampleSolution` now exists and includes interface/base/derived/override/property/field/XML-doc constructs
+- README examples now use the sample solution consistently
+- sample solution indexing is covered by Roslyn and CLI tests and succeeds end to end through the real CLI
 
 Still pending:
 

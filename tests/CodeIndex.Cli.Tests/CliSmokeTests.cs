@@ -61,6 +61,15 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
     }
 
     [Fact]
+    public async Task Inspect_ListsSampleProject()
+    {
+        var output = await fixture.RunCliAsync("inspect", fixture.SampleSolutionPath);
+
+        Assert.Contains("PROJECT SampleLibrary", output);
+        Assert.Contains("FriendlyGreeter.cs", output);
+    }
+
+    [Fact]
     public async Task FindSymbol_ReturnsLimitedFilteredResults()
     {
         var output = await fixture.RunCliAsync(
@@ -229,6 +238,8 @@ public sealed class IndexFixture : IAsyncLifetime
     public string RepoRoot { get; } = FindRepoRoot();
 
     public string SolutionPath => Path.Combine(RepoRoot, "code-index.sln");
+
+    public string SampleSolutionPath => Path.Combine(RepoRoot, "samples", "SampleSolution", "SampleSolution.sln");
 
     public string RoslynProjectPath => Path.Combine(RepoRoot, "src", "CodeIndex.Roslyn", "CodeIndex.Roslyn.csproj");
 

@@ -271,8 +271,8 @@ The tool should help AI agents:
 ### Done Criteria
 
 - [ ] Invalid output is blocked
-- [ ] Errors explain what failed and where
-- [ ] Partial-class behavior is documented
+- [x] Errors explain what failed and where
+- [x] Partial-class behavior is documented
 
 ---
 
@@ -318,22 +318,22 @@ The tool should help AI agents:
 
 ### Tasks
 
-- [ ] Create `samples/SampleSolution`
-- [ ] Add sample project with:
-  - [ ] interface
-  - [ ] base class
-  - [ ] derived class
-  - [ ] override method
-  - [ ] properties and fields
-  - [ ] XML docs
+- [x] Create `samples/SampleSolution`
+- [x] Add sample project with:
+  - [x] interface
+  - [x] base class
+  - [x] derived class
+  - [x] override method
+  - [x] properties and fields
+  - [x] XML docs
 - [x] Use current repository solution in tests
-- [ ] Use sample solution in README examples
+- [x] Use sample solution in README examples
 
 ### Done Criteria
 
-- [ ] Sample solution indexes successfully
-- [ ] Sample output is predictable
-- [ ] Tests use sample solution consistently
+- [x] Sample solution indexes successfully
+- [x] Sample output is predictable
+- [x] Tests use sample solution consistently
 
 ---
 
