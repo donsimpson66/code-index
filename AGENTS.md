@@ -3,7 +3,9 @@
 ## Index First
 
 When working in this repository, consult the checked-in index in
-`artifacts/code-index` before doing broad source searches.
+`artifacts/code-index` before searching through project files directly.
+Use the code-index commands to search the project code first, then fall back
+to file or text search only when the index does not answer the question.
 
 Preferred workflow:
 
@@ -13,7 +15,7 @@ Preferred workflow:
 dotnet run --project src/CodeIndex.Cli -- build ./code-index.sln --out ./artifacts/code-index
 ```
 
-2. Use symbol queries before raw code search.
+2. Use code-index symbol queries before searching project files.
 
 ```bash
 dotnet run --project src/CodeIndex.Cli -- find-symbol "WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index
@@ -29,6 +31,7 @@ dotnet run --project src/CodeIndex.Cli -- get-excerpt "src/CodeIndex.Roslyn/Work
 
 ## Search Order
 
+- Search project code with the code-index commands before using `rg`, editor file search, or broad file reads.
 - Prefer `find-symbol` when you know a type, member, or namespace name.
 - Prefer `get-symbol` to confirm the owning file, signature, summary, and parent.
 - Prefer `get-children` before opening an entire type file.

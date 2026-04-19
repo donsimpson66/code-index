@@ -2,6 +2,7 @@ namespace CodeIndex.Core;
 
 public static class SymbolKinds
 {
+	public const string Module = "module";
     public const string Namespace = "namespace";
     public const string Record = "record";
     public const string Class = "class";
@@ -13,6 +14,7 @@ public static class SymbolKinds
     public const string Method = "method";
     public const string Property = "property";
     public const string Field = "field";
+    public const string TypeAlias = "typealias";
     public const string Event = "event";
     public const string Local = "local";
 
@@ -20,6 +22,7 @@ public static class SymbolKinds
     {
         return kind switch
         {
+            Module => 0,
             Class => 0,
             Record => 1,
             Interface => 2,
@@ -27,13 +30,14 @@ public static class SymbolKinds
             Enum => 4,
             Delegate => 5,
             Namespace => 6,
-            Constructor => 7,
-            Method => 8,
-            Property => 9,
-            Field => 10,
-            Event => 11,
-            Local => 12,
-            _ => 13
+            TypeAlias => 7,
+            Constructor => 8,
+            Method => 9,
+            Property => 10,
+            Field => 11,
+            Event => 12,
+            Local => 13,
+            _ => 14
         };
     }
 }

@@ -17,42 +17,84 @@ public sealed class CliRuntime
 
 	public Func<string, bool, CancellationToken, Task<IReadOnlyList<FileRecord>>> BuildFilesAsync { get; init; } = async (path, includeGenerated, cancellationToken) =>
 	{
+		if (Directory.Exists(path))
+		{
+			var multiLanguageBuilder = new MultiLanguageFileIndexBuilder();
+			return await multiLanguageBuilder.BuildAsync(path, includeGenerated, cancellationToken);
+		}
+
 		var builder = new WorkspaceFileIndexBuilder();
 		return await builder.BuildAsync(path, includeGenerated, cancellationToken);
 	};
 
 	public Func<string, IReadOnlyList<FileRecord>, bool, CancellationToken, Task<IReadOnlyList<SymbolRecord>>> BuildSymbolsAsync { get; init; } = async (path, files, includeGenerated, cancellationToken) =>
 	{
+		if (Directory.Exists(path))
+		{
+			var multiLanguageBuilder = new MultiLanguageSymbolIndexBuilder();
+			return await multiLanguageBuilder.BuildAsync(path, files, includeGenerated, cancellationToken);
+		}
+
 		var builder = new WorkspaceSymbolIndexBuilder();
 		return await builder.BuildAsync(path, files, includeGenerated, cancellationToken);
 	};
 
 	public Func<string, IReadOnlyList<FileRecord>, IReadOnlyCollection<string>, bool, CancellationToken, Task<IReadOnlyList<SymbolRecord>>> BuildSymbolsForFilesAsync { get; init; } = async (path, files, indexedFilePaths, includeGenerated, cancellationToken) =>
 	{
+		if (Directory.Exists(path))
+		{
+			var multiLanguageBuilder = new MultiLanguageSymbolIndexBuilder();
+			return await multiLanguageBuilder.BuildAsync(path, files, indexedFilePaths, includeGenerated, cancellationToken);
+		}
+
 		var builder = new WorkspaceSymbolIndexBuilder();
 		return await builder.BuildAsync(path, files, indexedFilePaths, includeGenerated, cancellationToken);
 	};
 
 	public Func<string, bool, CancellationToken, Task<IReadOnlyList<EdgeRecord>>> BuildEdgesAsync { get; init; } = async (path, includeGenerated, cancellationToken) =>
 	{
+		if (Directory.Exists(path))
+		{
+			var multiLanguageBuilder = new MultiLanguageEdgeIndexBuilder();
+			return await multiLanguageBuilder.BuildAsync(path, includeGenerated, cancellationToken);
+		}
+
 		var builder = new WorkspaceEdgeIndexBuilder();
 		return await builder.BuildAsync(path, includeGenerated, cancellationToken);
 	};
 
 	public Func<string, IReadOnlyCollection<string>, IReadOnlySet<string>, bool, CancellationToken, Task<IReadOnlyList<EdgeRecord>>> BuildEdgesForFilesAsync { get; init; } = async (path, indexedFilePaths, knownSymbolIds, includeGenerated, cancellationToken) =>
 	{
+		if (Directory.Exists(path))
+		{
+			var multiLanguageBuilder = new MultiLanguageEdgeIndexBuilder();
+			return await multiLanguageBuilder.BuildAsync(path, indexedFilePaths, knownSymbolIds, includeGenerated, cancellationToken);
+		}
+
 		var builder = new WorkspaceEdgeIndexBuilder();
 		return await builder.BuildAsync(path, indexedFilePaths, knownSymbolIds, includeGenerated, cancellationToken);
 	};
 
 	public Func<string, IReadOnlyList<FileRecord>, IReadOnlyList<SymbolRecord>, bool, CancellationToken, Task<IReadOnlyList<ReferenceRecord>>> BuildReferencesAsync { get; init; } = async (path, files, symbols, includeGenerated, cancellationToken) =>
 	{
+		if (Directory.Exists(path))
+		{
+			var multiLanguageBuilder = new MultiLanguageReferenceIndexBuilder();
+			return await multiLanguageBuilder.BuildAsync(path, files, symbols, includeGenerated, cancellationToken);
+		}
+
 		var builder = new WorkspaceReferenceIndexBuilder();
 		return await builder.BuildAsync(path, files, symbols, includeGenerated, cancellationToken);
 	};
 
 	public Func<string, IReadOnlyList<FileRecord>, IReadOnlyList<SymbolRecord>, IReadOnlyCollection<string>, bool, CancellationToken, Task<IReadOnlyList<ReferenceRecord>>> BuildReferencesForFilesAsync { get; init; } = async (path, files, symbols, indexedFilePaths, includeGenerated, cancellationToken) =>
 	{
+		if (Directory.Exists(path))
+		{
+			var multiLanguageBuilder = new MultiLanguageReferenceIndexBuilder();
+			return await multiLanguageBuilder.BuildAsync(path, files, symbols, indexedFilePaths, includeGenerated, cancellationToken);
+		}
+
 		var builder = new WorkspaceReferenceIndexBuilder();
 		return await builder.BuildAsync(path, files, symbols, indexedFilePaths, includeGenerated, cancellationToken);
 	};
@@ -115,7 +157,7 @@ public static class CliApplication
 
 		var pathArgument = new Argument<string>("path")
 		{
-			Description = "Path to a .sln or .csproj file to inspect."
+			Description = "Path to a .sln, .csproj, or supported source directory."
 		};
 
 		var outputOption = new Option<string>("--out")
@@ -248,7 +290,7 @@ public static class CliApplication
 			return 0;
 		});
 
-		var buildCommand = new Command("build", "Build the initial file index artifact from a solution or project.");
+		var buildCommand = new Command("build", "Build the initial file index artifact from a solution, project, or supported source directory.");
 		buildCommand.Add(pathArgument);
 		buildCommand.Add(outputOption);
 		buildCommand.Add(dbOutOption);
@@ -268,7 +310,7 @@ public static class CliApplication
 
 			if (string.IsNullOrWhiteSpace(path))
 			{
-				throw new InvalidOperationException("A solution or project path is required.");
+				throw new InvalidOperationException("A solution, project, or source directory path is required.");
 			}
 
 			if (string.IsNullOrWhiteSpace(outputDirectory) && string.IsNullOrWhiteSpace(databaseOutputPath))
@@ -280,7 +322,7 @@ public static class CliApplication
 
 			if (verbose)
 			{
-				Console.WriteLine($"Loading workspace from {Path.GetFullPath(path)}");
+				Console.WriteLine($"Loading source input from {Path.GetFullPath(path)}");
 				Console.WriteLine(includeGenerated ? "Including generated files." : "Excluding generated files.");
 			}
 
@@ -312,7 +354,11 @@ public static class CliApplication
 				Console.WriteLine($"Indexed {files.Count} files.");
 			}
 
-			var inputKind = Path.GetExtension(path).Equals(".sln", StringComparison.OrdinalIgnoreCase) ? "solution" : "project";
+			var inputKind = Directory.Exists(path)
+				? "directory"
+				: Path.GetExtension(path).Equals(".sln", StringComparison.OrdinalIgnoreCase)
+					? "solution"
+					: "project";
 			var incrementalMergeService = new IncrementalIndexMergeService();
 			var embeddingBuilder = new SemanticEmbeddingIndexBuilder();
 			var canReuseIncrementalBaseline = incrementalBaseline is not null &&
