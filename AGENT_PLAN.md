@@ -33,13 +33,12 @@ Completed today:
 - a real `samples/SampleSolution` now exists and includes interface/base/derived/override/property/field/XML-doc constructs
 - README examples now use the sample solution consistently
 - sample solution indexing is covered by Roslyn and CLI tests and succeeds end to end through the real CLI
-- SQLite storage is implemented for `meta`, `files`, `symbols`, and `edges`
-- `build` now supports `--db-out` for writing a SQLite index alongside or instead of JSON artifacts
-- query commands now support `--db` for SQLite-backed `find-symbol`, `get-symbol`, `get-children`, and `get-excerpt`
-- `benchmark` now supports `--db` so repository-scale comparisons can measure database-backed retrieval cost directly
-- `benchmark --db` now reads metadata, file rows, and symbol and edge counts directly instead of reconstructing a full snapshot for whole-project metrics
-- CLI tests now cover SQLite build, query, benchmark, and mixed-input guard behavior
-- the current repository builds successfully to `artifacts/code-index/code-index.db` and benchmarks successfully against that database
+- JSON artifact storage is the production index path
+- `build` writes the JSON artifact set used by query and benchmark flows
+- query commands read generated JSON artifacts for symbol, child, reference, and excerpt lookups
+- `benchmark` measures JSON artifact size and index-first retrieval cost directly
+- CLI tests cover JSON-backed build, query, benchmark, and incremental behavior
+- the current repository builds successfully to `artifacts/code-index`
 - the repository root now ignores `bin/` and `obj/`, and tracked build outputs have been removed from version control
 
 Still pending:
@@ -144,7 +143,6 @@ Use the following unless there is a strong reason to change:
 - `Microsoft.Build.Locator`
 - `System.CommandLine`
 - `System.Text.Json`
-- `Microsoft.Data.Sqlite`
 
 ## Suggested Solution Structure
 
@@ -175,7 +173,7 @@ Contains:
 - domain models
 - schema definitions
 - JSON serialization
-- SQLite serialization and query storage
+- JSON serialization and snapshot reading
 - path normalization helpers
 - ID generation
 - validation logic
@@ -227,11 +225,10 @@ dotnet run --project src/CodeIndex.Cli -- build ./MySolution.sln --out ./artifac
 Options:
 
 - `--out <path>`
-- `--db-out <path>`
 - `--include-generated false|true`
 - `--verbose`
 
-Current implementation supports `--out <path>`, `--db-out <path>`, `--include-generated`, and `--verbose`.
+Current implementation supports `--out <path>`, `--incremental-from-index <path>`, `--include-generated`, and `--verbose`.
 
 ### `find-symbol`
 
@@ -662,7 +659,7 @@ Do not implement these in the first pass:
 
 - `FindReferencesAsync` for all symbols
 - caller/callee analysis
-- SQLite storage
+- secondary store cleanup
 - HTTP server
 - vector embeddings
 - support for non-C# projects
@@ -911,7 +908,7 @@ Do not block MVP on these.
 
 - references on demand using Roslyn `SymbolFinder`
 - cached query index
-- SQLite backend
+- alternate storage backend
 - incremental indexing
 - test-file linking
 - per-project summaries

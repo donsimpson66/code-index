@@ -111,17 +111,6 @@ public sealed class CliRuntime
 		return await reader.ReadAsync(indexDirectory, cancellationToken);
 	};
 
-	public Func<string, CancellationToken, Task<CodeIndexSnapshot>> ReadDatabaseSnapshotAsync { get; init; } = async (databasePath, cancellationToken) =>
-	{
-		var store = new SqliteCodeIndexStore();
-		return await store.ReadAsync(databasePath, cancellationToken);
-	};
-
-	public Func<string, string, CancellationToken, Task<IReadOnlyList<ReferenceRecord>>> FindReferencesAsync { get; init; } = async (databasePath, targetSymbolId, cancellationToken) =>
-	{
-		var store = new SqliteCodeIndexStore();
-		return await store.FindReferencesAsync(databasePath, targetSymbolId, cancellationToken);
-	};
 }
 
 public static class CliApplication
@@ -165,11 +154,6 @@ public static class CliApplication
 			Description = "Directory where code-index artifacts will be written."
 		};
 
-		var dbOutOption = new Option<string>("--db-out")
-		{
-			Description = "SQLite database file where code-index data will be written."
-		};
-
 		var includeGeneratedOption = new Option<bool>("--include-generated")
 		{
 			Description = "Include generated C# files such as obj outputs and *.g.cs files."
@@ -185,19 +169,9 @@ public static class CliApplication
 			Description = "Existing code-index artifact directory to use as an incremental build baseline."
 		};
 
-		var incrementalFromDbOption = new Option<string>("--incremental-from-db")
-		{
-			Description = "Existing SQLite code-index database to use as an incremental build baseline."
-		};
-
 		var indexOption = new Option<string>("--index")
 		{
 			Description = "Directory containing generated code-index artifacts."
-		};
-
-		var dbOption = new Option<string>("--db")
-		{
-			Description = "SQLite database file containing generated code-index data."
 		};
 
 		var limitOption = new Option<int>("--limit")
@@ -293,32 +267,26 @@ public static class CliApplication
 		var buildCommand = new Command("build", "Build the initial file index artifact from a solution, project, or supported source directory.");
 		buildCommand.Add(pathArgument);
 		buildCommand.Add(outputOption);
-		buildCommand.Add(dbOutOption);
 		buildCommand.Add(includeGeneratedOption);
 		buildCommand.Add(verboseOption);
 		buildCommand.Add(incrementalFromIndexOption);
-		buildCommand.Add(incrementalFromDbOption);
 		buildCommand.SetAction(async (parseResult, cancellationToken) =>
 		{
 			var path = parseResult.GetValue(pathArgument);
 			var outputDirectory = parseResult.GetValue(outputOption);
-			var databaseOutputPath = parseResult.GetValue(dbOutOption);
 			var includeGenerated = parseResult.GetValue(includeGeneratedOption);
 			var verbose = parseResult.GetValue(verboseOption);
 			var incrementalFromIndex = parseResult.GetValue(incrementalFromIndexOption);
-			var incrementalFromDb = parseResult.GetValue(incrementalFromDbOption);
 
 			if (string.IsNullOrWhiteSpace(path))
 			{
 				throw new InvalidOperationException("A solution, project, or source directory path is required.");
 			}
 
-			if (string.IsNullOrWhiteSpace(outputDirectory) && string.IsNullOrWhiteSpace(databaseOutputPath))
+			if (string.IsNullOrWhiteSpace(outputDirectory))
 			{
-				throw new InvalidOperationException("An output target is required. Pass --out <path> and/or --db-out <path>.");
+				throw new InvalidOperationException("An output target is required. Pass --out <path>.");
 			}
-
-			EnsureIncrementalBaselineSource(incrementalFromIndex, incrementalFromDb);
 
 			if (verbose)
 			{
@@ -335,15 +303,6 @@ public static class CliApplication
 				if (verbose)
 				{
 					Console.WriteLine($"Loaded incremental baseline from {Path.GetFullPath(incrementalFromIndex)}");
-				}
-			}
-			else if (!string.IsNullOrWhiteSpace(incrementalFromDb))
-			{
-				incrementalBaseline = await runtime.ReadDatabaseSnapshotAsync(incrementalFromDb, cancellationToken);
-
-				if (verbose)
-				{
-					Console.WriteLine($"Loaded incremental baseline from {Path.GetFullPath(incrementalFromDb)}");
 				}
 			}
 
@@ -469,7 +428,6 @@ public static class CliApplication
 			var meta = CodeIndexMetaFactory.Create(path, inputKind);
 			var snapshot = new CodeIndexSnapshot(meta, files, symbols, edges, references, embeddings);
 			runtime.ValidateSnapshot(snapshot);
-			var sqliteStore = new SqliteCodeIndexStore();
 
 			if (verbose)
 			{
@@ -501,20 +459,12 @@ public static class CliApplication
 				Console.WriteLine($"Wrote {embeddings.Count} embedding records to {embeddingsOutputPath}");
 			}
 
-			if (!string.IsNullOrWhiteSpace(databaseOutputPath))
-			{
-				var fullDatabasePath = Path.GetFullPath(databaseOutputPath);
-				await sqliteStore.WriteAsync(fullDatabasePath, snapshot, cancellationToken);
-				Console.WriteLine($"Wrote SQLite index to {fullDatabasePath}");
-			}
-
 			return 0;
 		});
 
 		var findSymbolCommand = new Command("find-symbol", "Find symbols by name or qualified name from a generated index.");
 		findSymbolCommand.Add(symbolQueryArgument);
 		findSymbolCommand.Add(indexOption);
-		findSymbolCommand.Add(dbOption);
 		findSymbolCommand.Add(limitOption);
 		findSymbolCommand.Add(kindOption);
 		findSymbolCommand.Add(accessibilityOption);
@@ -523,7 +473,6 @@ public static class CliApplication
 		{
 			var query = parseResult.GetValue(symbolQueryArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
-			var databasePath = parseResult.GetValue(dbOption);
 			var limit = parseResult.GetValue(limitOption);
 			var kind = parseResult.GetValue(kindOption);
 			var accessibility = parseResult.GetValue(accessibilityOption);
@@ -534,18 +483,14 @@ public static class CliApplication
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			EnsureSingleStoreSource(indexDirectory, databasePath);
-
-			var sqliteStore = new SqliteCodeIndexStore();
-			var matches = !string.IsNullOrWhiteSpace(databasePath)
-				? LimitResults(OrderFindSymbolResults(await sqliteStore.FindSymbolsAsync(databasePath, query, kind, accessibility, cancellationToken), query, sort), limit).ToArray()
-				: LimitResults(OrderFindSymbolResults((await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken)).Symbols
-					.Where(symbol =>
-						string.Equals(symbol.Name, query, StringComparison.OrdinalIgnoreCase) ||
-						string.Equals(symbol.QualifiedName, query, StringComparison.OrdinalIgnoreCase) ||
-						symbol.QualifiedName.Contains(query, StringComparison.OrdinalIgnoreCase))
-					.Where(symbol => string.IsNullOrWhiteSpace(kind) || string.Equals(symbol.Kind, kind, StringComparison.OrdinalIgnoreCase))
-					.Where(symbol => string.IsNullOrWhiteSpace(accessibility) || string.Equals(symbol.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), query, sort), limit)
+			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
+			var matches = LimitResults(OrderFindSymbolResults(snapshot.Symbols
+				.Where(symbol =>
+					string.Equals(symbol.Name, query, StringComparison.OrdinalIgnoreCase) ||
+					string.Equals(symbol.QualifiedName, query, StringComparison.OrdinalIgnoreCase) ||
+					symbol.QualifiedName.Contains(query, StringComparison.OrdinalIgnoreCase))
+				.Where(symbol => string.IsNullOrWhiteSpace(kind) || string.Equals(symbol.Kind, kind, StringComparison.OrdinalIgnoreCase))
+				.Where(symbol => string.IsNullOrWhiteSpace(accessibility) || string.Equals(symbol.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), query, sort), limit)
 				.ToArray();
 
 			WriteJson(matches);
@@ -555,14 +500,12 @@ public static class CliApplication
 		var semanticSearchCommand = new Command("semantic-search", "Search embedded file and symbol text using deterministic vector similarity.");
 		semanticSearchCommand.Add(symbolQueryArgument);
 		semanticSearchCommand.Add(indexOption);
-		semanticSearchCommand.Add(dbOption);
 		semanticSearchCommand.Add(limitOption);
 		semanticSearchCommand.Add(typeOption);
 		semanticSearchCommand.SetAction(async (parseResult, cancellationToken) =>
 		{
 			var query = parseResult.GetValue(symbolQueryArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
-			var databasePath = parseResult.GetValue(dbOption);
 			var limit = parseResult.GetValue(limitOption);
 			var itemType = NormalizeOptional(parseResult.GetValue(typeOption));
 
@@ -578,7 +521,7 @@ public static class CliApplication
 				throw new InvalidOperationException("Unsupported --type for semantic-search. Use file or symbol.");
 			}
 
-			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken);
+			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
 			var embeddingBuilder = new SemanticEmbeddingIndexBuilder();
 			var results = embeddingBuilder.Search(query, snapshot.Embeddings, itemType, limit <= 0 ? 10 : limit)
 				.Select(result => CreateSemanticSearchResult(snapshot, result))
@@ -591,13 +534,11 @@ public static class CliApplication
 		var findReferencesCommand = new Command("find-references", "Find references for a symbol ID or qualified name from a generated index.");
 		findReferencesCommand.Add(symbolQueryArgument);
 		findReferencesCommand.Add(indexOption);
-		findReferencesCommand.Add(dbOption);
 		findReferencesCommand.Add(limitOption);
 		findReferencesCommand.SetAction(async (parseResult, cancellationToken) =>
 		{
 			var query = parseResult.GetValue(symbolQueryArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
-			var databasePath = parseResult.GetValue(dbOption);
 			var limit = parseResult.GetValue(limitOption);
 
 			if (string.IsNullOrWhiteSpace(query))
@@ -605,7 +546,7 @@ public static class CliApplication
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken);
+			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
 			var targetSymbol = snapshot.Symbols.FirstOrDefault(candidate =>
 				string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
 				string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
@@ -643,24 +584,20 @@ public static class CliApplication
 		var getSymbolCommand = new Command("get-symbol", "Get a single symbol by ID or qualified name from a generated index.");
 		getSymbolCommand.Add(symbolQueryArgument);
 		getSymbolCommand.Add(indexOption);
-		getSymbolCommand.Add(dbOption);
 		getSymbolCommand.SetAction(async (parseResult, cancellationToken) =>
 		{
 			var query = parseResult.GetValue(symbolQueryArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
-			var databasePath = parseResult.GetValue(dbOption);
 
 			if (string.IsNullOrWhiteSpace(query))
 			{
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var sqliteStore = new SqliteCodeIndexStore();
-			var symbol = !string.IsNullOrWhiteSpace(databasePath)
-				? await sqliteStore.GetSymbolAsync(databasePath, query, cancellationToken)
-				: (await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken)).Symbols.FirstOrDefault(candidate =>
-					string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
-					string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
+			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
+			var symbol = snapshot.Symbols.FirstOrDefault(candidate =>
+				string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
+				string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
 
 			if (symbol is null)
 			{
@@ -674,7 +611,6 @@ public static class CliApplication
 		var getChildrenCommand = new Command("get-children", "Get child symbols for a parent symbol from a generated index.");
 		getChildrenCommand.Add(symbolQueryArgument);
 		getChildrenCommand.Add(indexOption);
-		getChildrenCommand.Add(dbOption);
 		getChildrenCommand.Add(limitOption);
 		getChildrenCommand.Add(kindOption);
 		getChildrenCommand.Add(accessibilityOption);
@@ -683,7 +619,6 @@ public static class CliApplication
 		{
 			var query = parseResult.GetValue(symbolQueryArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
-			var databasePath = parseResult.GetValue(dbOption);
 			var limit = parseResult.GetValue(limitOption);
 			var kind = parseResult.GetValue(kindOption);
 			var accessibility = parseResult.GetValue(accessibilityOption);
@@ -694,38 +629,22 @@ public static class CliApplication
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var sqliteStore = new SqliteCodeIndexStore();
-			SymbolRecord[] children;
-			if (!string.IsNullOrWhiteSpace(databasePath))
+			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
+			var parent = snapshot.Symbols.FirstOrDefault(candidate =>
+				string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
+				string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
+
+			if (parent is null)
 			{
-				var parent = await sqliteStore.GetSymbolAsync(databasePath, query, cancellationToken);
-
-				if (parent is null)
-				{
-					throw new InvalidOperationException($"No symbol found for query: {query}");
-				}
-
-				children = LimitResults(OrderChildResults(await sqliteStore.GetChildrenAsync(databasePath, parent.Id, kind, accessibility, cancellationToken), sort), limit).ToArray();
+				throw new InvalidOperationException($"No symbol found for query: {query}");
 			}
-			else
-			{
-				var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken);
-				var parent = snapshot.Symbols.FirstOrDefault(candidate =>
-					string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
-					string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
 
-				if (parent is null)
-				{
-					throw new InvalidOperationException($"No symbol found for query: {query}");
-				}
-
-				children = LimitResults(OrderChildResults(snapshot.Edges
-					.Where(edge => edge.Type == EdgeTypes.Contains && edge.From == parent.Id)
-					.Join(snapshot.Symbols, edge => edge.To, symbol => symbol.Id, (_, symbol) => symbol)
-					.Where(symbol => string.IsNullOrWhiteSpace(kind) || string.Equals(symbol.Kind, kind, StringComparison.OrdinalIgnoreCase))
-					.Where(symbol => string.IsNullOrWhiteSpace(accessibility) || string.Equals(symbol.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), sort), limit)
-					.ToArray();
-			}
+			var children = LimitResults(OrderChildResults(snapshot.Edges
+				.Where(edge => edge.Type == EdgeTypes.Contains && edge.From == parent.Id)
+				.Join(snapshot.Symbols, edge => edge.To, symbol => symbol.Id, (_, symbol) => symbol)
+				.Where(symbol => string.IsNullOrWhiteSpace(kind) || string.Equals(symbol.Kind, kind, StringComparison.OrdinalIgnoreCase))
+				.Where(symbol => string.IsNullOrWhiteSpace(accessibility) || string.Equals(symbol.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), sort), limit)
+				.ToArray();
 
 			WriteJson(children);
 			return 0;
@@ -734,7 +653,6 @@ public static class CliApplication
 		var getCalleesCommand = new Command("get-callees", "Get call targets for a method or constructor from a generated index.");
 		getCalleesCommand.Add(symbolQueryArgument);
 		getCalleesCommand.Add(indexOption);
-		getCalleesCommand.Add(dbOption);
 		getCalleesCommand.Add(limitOption);
 		getCalleesCommand.Add(kindOption);
 		getCalleesCommand.Add(accessibilityOption);
@@ -743,7 +661,6 @@ public static class CliApplication
 		{
 			var query = parseResult.GetValue(symbolQueryArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
-			var databasePath = parseResult.GetValue(dbOption);
 			var limit = parseResult.GetValue(limitOption);
 			var kind = parseResult.GetValue(kindOption);
 			var accessibility = parseResult.GetValue(accessibilityOption);
@@ -754,39 +671,22 @@ public static class CliApplication
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var sqliteStore = new SqliteCodeIndexStore();
-			SymbolRecord[] callees;
+			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
+			var symbol = snapshot.Symbols.FirstOrDefault(candidate =>
+				string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
+				string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
 
-			if (!string.IsNullOrWhiteSpace(databasePath))
+			if (symbol is null)
 			{
-				var symbol = await sqliteStore.GetSymbolAsync(databasePath, query, cancellationToken);
-
-				if (symbol is null)
-				{
-					throw new InvalidOperationException($"No symbol found for query: {query}");
-				}
-
-				callees = LimitResults(OrderChildResults(await sqliteStore.GetCalleesAsync(databasePath, symbol.Id, kind, accessibility, cancellationToken), sort), limit).ToArray();
+				throw new InvalidOperationException($"No symbol found for query: {query}");
 			}
-			else
-			{
-				var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken);
-				var symbol = snapshot.Symbols.FirstOrDefault(candidate =>
-					string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
-					string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
 
-				if (symbol is null)
-				{
-					throw new InvalidOperationException($"No symbol found for query: {query}");
-				}
-
-				callees = LimitResults(OrderChildResults(snapshot.Edges
-					.Where(edge => edge.Type == EdgeTypes.Calls && edge.From == symbol.Id)
-					.Join(snapshot.Symbols, edge => edge.To, candidate => candidate.Id, (_, candidate) => candidate)
-					.Where(candidate => string.IsNullOrWhiteSpace(kind) || string.Equals(candidate.Kind, kind, StringComparison.OrdinalIgnoreCase))
-					.Where(candidate => string.IsNullOrWhiteSpace(accessibility) || string.Equals(candidate.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), sort), limit)
-					.ToArray();
-			}
+			var callees = LimitResults(OrderChildResults(snapshot.Edges
+				.Where(edge => edge.Type == EdgeTypes.Calls && edge.From == symbol.Id)
+				.Join(snapshot.Symbols, edge => edge.To, candidate => candidate.Id, (_, candidate) => candidate)
+				.Where(candidate => string.IsNullOrWhiteSpace(kind) || string.Equals(candidate.Kind, kind, StringComparison.OrdinalIgnoreCase))
+				.Where(candidate => string.IsNullOrWhiteSpace(accessibility) || string.Equals(candidate.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), sort), limit)
+				.ToArray();
 
 			WriteJson(callees);
 			return 0;
@@ -795,7 +695,6 @@ public static class CliApplication
 		var getCallersCommand = new Command("get-callers", "Get callers for a method or constructor from a generated index.");
 		getCallersCommand.Add(symbolQueryArgument);
 		getCallersCommand.Add(indexOption);
-		getCallersCommand.Add(dbOption);
 		getCallersCommand.Add(limitOption);
 		getCallersCommand.Add(kindOption);
 		getCallersCommand.Add(accessibilityOption);
@@ -804,7 +703,6 @@ public static class CliApplication
 		{
 			var query = parseResult.GetValue(symbolQueryArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
-			var databasePath = parseResult.GetValue(dbOption);
 			var limit = parseResult.GetValue(limitOption);
 			var kind = parseResult.GetValue(kindOption);
 			var accessibility = parseResult.GetValue(accessibilityOption);
@@ -815,39 +713,22 @@ public static class CliApplication
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var sqliteStore = new SqliteCodeIndexStore();
-			SymbolRecord[] callers;
+			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
+			var symbol = snapshot.Symbols.FirstOrDefault(candidate =>
+				string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
+				string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
 
-			if (!string.IsNullOrWhiteSpace(databasePath))
+			if (symbol is null)
 			{
-				var symbol = await sqliteStore.GetSymbolAsync(databasePath, query, cancellationToken);
-
-				if (symbol is null)
-				{
-					throw new InvalidOperationException($"No symbol found for query: {query}");
-				}
-
-				callers = LimitResults(OrderChildResults(await sqliteStore.GetCallersAsync(databasePath, symbol.Id, kind, accessibility, cancellationToken), sort), limit).ToArray();
+				throw new InvalidOperationException($"No symbol found for query: {query}");
 			}
-			else
-			{
-				var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken);
-				var symbol = snapshot.Symbols.FirstOrDefault(candidate =>
-					string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
-					string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
 
-				if (symbol is null)
-				{
-					throw new InvalidOperationException($"No symbol found for query: {query}");
-				}
-
-				callers = LimitResults(OrderChildResults(snapshot.Edges
-					.Where(edge => edge.Type == EdgeTypes.Calls && edge.To == symbol.Id)
-					.Join(snapshot.Symbols, edge => edge.From, candidate => candidate.Id, (_, candidate) => candidate)
-					.Where(candidate => string.IsNullOrWhiteSpace(kind) || string.Equals(candidate.Kind, kind, StringComparison.OrdinalIgnoreCase))
-					.Where(candidate => string.IsNullOrWhiteSpace(accessibility) || string.Equals(candidate.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), sort), limit)
-					.ToArray();
-			}
+			var callers = LimitResults(OrderChildResults(snapshot.Edges
+				.Where(edge => edge.Type == EdgeTypes.Calls && edge.To == symbol.Id)
+				.Join(snapshot.Symbols, edge => edge.From, candidate => candidate.Id, (_, candidate) => candidate)
+				.Where(candidate => string.IsNullOrWhiteSpace(kind) || string.Equals(candidate.Kind, kind, StringComparison.OrdinalIgnoreCase))
+				.Where(candidate => string.IsNullOrWhiteSpace(accessibility) || string.Equals(candidate.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), sort), limit)
+				.ToArray();
 
 			WriteJson(callers);
 			return 0;
@@ -856,7 +737,6 @@ public static class CliApplication
 		var getTestTargetsCommand = new Command("get-test-targets", "Get heuristic production targets for a test symbol from a generated index.");
 		getTestTargetsCommand.Add(symbolQueryArgument);
 		getTestTargetsCommand.Add(indexOption);
-		getTestTargetsCommand.Add(dbOption);
 		getTestTargetsCommand.Add(limitOption);
 		getTestTargetsCommand.Add(kindOption);
 		getTestTargetsCommand.Add(accessibilityOption);
@@ -865,7 +745,6 @@ public static class CliApplication
 		{
 			var query = parseResult.GetValue(symbolQueryArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
-			var databasePath = parseResult.GetValue(dbOption);
 			var limit = parseResult.GetValue(limitOption);
 			var kind = parseResult.GetValue(kindOption);
 			var accessibility = parseResult.GetValue(accessibilityOption);
@@ -876,39 +755,22 @@ public static class CliApplication
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var sqliteStore = new SqliteCodeIndexStore();
-			SymbolRecord[] targets;
+			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
+			var symbol = snapshot.Symbols.FirstOrDefault(candidate =>
+				string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
+				string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
 
-			if (!string.IsNullOrWhiteSpace(databasePath))
+			if (symbol is null)
 			{
-				var symbol = await sqliteStore.GetSymbolAsync(databasePath, query, cancellationToken);
-
-				if (symbol is null)
-				{
-					throw new InvalidOperationException($"No symbol found for query: {query}");
-				}
-
-				targets = LimitResults(OrderChildResults(await sqliteStore.GetTestTargetsAsync(databasePath, symbol.Id, kind, accessibility, cancellationToken), sort), limit).ToArray();
+				throw new InvalidOperationException($"No symbol found for query: {query}");
 			}
-			else
-			{
-				var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken);
-				var symbol = snapshot.Symbols.FirstOrDefault(candidate =>
-					string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
-					string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
 
-				if (symbol is null)
-				{
-					throw new InvalidOperationException($"No symbol found for query: {query}");
-				}
-
-				targets = LimitResults(OrderChildResults(snapshot.Edges
-					.Where(edge => edge.Type == EdgeTypes.Tests && edge.From == symbol.Id)
-					.Join(snapshot.Symbols, edge => edge.To, candidate => candidate.Id, (_, candidate) => candidate)
-					.Where(candidate => string.IsNullOrWhiteSpace(kind) || string.Equals(candidate.Kind, kind, StringComparison.OrdinalIgnoreCase))
-					.Where(candidate => string.IsNullOrWhiteSpace(accessibility) || string.Equals(candidate.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), sort), limit)
-					.ToArray();
-			}
+			var targets = LimitResults(OrderChildResults(snapshot.Edges
+				.Where(edge => edge.Type == EdgeTypes.Tests && edge.From == symbol.Id)
+				.Join(snapshot.Symbols, edge => edge.To, candidate => candidate.Id, (_, candidate) => candidate)
+				.Where(candidate => string.IsNullOrWhiteSpace(kind) || string.Equals(candidate.Kind, kind, StringComparison.OrdinalIgnoreCase))
+				.Where(candidate => string.IsNullOrWhiteSpace(accessibility) || string.Equals(candidate.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), sort), limit)
+				.ToArray();
 
 			WriteJson(targets);
 			return 0;
@@ -917,7 +779,6 @@ public static class CliApplication
 		var getTestsCommand = new Command("get-tests", "Get heuristic tests for a production symbol from a generated index.");
 		getTestsCommand.Add(symbolQueryArgument);
 		getTestsCommand.Add(indexOption);
-		getTestsCommand.Add(dbOption);
 		getTestsCommand.Add(limitOption);
 		getTestsCommand.Add(kindOption);
 		getTestsCommand.Add(accessibilityOption);
@@ -926,7 +787,6 @@ public static class CliApplication
 		{
 			var query = parseResult.GetValue(symbolQueryArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
-			var databasePath = parseResult.GetValue(dbOption);
 			var limit = parseResult.GetValue(limitOption);
 			var kind = parseResult.GetValue(kindOption);
 			var accessibility = parseResult.GetValue(accessibilityOption);
@@ -937,39 +797,22 @@ public static class CliApplication
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var sqliteStore = new SqliteCodeIndexStore();
-			SymbolRecord[] tests;
+			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
+			var symbol = snapshot.Symbols.FirstOrDefault(candidate =>
+				string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
+				string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
 
-			if (!string.IsNullOrWhiteSpace(databasePath))
+			if (symbol is null)
 			{
-				var symbol = await sqliteStore.GetSymbolAsync(databasePath, query, cancellationToken);
-
-				if (symbol is null)
-				{
-					throw new InvalidOperationException($"No symbol found for query: {query}");
-				}
-
-				tests = LimitResults(OrderChildResults(await sqliteStore.GetTestsAsync(databasePath, symbol.Id, kind, accessibility, cancellationToken), sort), limit).ToArray();
+				throw new InvalidOperationException($"No symbol found for query: {query}");
 			}
-			else
-			{
-				var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken);
-				var symbol = snapshot.Symbols.FirstOrDefault(candidate =>
-					string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
-					string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
 
-				if (symbol is null)
-				{
-					throw new InvalidOperationException($"No symbol found for query: {query}");
-				}
-
-				tests = LimitResults(OrderChildResults(snapshot.Edges
-					.Where(edge => edge.Type == EdgeTypes.Tests && edge.To == symbol.Id)
-					.Join(snapshot.Symbols, edge => edge.From, candidate => candidate.Id, (_, candidate) => candidate)
-					.Where(candidate => string.IsNullOrWhiteSpace(kind) || string.Equals(candidate.Kind, kind, StringComparison.OrdinalIgnoreCase))
-					.Where(candidate => string.IsNullOrWhiteSpace(accessibility) || string.Equals(candidate.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), sort), limit)
-					.ToArray();
-			}
+			var tests = LimitResults(OrderChildResults(snapshot.Edges
+				.Where(edge => edge.Type == EdgeTypes.Tests && edge.To == symbol.Id)
+				.Join(snapshot.Symbols, edge => edge.From, candidate => candidate.Id, (_, candidate) => candidate)
+				.Where(candidate => string.IsNullOrWhiteSpace(kind) || string.Equals(candidate.Kind, kind, StringComparison.OrdinalIgnoreCase))
+				.Where(candidate => string.IsNullOrWhiteSpace(accessibility) || string.Equals(candidate.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), sort), limit)
+				.ToArray();
 
 			WriteJson(tests);
 			return 0;
@@ -978,14 +821,12 @@ public static class CliApplication
 		var getExcerptCommand = new Command("get-excerpt", "Get exact file lines from a generated index.");
 		getExcerptCommand.Add(filePathArgument);
 		getExcerptCommand.Add(indexOption);
-		getExcerptCommand.Add(dbOption);
 		getExcerptCommand.Add(startOption);
 		getExcerptCommand.Add(endOption);
 		getExcerptCommand.SetAction(async (parseResult, cancellationToken) =>
 		{
 			var file = parseResult.GetValue(filePathArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
-			var databasePath = parseResult.GetValue(dbOption);
 			var start = parseResult.GetValue(startOption);
 			var end = parseResult.GetValue(endOption);
 
@@ -999,20 +840,15 @@ public static class CliApplication
 				throw new InvalidOperationException("Use positive line numbers and ensure --end is greater than or equal to --start.");
 			}
 
-			var sqliteStore = new SqliteCodeIndexStore();
-			var fileRecord = !string.IsNullOrWhiteSpace(databasePath)
-				? await sqliteStore.GetFileByPathAsync(databasePath, file, cancellationToken)
-				: (await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken)).Files.FirstOrDefault(candidate => string.Equals(candidate.Path, file, StringComparison.OrdinalIgnoreCase));
+			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
+			var fileRecord = snapshot.Files.FirstOrDefault(candidate => string.Equals(candidate.Path, file, StringComparison.OrdinalIgnoreCase));
 
 			if (fileRecord is null)
 			{
 				throw new InvalidOperationException($"No indexed file found for path: {file}");
 			}
 
-			var meta = !string.IsNullOrWhiteSpace(databasePath)
-				? await sqliteStore.ReadMetaAsync(databasePath, cancellationToken)
-				: (await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken)).Meta;
-			var fullFilePath = Path.Combine(meta.SourceRoot, fileRecord.Path.Replace('/', Path.DirectorySeparatorChar));
+			var fullFilePath = Path.Combine(snapshot.Meta.SourceRoot, fileRecord.Path.Replace('/', Path.DirectorySeparatorChar));
 			var lines = await File.ReadAllLinesAsync(fullFilePath, cancellationToken);
 			var excerpt = Enumerable.Range(start, Math.Min(end, lines.Length) - start + 1)
 				.Select(lineNumber => new { line = lineNumber, text = lines[lineNumber - 1] })
@@ -1024,7 +860,6 @@ public static class CliApplication
 
 		var benchmarkCommand = new Command("benchmark", "Compare reading the indexed project directly versus using code-index artifacts first.");
 		benchmarkCommand.Add(indexOption);
-		benchmarkCommand.Add(dbOption);
 		benchmarkCommand.Add(benchmarkSymbolOption);
 		benchmarkCommand.Add(benchmarkFileOption);
 		benchmarkCommand.Add(startOption);
@@ -1032,7 +867,6 @@ public static class CliApplication
 		benchmarkCommand.SetAction(async (parseResult, cancellationToken) =>
 		{
 			var indexDirectory = parseResult.GetValue(indexOption);
-			var databasePath = parseResult.GetValue(dbOption);
 			var symbolQuery = parseResult.GetValue(benchmarkSymbolOption);
 			var file = parseResult.GetValue(benchmarkFileOption);
 			var start = parseResult.GetValue(startOption);
@@ -1048,32 +882,13 @@ public static class CliApplication
 				throw new InvalidOperationException("Use positive line numbers and ensure --end is greater than or equal to --start when benchmarking an excerpt.");
 			}
 
-			EnsureSingleStoreSource(indexDirectory, databasePath);
-			var sqliteStore = new SqliteCodeIndexStore();
-			CodeIndexSnapshot? snapshot = null;
-			var fullIndexDirectory = string.IsNullOrWhiteSpace(indexDirectory) ? null : Path.GetFullPath(indexDirectory);
-			var fullDatabasePath = string.IsNullOrWhiteSpace(databasePath) ? null : Path.GetFullPath(databasePath);
-			CodeIndexMeta meta;
-			IReadOnlyList<FileRecord> files;
-			int symbolCount;
-			int edgeCount;
+			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
+			var fullIndexDirectory = Path.GetFullPath(indexDirectory!);
+			var meta = snapshot.Meta;
+			var files = snapshot.Files;
+			var symbolCount = snapshot.Symbols.Count;
+			var edgeCount = snapshot.Edges.Count;
 			var indexLoadStopwatch = Stopwatch.StartNew();
-
-			if (!string.IsNullOrWhiteSpace(fullDatabasePath))
-			{
-				meta = await sqliteStore.ReadMetaAsync(fullDatabasePath, cancellationToken);
-				files = await sqliteStore.ReadFilesAsync(fullDatabasePath, cancellationToken);
-				symbolCount = await sqliteStore.CountSymbolsAsync(fullDatabasePath, cancellationToken);
-				edgeCount = await sqliteStore.CountEdgesAsync(fullDatabasePath, cancellationToken);
-			}
-			else
-			{
-				snapshot = await ReadSnapshotAsync(runtime, indexDirectory, databasePath, cancellationToken);
-				meta = snapshot.Meta;
-				files = snapshot.Files;
-				symbolCount = snapshot.Symbols.Count;
-				edgeCount = snapshot.Edges.Count;
-			}
 
 			indexLoadStopwatch.Stop();
 
@@ -1105,30 +920,21 @@ public static class CliApplication
 			long referencesBytes = 0;
 			long embeddingsBytes = 0;
 			long totalIndexBytes = 0;
-			long? databaseBytes = null;
 
-			if (!string.IsNullOrWhiteSpace(fullIndexDirectory))
-			{
-				var metaPath = Path.Combine(fullIndexDirectory, "code-index.meta.json");
-				var filesPath = Path.Combine(fullIndexDirectory, "code-index.files.json");
-				var symbolsPath = Path.Combine(fullIndexDirectory, "code-index.symbols.json");
-				var edgesPath = Path.Combine(fullIndexDirectory, "code-index.edges.json");
-				var referencesPath = Path.Combine(fullIndexDirectory, "code-index.references.json");
-				var embeddingsPath = Path.Combine(fullIndexDirectory, "code-index.embeddings.json");
+			var metaPath = Path.Combine(fullIndexDirectory, "code-index.meta.json");
+			var filesPath = Path.Combine(fullIndexDirectory, "code-index.files.json");
+			var symbolsPath = Path.Combine(fullIndexDirectory, "code-index.symbols.json");
+			var edgesPath = Path.Combine(fullIndexDirectory, "code-index.edges.json");
+			var referencesPath = Path.Combine(fullIndexDirectory, "code-index.references.json");
+			var embeddingsPath = Path.Combine(fullIndexDirectory, "code-index.embeddings.json");
 
-				metaBytes = new FileInfo(metaPath).Length;
-				filesBytes = new FileInfo(filesPath).Length;
-				symbolsBytes = new FileInfo(symbolsPath).Length;
-				edgesBytes = new FileInfo(edgesPath).Length;
-				referencesBytes = File.Exists(referencesPath) ? new FileInfo(referencesPath).Length : 0;
-				embeddingsBytes = File.Exists(embeddingsPath) ? new FileInfo(embeddingsPath).Length : 0;
-				totalIndexBytes = metaBytes + filesBytes + symbolsBytes + edgesBytes + referencesBytes + embeddingsBytes;
-			}
-			else if (!string.IsNullOrWhiteSpace(fullDatabasePath))
-			{
-				databaseBytes = new FileInfo(fullDatabasePath).Length;
-				totalIndexBytes = databaseBytes.Value;
-			}
+			metaBytes = new FileInfo(metaPath).Length;
+			filesBytes = new FileInfo(filesPath).Length;
+			symbolsBytes = new FileInfo(symbolsPath).Length;
+			edgesBytes = new FileInfo(edgesPath).Length;
+			referencesBytes = File.Exists(referencesPath) ? new FileInfo(referencesPath).Length : 0;
+			embeddingsBytes = File.Exists(embeddingsPath) ? new FileInfo(embeddingsPath).Length : 0;
+			totalIndexBytes = metaBytes + filesBytes + symbolsBytes + edgesBytes + referencesBytes + embeddingsBytes;
 
 			object? symbolQueryMetrics = null;
 			long indexFirstFlowBytes = 0;
@@ -1137,24 +943,20 @@ public static class CliApplication
 			if (!string.IsNullOrWhiteSpace(symbolQuery))
 			{
 				var symbolQueryStopwatch = Stopwatch.StartNew();
-				var matches = !string.IsNullOrWhiteSpace(fullDatabasePath)
-					? LimitResults(OrderFindSymbolResults(await sqliteStore.FindSymbolsAsync(fullDatabasePath, symbolQuery, null, null, cancellationToken), symbolQuery, "ranked"), 5).ToArray()
-					: LimitResults(OrderFindSymbolResults(snapshot!.Symbols
-						.Where(symbol =>
-							string.Equals(symbol.Name, symbolQuery, StringComparison.OrdinalIgnoreCase) ||
-							string.Equals(symbol.QualifiedName, symbolQuery, StringComparison.OrdinalIgnoreCase) ||
-							symbol.QualifiedName.Contains(symbolQuery, StringComparison.OrdinalIgnoreCase)), symbolQuery, "ranked"), 5)
-						.ToArray();
+				var matches = LimitResults(OrderFindSymbolResults(snapshot.Symbols
+					.Where(symbol =>
+						string.Equals(symbol.Name, symbolQuery, StringComparison.OrdinalIgnoreCase) ||
+						string.Equals(symbol.QualifiedName, symbolQuery, StringComparison.OrdinalIgnoreCase) ||
+						symbol.QualifiedName.Contains(symbolQuery, StringComparison.OrdinalIgnoreCase)), symbolQuery, "ranked"), 5)
+					.ToArray();
 
 				var selected = matches.FirstOrDefault();
 				var children = selected is null
 					? Array.Empty<SymbolRecord>()
-					: !string.IsNullOrWhiteSpace(fullDatabasePath)
-						? OrderChildResults(await sqliteStore.GetChildrenAsync(fullDatabasePath, selected.Id, null, null, cancellationToken), "declaration").ToArray()
-						: OrderChildResults(snapshot!.Edges
-							.Where(edge => edge.Type == EdgeTypes.Contains && edge.From == selected.Id)
-							.Join(snapshot.Symbols, edge => edge.To, symbol => symbol.Id, (_, symbol) => symbol), "declaration")
-							.ToArray();
+					: OrderChildResults(snapshot.Edges
+						.Where(edge => edge.Type == EdgeTypes.Contains && edge.From == selected.Id)
+						.Join(snapshot.Symbols, edge => edge.To, symbol => symbol.Id, (_, symbol) => symbol), "declaration")
+						.ToArray();
 
 				var findSymbolBytes = GetSerializedByteCount(matches);
 				var getSymbolBytes = selected is null ? 0 : GetSerializedByteCount(selected);
@@ -1184,9 +986,7 @@ public static class CliApplication
 			if (!string.IsNullOrWhiteSpace(file))
 			{
 				var excerptStopwatch = Stopwatch.StartNew();
-				var fileRecord = !string.IsNullOrWhiteSpace(fullDatabasePath)
-					? await sqliteStore.GetFileByPathAsync(fullDatabasePath, file, cancellationToken)
-					: files.FirstOrDefault(candidate => string.Equals(candidate.Path, file, StringComparison.OrdinalIgnoreCase));
+				var fileRecord = files.FirstOrDefault(candidate => string.Equals(candidate.Path, file, StringComparison.OrdinalIgnoreCase));
 
 				if (fileRecord is null)
 				{
@@ -1216,9 +1016,7 @@ public static class CliApplication
 			}
 
 			var rawSourceEstimatedTokens = EstimateTokenCount(totalSourceBytes);
-			var totalIndexEstimatedTokens = !string.IsNullOrWhiteSpace(fullIndexDirectory)
-				? EstimateTokenCount(totalIndexBytes)
-				: (int?)null;
+			var totalIndexEstimatedTokens = EstimateTokenCount(totalIndexBytes);
 			var indexFirstFlowEstimatedTokens = indexFirstFlowBytes == 0 ? (int?)null : EstimateTokenCount(indexFirstFlowBytes);
 
 			var benchmark = new
@@ -1238,7 +1036,7 @@ public static class CliApplication
 				indexArtifacts = new
 				{
 					directory = fullIndexDirectory,
-					loadElapsedMs = fullIndexDirectory is null ? (long?)null : indexLoadStopwatch.ElapsedMilliseconds,
+					loadElapsedMs = indexLoadStopwatch.ElapsedMilliseconds,
 					metaBytes,
 					filesBytes,
 					symbolsBytes,
@@ -1247,14 +1045,6 @@ public static class CliApplication
 					embeddingsBytes,
 					totalBytes = totalIndexBytes,
 					totalEstimatedTokens = totalIndexEstimatedTokens,
-					symbolCount = symbolCount,
-					edgeCount = edgeCount
-				},
-				database = databaseBytes is null ? null : new
-				{
-					path = fullDatabasePath,
-					loadElapsedMs = indexLoadStopwatch.ElapsedMilliseconds,
-					totalBytes = databaseBytes,
 					symbolCount = symbolCount,
 					edgeCount = edgeCount
 				},
@@ -1297,41 +1087,12 @@ public static class CliApplication
 
 	private static async Task<CodeIndexSnapshot> ReadSnapshotAsync(CliRuntime runtime, string? indexDirectory, CancellationToken cancellationToken)
 	{
-		return await ReadSnapshotAsync(runtime, indexDirectory, null, cancellationToken);
-	}
-
-	private static async Task<CodeIndexSnapshot> ReadSnapshotAsync(CliRuntime runtime, string? indexDirectory, string? databasePath, CancellationToken cancellationToken)
-	{
-		EnsureSingleStoreSource(indexDirectory, databasePath);
-
-		if (!string.IsNullOrWhiteSpace(databasePath))
-		{
-			var sqliteStore = new SqliteCodeIndexStore();
-			return await sqliteStore.ReadAsync(databasePath, cancellationToken);
-		}
-
 		if (string.IsNullOrWhiteSpace(indexDirectory))
 		{
 			throw new InvalidOperationException("An index directory is required. Pass --index <path>.");
 		}
 
 		return await runtime.ReadSnapshotAsync(indexDirectory, cancellationToken);
-	}
-
-	private static void EnsureSingleStoreSource(string? indexDirectory, string? databasePath)
-	{
-		var hasIndex = !string.IsNullOrWhiteSpace(indexDirectory);
-		var hasDatabase = !string.IsNullOrWhiteSpace(databasePath);
-
-		if (!hasIndex && !hasDatabase)
-		{
-			throw new InvalidOperationException("An index directory or database is required. Pass --index <path> or --db <path>.");
-		}
-
-		if (hasIndex && hasDatabase)
-		{
-			throw new InvalidOperationException("Pass either --index <path> or --db <path>, but not both.");
-		}
 	}
 
 	private static void WriteJson<T>(T value)
@@ -1418,16 +1179,6 @@ public static class CliApplication
 		}
 
 		return 5;
-	}
-
-	private static void EnsureIncrementalBaselineSource(string? incrementalFromIndex, string? incrementalFromDb)
-	{
-		if (string.IsNullOrWhiteSpace(incrementalFromIndex) || string.IsNullOrWhiteSpace(incrementalFromDb))
-		{
-			return;
-		}
-
-		throw new InvalidOperationException("Pass either --incremental-from-index <path> or --incremental-from-db <path>, but not both.");
 	}
 
 	private static string? NormalizeOptional(string? value)

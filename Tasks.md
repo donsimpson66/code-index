@@ -4,7 +4,7 @@
 
 Build a .NET 10 CLI tool that uses Roslyn for `.sln` and `.csproj` inputs and
 lightweight source parsing for supported directory inputs to generate compact
-code index artifacts, with JSON output and optional SQLite storage.
+JSON code index artifacts.
 
 The tool should help AI agents:
 
@@ -347,40 +347,12 @@ Do not implement these until MVP is stable.
 - [x] `FindReferencesAsync`
 - [x] cached references index
 - [x] caller/callee analysis
-- [x] SQLite backend
 - [x] incremental indexing
 - [ ] API server
 - [x] multi-language support
 - [x] local variable indexing
 - [x] vector embeddings
 - [x] test linking heuristics
-
-## Milestone 12 - SQLite Store and Query Path
-
-### Tasks
-
-- [x] Add SQLite package support in core storage layer
-- [x] Create SQLite schema for `meta`, `files`, `symbols`, and `edges`
-- [x] Write full snapshot to SQLite during `build --db-out`
-- [x] Support `find-symbol --db`
-- [x] Support `get-symbol --db`
-- [x] Support `get-children --db`
-- [x] Support `get-excerpt --db`
-- [x] Support `benchmark --db`
-- [x] Use direct metadata, file, and count queries for `benchmark --db`
-- [x] Validate mutual exclusivity of `--index` and `--db`
-- [x] Add CLI tests for SQLite build/query/benchmark flows
-- [x] Benchmark SQLite mode against the current repository
-- [x] Ignore generated `bin/` and `obj/` outputs at the repository root
-
-### Done Criteria
-
-- [x] SQLite-backed commands return the same shape as JSON-backed commands
-- [x] CLI tests cover both storage paths
-- [x] Current repository builds and benchmarks through the SQLite path
-- [x] Database benchmark metrics do not require a full snapshot read
-
----
 
 ## Current Post-MVP Status
 
@@ -390,13 +362,135 @@ Implemented beyond the original MVP:
 - [x] caller/callee analysis via `calls` edges plus `get-callers` and `get-callees`
 - [x] test linking heuristics via `get-tests` and `get-test-targets`
 - [x] semantic embeddings and `semantic-search`
-- [x] incremental indexing from prior JSON or SQLite baselines
-- [x] benchmark coverage for JSON, SQLite, size, speed, and estimated token usage
+- [x] incremental indexing from prior JSON baselines
+- [x] benchmark coverage for JSON size, speed, and estimated token usage
 - [x] directory-based multi-language indexing for Java, Go, TypeScript, Python, and PHP
 
 Still open:
 
 - [ ] API server
+
+---
+
+## Production MCP Server Track
+
+### Phase 1 - Remove Secondary Store
+
+### Tasks
+
+- [x] Remove the retired secondary store implementation and production code
+- [x] Remove secondary-store output support from the CLI build flow
+- [x] Remove secondary-store query paths from CLI commands
+- [x] Remove secondary-store benchmark branches and output
+- [x] Remove secondary-store package references from project files
+- [x] Remove or rewrite storage-specific documentation and plan files
+- [x] Keep JSON-backed build and query behavior working end to end
+
+### Done Criteria
+
+- [x] No production path depends on a secondary store backend
+- [x] One JSON-backed storage/query model remains
+- [x] README and tests no longer describe retired secondary-store usage
+
+---
+
+### Phase 2 - Multi-Language Refactor Cleanup
+
+### Tasks
+
+- [ ] Split `MultiLanguageSourceIndexing.cs` by concern
+- [ ] Move per-language parser logic into separate files
+- [ ] Move per-language usage/reference logic into separate files
+- [ ] Extract shared multi-language parsing helpers
+- [ ] Centralize input-kind/indexing-strategy selection in one place
+- [ ] Reduce repeated `Directory.Exists(path)` branching in `CliRuntime`
+- [ ] Add dedicated multi-language tests for Java, Go, TypeScript, Python, and PHP
+
+### Done Criteria
+
+- [ ] Multi-language support no longer depends on one monolithic implementation file
+- [ ] One language can change without editing one giant parser/usage file
+- [ ] Multi-language behavior has focused automated coverage
+
+---
+
+### Phase 3 - Shared Build And Query Service Layer
+
+### Tasks
+
+- [ ] Extract build orchestration out of CLI command handlers
+- [ ] Extract query orchestration out of CLI command handlers
+- [ ] Define a reusable internal service API for build and query operations
+- [ ] Keep the CLI as a thin adapter over the shared service layer
+- [ ] Standardize result shapes used by both CLI and MCP surfaces
+
+### Done Criteria
+
+- [ ] Build/query logic can run without `System.CommandLine`
+- [ ] CLI and MCP can share one service boundary
+
+---
+
+### Phase 4 - MCP Server Project
+
+### Tasks
+
+- [ ] Add `src/CodeIndex.Mcp`
+- [ ] Add the project to `code-index.sln`
+- [ ] Add official .NET MCP SDK dependencies
+- [ ] Configure stdio transport
+- [ ] Keep logs on stderr only
+- [ ] Wire the MCP server to the shared build/query service layer
+
+### Done Criteria
+
+- [ ] MCP server starts over stdio
+- [ ] MCP tools can be listed by a client
+- [ ] No CLI shell-out is needed for tool execution
+
+---
+
+### Phase 5 - MCP Tool Surface
+
+### Tasks
+
+- [ ] Implement `build_index`
+- [ ] Implement `find_symbol`
+- [ ] Implement `get_symbol`
+- [ ] Implement `get_children`
+- [ ] Implement `find_references`
+- [ ] Implement `semantic_search`
+- [ ] Implement `get_callees`
+- [ ] Implement `get_callers`
+- [ ] Implement `get_tests`
+- [ ] Implement `get_test_targets`
+- [ ] Implement `get_excerpt`
+- [ ] Keep tool responses compact and agent-friendly
+
+### Done Criteria
+
+- [ ] MCP tool surface covers the index-first workflow
+- [ ] MCP server can build indexes, not just query them
+
+---
+
+### Phase 6 - Workspace Defaults, Docs, And Hardening
+
+### Tasks
+
+- [ ] Define a default local artifact directory such as `.code-index/`
+- [ ] Support safe workspace-relative path resolution
+- [ ] Add README documentation for MCP setup and workflow
+- [ ] Add VS Code MCP configuration example
+- [ ] Add OpenCode MCP configuration example
+- [ ] Add MCP integration tests for build and query flows
+- [ ] Harden cancellation, path validation, and error handling
+
+### Done Criteria
+
+- [ ] Local client setup is documented
+- [ ] MCP build and query flows are covered by automated tests
+- [ ] The server is reliable enough for repeated editor use
 
 ---
 
