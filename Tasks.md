@@ -2,13 +2,15 @@
 
 ## Goal
 
-Build a .NET 10 CLI tool that uses Roslyn to generate compact code index
-artifacts for C# solutions and projects, with JSON output and optional SQLite
-storage.
+Build a .NET 10 CLI tool that uses Roslyn for `.sln` and `.csproj` inputs and
+lightweight source parsing for supported directory inputs to generate compact
+code index artifacts, with JSON output and optional SQLite storage.
 
 The tool should help AI agents:
 
 - find symbols quickly
+- resolve references and caller/callee relationships
+- query semantic matches without loading full files
 - reduce token usage
 - reduce context size
 - fetch only relevant file ranges
@@ -348,7 +350,7 @@ Do not implement these until MVP is stable.
 - [x] SQLite backend
 - [x] incremental indexing
 - [ ] API server
-- [ ] multi-language support
+- [x] multi-language support
 - [x] local variable indexing
 - [x] vector embeddings
 - [x] test linking heuristics
@@ -377,6 +379,24 @@ Do not implement these until MVP is stable.
 - [x] CLI tests cover both storage paths
 - [x] Current repository builds and benchmarks through the SQLite path
 - [x] Database benchmark metrics do not require a full snapshot read
+
+---
+
+## Current Post-MVP Status
+
+Implemented beyond the original MVP:
+
+- [x] references index and `find-references`
+- [x] caller/callee analysis via `calls` edges plus `get-callers` and `get-callees`
+- [x] test linking heuristics via `get-tests` and `get-test-targets`
+- [x] semantic embeddings and `semantic-search`
+- [x] incremental indexing from prior JSON or SQLite baselines
+- [x] benchmark coverage for JSON, SQLite, size, speed, and estimated token usage
+- [x] directory-based multi-language indexing for Java, Go, TypeScript, Python, and PHP
+
+Still open:
+
+- [ ] API server
 
 ---
 

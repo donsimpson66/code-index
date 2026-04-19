@@ -261,12 +261,33 @@ internal static class MultiLanguageUsageParser
 {
     private static readonly Regex JavaMethodCallRegex = new(@"(?:(?<qualifier>[A-Za-z_][A-Za-z0-9_]*)\s*\.\s*)?(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex JavaConstructorReferenceRegex = new(@"\bnew\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex JavaImportRegex = new(@"^\s*import\s+(?<static>static\s+)?(?<path>[A-Za-z_][A-Za-z0-9_\.]*(?:\.\*)?)\s*;", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.Multiline);
     private static readonly Regex TypeScriptMethodCallRegex = new(@"(?:(?<qualifier>[A-Za-z_][A-Za-z0-9_]*)\s*\.\s*)?(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex TypeScriptConstructorReferenceRegex = new(@"\bnew\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex TypeScriptImportRegex = new(@"^\s*import\s+(?:(?<default>[A-Za-z_][A-Za-z0-9_]*)\s*,\s*)?(?:\{(?<named>[^}]*)\}|\*\s+as\s+(?<namespace>[A-Za-z_][A-Za-z0-9_]*))?\s*from\s*['""](?<path>[^'""]+)['""]", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.Multiline);
     private static readonly Regex TypeScriptFieldTypeRegex = new(@"^\s*(?:(?:public|private|protected|static|readonly)\s+)*(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*:\s*(?<type>[A-Za-z_][A-Za-z0-9_]*)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex TypeScriptCallableParameterRegex = new(@"(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*:\s*(?<type>[A-Za-z_][A-Za-z0-9_]*)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex TypeScriptVariableTypeRegex = new(@"^\s*(?:const|let|var)\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*:\s*(?<type>[A-Za-z_][A-Za-z0-9_]*)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex TypeScriptVariableNewRegex = new(@"^\s*(?:const|let|var)\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*new\s+(?<type>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex TypeScriptVariableAliasRegex = new(@"^\s*(?:const|let|var)\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:(?<owner>this)\.)?(?<source>[A-Za-z_][A-Za-z0-9_]*)\s*;?", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex TypeScriptFieldAssignmentNewRegex = new(@"^\s*this\.(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*new\s+(?<type>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex TypeScriptFieldAssignmentAliasRegex = new(@"^\s*this\.(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:(?<owner>this)\.)?(?<source>[A-Za-z_][A-Za-z0-9_]*)\s*;?", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex GoSelectorCallRegex = new(@"(?<qualifier>[A-Za-z_][A-Za-z0-9_]*)\s*\.\s*(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex GoCallRegex = new(@"(?<!func\s)(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex GoImportSpecRegex = new(@"^(?:(?<alias>[A-Za-z_][A-Za-z0-9_]*|\.|_)\s+)?""(?<path>[^""]+)""$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex PythonCallRegex = new(@"(?:(?<qualifier>[A-Za-z_][A-Za-z0-9_]*)\s*\.\s*)?(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex PythonImportRegex = new(@"^\s*import\s+(?<module>[A-Za-z_][A-Za-z0-9_\.]*)\s*(?:as\s+(?<alias>[A-Za-z_][A-Za-z0-9_]*))?", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.Multiline);
+    private static readonly Regex PythonFromImportRegex = new(@"^\s*from\s+(?<module>[A-Za-z_][A-Za-z0-9_\.]*)\s+import\s+(?<names>[^\r\n]+)", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.Multiline);
+    private static readonly Regex PythonCallableParameterRegex = new(@"(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*:\s*(?<type>[A-Za-z_][A-Za-z0-9_]*)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex PythonAssignmentTypeRegex = new(@"^\s*(?:(?<owner>self)\.)?(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?<type>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex PythonAliasAssignmentRegex = new(@"^\s*(?:(?<owner>self)\.)?(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:(?<sourceOwner>self)\.)?(?<source>[A-Za-z_][A-Za-z0-9_]*)\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex PhpCallRegex = new(@"(?:(?<qualifier>\$?[A-Za-z_][A-Za-z0-9_]*)\s*(?:->|::)\s*)?(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex PhpConstructorReferenceRegex = new(@"\bnew\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex PhpUseRegex = new(@"^\s*use\s+(?<function>function\s+)?(?<path>[A-Za-z_\\][A-Za-z0-9_\\]*)(?:\s+as\s+(?<alias>[A-Za-z_][A-Za-z0-9_]*))?\s*;", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.Multiline);
+    private static readonly Regex PhpCallableParameterRegex = new(@"(?<type>[A-Za-z_\\][A-Za-z0-9_\\|?]*)\s+\$(?<name>[A-Za-z_][A-Za-z0-9_]*)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex PhpFieldTypeRegex = new(@"^\s*(?:(?:public|private|protected|static|readonly)\s+)*(?<type>[A-Za-z_\\][A-Za-z0-9_\\|?]*)\s+\$(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*(?:=[^;]+)?;", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex PhpAssignmentNewTypeRegex = new(@"^\s*(?:(?<owner>\$this)->)?(?:(?<dollar>\$)?(?<name>[A-Za-z_][A-Za-z0-9_]*))\s*=\s*new\s+(?<type>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex PhpAliasAssignmentRegex = new(@"^\s*(?:(?<owner>\$this)->)?(?:(?<dollar>\$)?(?<name>[A-Za-z_][A-Za-z0-9_]*))\s*=\s*(?:(?<sourceOwner>\$this)->)?\$(?<source>[A-Za-z_][A-Za-z0-9_]*)\s*;", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly HashSet<string> IgnoredCallNames = new(StringComparer.Ordinal)
     {
         "if",
@@ -315,7 +336,7 @@ internal static class MultiLanguageUsageParser
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (file.Language is not ("Java" or "Go" or "TypeScript"))
+            if (file.Language is not ("Java" or "Go" or "TypeScript" or "Python" or "PHP"))
             {
                 continue;
             }
@@ -333,6 +354,8 @@ internal static class MultiLanguageUsageParser
                 "Java" => ExtractJavaReferences(file, source, fileSymbols, symbols),
                 "Go" => ExtractGoReferences(file, source, fileSymbols, symbols),
                 "TypeScript" => ExtractTypeScriptReferences(file, source, fileSymbols, symbols),
+                "Python" => ExtractPythonReferences(file, source, fileSymbols, symbols),
+                "PHP" => ExtractPhpReferences(file, source, fileSymbols, symbols),
                 _ => Array.Empty<ReferenceRecord>()
             });
         }
@@ -350,17 +373,29 @@ internal static class MultiLanguageUsageParser
     private static IReadOnlyList<ReferenceRecord> ExtractJavaReferences(FileRecord file, string source, IReadOnlyList<SymbolRecord> fileSymbols, IReadOnlyList<SymbolRecord> allSymbols)
     {
         var packageName = MultiLanguageSymbolParser.GetJavaPackageName(file, source);
+        var imports = ParseJavaImports(source);
         var packageSymbols = allSymbols.Where(symbol =>
             string.Equals(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id), "Java", StringComparison.Ordinal) &&
             (string.Equals(symbol.QualifiedName, packageName, StringComparison.Ordinal) ||
              symbol.QualifiedName.StartsWith(packageName + ".", StringComparison.Ordinal)))
             .ToArray();
-        var typeSymbols = packageSymbols.Where(MultiLanguageSymbolParser.IsTypeSymbol).ToArray();
-        var callableSymbols = packageSymbols.Where(symbol => CallableKinds.Contains(symbol.Kind)).ToArray();
+        var importedSymbols = allSymbols.Where(symbol =>
+                string.Equals(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id), "Java", StringComparison.Ordinal) &&
+                (imports.ImportedPackages.Any(package => string.Equals(symbol.QualifiedName, package, StringComparison.Ordinal) || symbol.QualifiedName.StartsWith(package + ".", StringComparison.Ordinal)) ||
+                 imports.ImportedTypes.Any(typeName => string.Equals(symbol.QualifiedName, typeName, StringComparison.Ordinal) || symbol.QualifiedName.StartsWith(typeName + ".", StringComparison.Ordinal)) ||
+                 imports.ImportedStaticTypes.Any(typeName => string.Equals(symbol.QualifiedName, typeName, StringComparison.Ordinal) || symbol.QualifiedName.StartsWith(typeName + ".", StringComparison.Ordinal)) ||
+                 imports.ImportedStaticMembers.Any(memberName => string.Equals(symbol.QualifiedName, memberName, StringComparison.Ordinal))))
+            .ToArray();
+        var candidateSymbols = packageSymbols.Concat(importedSymbols).Distinct().ToArray();
+        var typeSymbols = candidateSymbols.Where(MultiLanguageSymbolParser.IsTypeSymbol).ToArray();
+        var callableSymbols = candidateSymbols.Where(symbol => CallableKinds.Contains(symbol.Kind)).ToArray();
+        var callableLookup = callableSymbols.ToDictionary(symbol => symbol.QualifiedName, StringComparer.Ordinal);
         var methodLookup = callableSymbols
             .GroupBy(symbol => (symbol.ParentId, symbol.Name), symbol => symbol)
             .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.Range.StartLine).ToArray());
-        var typeLookup = typeSymbols.ToDictionary(symbol => symbol.Name, StringComparer.Ordinal);
+        var typeLookup = typeSymbols
+            .GroupBy(symbol => symbol.Name, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.QualifiedName, StringComparer.Ordinal).First(), StringComparer.Ordinal);
         var contexts = BuildBraceContexts(source, fileSymbols, MultiLanguageSymbolParser.JavaOrCSharpTypeRegex, MultiLanguageSymbolParser.JavaOrCSharpMethodRegex);
         var references = new List<ReferenceRecord>();
 
@@ -380,7 +415,7 @@ internal static class MultiLanguageUsageParser
                 }
 
                 var qualifier = match.Groups["qualifier"].Success ? match.Groups["qualifier"].Value : null;
-                var target = ResolveJavaMethodTarget(context.Type, qualifier, callName, methodLookup, typeLookup);
+                var target = ResolveJavaMethodTarget(context.Type, qualifier, callName, packageName, imports, callableLookup, methodLookup, typeLookup);
                 if (target is null)
                 {
                     continue;
@@ -392,7 +427,8 @@ internal static class MultiLanguageUsageParser
             foreach (Match match in JavaConstructorReferenceRegex.Matches(context.Line))
             {
                 var typeName = match.Groups["name"].Value;
-                if (typeLookup.TryGetValue(typeName, out var targetType))
+                var targetType = ResolveJavaTypeTarget(typeName, packageName, imports, typeLookup);
+                if (targetType is not null)
                 {
                     references.Add(CreateReference(targetType, context.Callable.Id, file.Id, context.LineNumber, match.Groups["name"].Index + 1, typeName, context.Line));
                 }
@@ -405,22 +441,37 @@ internal static class MultiLanguageUsageParser
     private static IReadOnlyList<ReferenceRecord> ExtractGoReferences(FileRecord file, string source, IReadOnlyList<SymbolRecord> fileSymbols, IReadOnlyList<SymbolRecord> allSymbols)
     {
         var packageName = MultiLanguageSymbolParser.GetGoPackageName(file, source);
+        var imports = ParseGoImports(source);
         var packageSymbols = allSymbols.Where(symbol =>
             string.Equals(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id), "Go", StringComparison.Ordinal) &&
             (string.Equals(symbol.QualifiedName, packageName, StringComparison.Ordinal) ||
              symbol.QualifiedName.StartsWith(packageName + ".", StringComparison.Ordinal)))
             .ToArray();
-        var typeSymbols = packageSymbols.Where(MultiLanguageSymbolParser.IsTypeSymbol).ToArray();
-        var callableSymbols = packageSymbols.Where(symbol => CallableKinds.Contains(symbol.Kind)).ToArray();
-        var packageFunctionLookup = callableSymbols
+        var importedSymbols = allSymbols.Where(symbol =>
+                string.Equals(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id), "Go", StringComparison.Ordinal) &&
+                imports.ImportedPackages.Any(importedPackage =>
+                    string.Equals(symbol.QualifiedName, importedPackage, StringComparison.Ordinal) ||
+                    symbol.QualifiedName.StartsWith(importedPackage + ".", StringComparison.Ordinal)))
+            .ToArray();
+        var candidateSymbols = packageSymbols.Concat(importedSymbols).Distinct().ToArray();
+        var typeSymbols = candidateSymbols.Where(MultiLanguageSymbolParser.IsTypeSymbol).ToArray();
+        var callableSymbols = candidateSymbols.Where(symbol => CallableKinds.Contains(symbol.Kind)).ToArray();
+        var packageFunctionLookup = packageSymbols
+            .Where(symbol => CallableKinds.Contains(symbol.Kind))
             .Where(symbol => symbol.ParentId is null || allSymbols.Any(parent => parent.Id == symbol.ParentId && parent.Kind == SymbolKinds.Module))
             .GroupBy(symbol => symbol.Name, symbol => symbol)
             .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.Range.StartLine).ToArray(), StringComparer.Ordinal);
+        var importedPackageFunctionLookup = callableSymbols
+            .Where(symbol => symbol.ParentId is null || candidateSymbols.Any(parent => parent.Id == symbol.ParentId && parent.Kind == SymbolKinds.Module))
+            .GroupBy(symbol => (MultiLanguageSymbolParser.GetQualifierPrefix(symbol.QualifiedName), symbol.Name), symbol => symbol)
+            .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.Range.StartLine).ToArray());
         var receiverMethodLookup = callableSymbols
             .Where(symbol => symbol.ParentId is not null)
             .GroupBy(symbol => (symbol.ParentId, symbol.Name), symbol => symbol)
             .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.Range.StartLine).ToArray());
-        var typeLookup = typeSymbols.ToDictionary(symbol => symbol.Name, StringComparer.Ordinal);
+        var typeLookup = typeSymbols
+            .GroupBy(symbol => symbol.Name, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.QualifiedName, StringComparer.Ordinal).First(), StringComparer.Ordinal);
         var contexts = BuildGoContexts(source, fileSymbols);
         var references = new List<ReferenceRecord>();
 
@@ -439,9 +490,17 @@ internal static class MultiLanguageUsageParser
                     continue;
                 }
 
-                var target = context.Type is not null && receiverMethodLookup.TryGetValue((context.Type.Id, methodName), out var methods)
-                    ? methods[0]
-                    : null;
+                SymbolRecord? target = null;
+                var qualifier = match.Groups["qualifier"].Value;
+
+                if (imports.Bindings.TryGetValue(qualifier, out var importedPackageName) && importedPackageFunctionLookup.TryGetValue((importedPackageName, methodName), out var importedFunctions))
+                {
+                    target = importedFunctions[0];
+                }
+                else if (context.Type is not null && receiverMethodLookup.TryGetValue((context.Type.Id, methodName), out var methods))
+                {
+                    target = methods[0];
+                }
 
                 if (target is not null)
                 {
@@ -472,6 +531,19 @@ internal static class MultiLanguageUsageParser
                     references.Add(CreateReference(typeSymbol, context.Callable.Id, file.Id, context.LineNumber, index + 1, typeSymbol.Name, context.Line));
                 }
             }
+
+            foreach (var binding in imports.Bindings)
+            {
+                foreach (var typeSymbol in typeSymbols.Where(symbol => string.Equals(MultiLanguageSymbolParser.GetQualifierPrefix(symbol.QualifiedName), binding.Value, StringComparison.Ordinal)))
+                {
+                    var compositeLiteralToken = $"{binding.Key}.{typeSymbol.Name}{{";
+                    var index = context.Line.IndexOf(compositeLiteralToken, StringComparison.Ordinal);
+                    if (index >= 0)
+                    {
+                        references.Add(CreateReference(typeSymbol, context.Callable.Id, file.Id, context.LineNumber, index + 1, typeSymbol.Name, context.Line));
+                    }
+                }
+            }
         }
 
         return references;
@@ -482,11 +554,11 @@ internal static class MultiLanguageUsageParser
         var moduleName = MultiLanguageSymbolParser.BuildLogicalModuleQualifier(file.Path);
         var moduleSymbols = allSymbols.Where(symbol =>
             string.Equals(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id), "TypeScript", StringComparison.Ordinal) &&
-                string.Equals(symbol.QualifiedName, moduleName, StringComparison.Ordinal) ||
-            (string.Equals(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id), "TypeScript", StringComparison.Ordinal) &&
+            (string.Equals(symbol.QualifiedName, moduleName, StringComparison.Ordinal) ||
              symbol.QualifiedName.StartsWith(moduleName + ".", StringComparison.Ordinal)))
             .ToArray();
         var importedModules = ParseTypeScriptImports(file.Path, source);
+        var importedBindings = ParseTypeScriptImportBindings(file.Path, source);
         var importedSymbols = allSymbols.Where(symbol =>
             string.Equals(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id), "TypeScript", StringComparison.Ordinal) &&
             importedModules.Any(module =>
@@ -497,8 +569,9 @@ internal static class MultiLanguageUsageParser
         var typeSymbols = candidateSymbols.Where(MultiLanguageSymbolParser.IsTypeSymbol).ToArray();
         var callableSymbols = candidateSymbols.Where(symbol => CallableKinds.Contains(symbol.Kind)).ToArray();
         var propertySymbols = candidateSymbols.Where(symbol => symbol.Kind is SymbolKinds.Field or SymbolKinds.Property).ToArray();
-        var typeLookup = typeSymbols.ToDictionary(symbol => symbol.Name, StringComparer.Ordinal);
-        var importedBindings = ParseTypeScriptImportBindings(file.Path, source);
+        var typeLookup = typeSymbols
+            .GroupBy(symbol => symbol.Name, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.QualifiedName, StringComparer.Ordinal).First(), StringComparer.Ordinal);
         var importedTypeLookup = ResolveImportedTypeLookup(importedBindings, candidateSymbols);
         var importedCallableLookup = ResolveImportedCallableLookup(importedBindings, candidateSymbols);
         var moduleFunctionLookup = callableSymbols.GroupBy(symbol => (symbol.ParentId, symbol.Name), symbol => symbol).ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.Range.StartLine).ToArray());
@@ -506,7 +579,12 @@ internal static class MultiLanguageUsageParser
             .Where(symbol => symbol.ParentId is null || candidateSymbols.Any(parent => parent.Id == symbol.ParentId && parent.Kind == SymbolKinds.Module))
             .GroupBy(symbol => symbol.Name, symbol => symbol)
             .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.Range.StartLine).ToArray(), StringComparer.Ordinal);
+        var importedModuleFunctionLookup = callableSymbols
+            .Where(symbol => symbol.ParentId is null || candidateSymbols.Any(parent => parent.Id == symbol.ParentId && parent.Kind == SymbolKinds.Module))
+            .GroupBy(symbol => (MultiLanguageSymbolParser.GetQualifierPrefix(symbol.QualifiedName), symbol.Name), symbol => symbol)
+            .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.Range.StartLine).ToArray());
         var fieldTypeLookup = ParseTypeScriptFieldTypes(source, fileSymbols);
+        var callableTypeHintLookup = ParseTypeScriptCallableTypeHints(source, fileSymbols, fieldTypeLookup);
         var contexts = BuildBraceContexts(source, fileSymbols, MultiLanguageSymbolParser.TypeScriptTypeRegex, MultiLanguageSymbolParser.TypeScriptMethodRegex);
         var references = new List<ReferenceRecord>();
 
@@ -526,7 +604,7 @@ internal static class MultiLanguageUsageParser
                 }
 
                 var qualifier = match.Groups["qualifier"].Success ? match.Groups["qualifier"].Value : null;
-                var target = ResolveTypeScriptCallableTarget(context.Type, qualifier, methodName, moduleFunctionLookup, topLevelFunctionLookup, typeLookup, importedTypeLookup, importedCallableLookup, propertySymbols, fieldTypeLookup);
+                var target = ResolveTypeScriptCallableTarget(context.Type, context.Callable, qualifier, methodName, importedBindings, moduleFunctionLookup, topLevelFunctionLookup, importedModuleFunctionLookup, typeLookup, importedTypeLookup, importedCallableLookup, propertySymbols, fieldTypeLookup, callableTypeHintLookup);
                 if (target is not null)
                 {
                     references.Add(CreateReference(target, context.Callable.Id, file.Id, context.LineNumber, match.Groups["name"].Index + 1, methodName, context.Line));
@@ -556,10 +634,155 @@ internal static class MultiLanguageUsageParser
         return references;
     }
 
+    private static IReadOnlyList<ReferenceRecord> ExtractPythonReferences(FileRecord file, string source, IReadOnlyList<SymbolRecord> fileSymbols, IReadOnlyList<SymbolRecord> allSymbols)
+    {
+        var moduleName = MultiLanguageSymbolParser.BuildLogicalModuleQualifier(file.Path);
+        var imports = ParsePythonImports(source);
+        var moduleSymbols = allSymbols.Where(symbol =>
+            string.Equals(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id), "Python", StringComparison.Ordinal) &&
+            (string.Equals(symbol.QualifiedName, moduleName, StringComparison.Ordinal) ||
+             symbol.QualifiedName.StartsWith(moduleName + ".", StringComparison.Ordinal)))
+            .ToArray();
+        var importedSymbols = allSymbols.Where(symbol =>
+                string.Equals(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id), "Python", StringComparison.Ordinal) &&
+                imports.Bindings.Values.Any(target =>
+                    string.Equals(symbol.QualifiedName, target, StringComparison.Ordinal) ||
+                    symbol.QualifiedName.StartsWith(target + ".", StringComparison.Ordinal)))
+            .ToArray();
+        var candidateSymbols = moduleSymbols.Concat(importedSymbols).Distinct().ToArray();
+        var typeLookup = candidateSymbols
+            .Where(MultiLanguageSymbolParser.IsTypeSymbol)
+            .GroupBy(symbol => symbol.Name, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.QualifiedName, StringComparer.Ordinal).First(), StringComparer.Ordinal);
+        var methodLookup = candidateSymbols
+            .Where(symbol => CallableKinds.Contains(symbol.Kind))
+            .GroupBy(symbol => (symbol.ParentId, symbol.Name), symbol => symbol)
+            .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.Range.StartLine).ToArray());
+        var topLevelFunctionLookup = candidateSymbols
+            .Where(symbol => CallableKinds.Contains(symbol.Kind))
+            .Where(symbol => symbol.ParentId is null || candidateSymbols.Any(parent => parent.Id == symbol.ParentId && parent.Kind == SymbolKinds.Module))
+            .GroupBy(symbol => symbol.Name, symbol => symbol)
+            .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.Range.StartLine).ToArray(), StringComparer.Ordinal);
+        var importedModuleFunctionLookup = candidateSymbols
+            .Where(symbol => CallableKinds.Contains(symbol.Kind))
+            .Where(symbol => symbol.ParentId is null || candidateSymbols.Any(parent => parent.Id == symbol.ParentId && parent.Kind == SymbolKinds.Module))
+            .GroupBy(symbol => (MultiLanguageSymbolParser.GetQualifierPrefix(symbol.QualifiedName), symbol.Name), symbol => symbol)
+            .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.Range.StartLine).ToArray());
+        var importedMemberLookup = ResolveImportedMemberLookup(imports.Bindings, candidateSymbols);
+        var fieldTypeLookup = ParsePythonFieldTypes(source, fileSymbols);
+        var callableTypeHintLookup = ParsePythonCallableTypeHints(source, fileSymbols, fieldTypeLookup);
+        var contexts = BuildPythonContexts(source, fileSymbols);
+        var references = new List<ReferenceRecord>();
+
+        foreach (var context in contexts)
+        {
+            if (context.Callable is null || context.LineNumber == context.Callable.Range.StartLine)
+            {
+                continue;
+            }
+
+            foreach (Match match in PythonCallRegex.Matches(context.Line))
+            {
+                var callableName = match.Groups["name"].Value;
+                if (IgnoredCallNames.Contains(callableName))
+                {
+                    continue;
+                }
+
+                var qualifier = match.Groups["qualifier"].Success ? match.Groups["qualifier"].Value : null;
+                var target = ResolvePythonCallableTarget(context.Type, context.Callable, qualifier, callableName, imports.Bindings, methodLookup, topLevelFunctionLookup, importedModuleFunctionLookup, typeLookup, importedMemberLookup, fieldTypeLookup, callableTypeHintLookup);
+                if (target is null)
+                {
+                    continue;
+                }
+
+                references.Add(CreateReference(target, context.Callable.Id, file.Id, context.LineNumber, match.Groups["name"].Index + 1, callableName, context.Line));
+            }
+        }
+
+        return references;
+    }
+
+    private static IReadOnlyList<ReferenceRecord> ExtractPhpReferences(FileRecord file, string source, IReadOnlyList<SymbolRecord> fileSymbols, IReadOnlyList<SymbolRecord> allSymbols)
+    {
+        var namespaceName = MultiLanguageSymbolParser.GetPhpNamespaceName(file, source);
+        var imports = ParsePhpImports(source);
+        var namespaceSymbols = allSymbols.Where(symbol =>
+            string.Equals(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id), "PHP", StringComparison.Ordinal) &&
+            (string.Equals(symbol.QualifiedName, namespaceName, StringComparison.Ordinal) ||
+             symbol.QualifiedName.StartsWith(namespaceName + ".", StringComparison.Ordinal)))
+            .ToArray();
+        var importedSymbols = allSymbols.Where(symbol =>
+                string.Equals(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id), "PHP", StringComparison.Ordinal) &&
+                (imports.TypeBindings.Values.Any(target => string.Equals(symbol.QualifiedName, target, StringComparison.Ordinal) || symbol.QualifiedName.StartsWith(target + ".", StringComparison.Ordinal)) ||
+                 imports.FunctionBindings.Values.Any(target => string.Equals(symbol.QualifiedName, target, StringComparison.Ordinal))))
+            .ToArray();
+        var candidateSymbols = namespaceSymbols.Concat(importedSymbols).Distinct().ToArray();
+        var typeLookup = candidateSymbols
+            .Where(MultiLanguageSymbolParser.IsTypeSymbol)
+            .GroupBy(symbol => symbol.Name, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.QualifiedName, StringComparer.Ordinal).First(), StringComparer.Ordinal);
+        var methodLookup = candidateSymbols
+            .Where(symbol => CallableKinds.Contains(symbol.Kind))
+            .GroupBy(symbol => (symbol.ParentId, symbol.Name), symbol => symbol)
+            .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.Range.StartLine).ToArray());
+        var topLevelFunctionLookup = candidateSymbols
+            .Where(symbol => CallableKinds.Contains(symbol.Kind))
+            .Where(symbol => symbol.ParentId is null || candidateSymbols.Any(parent => parent.Id == symbol.ParentId && parent.Kind == SymbolKinds.Namespace))
+            .GroupBy(symbol => symbol.Name, symbol => symbol)
+            .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.Range.StartLine).ToArray(), StringComparer.Ordinal);
+        var importedFunctionLookup = ResolveImportedMemberLookup(imports.FunctionBindings, candidateSymbols);
+        var importedTypeLookup = ResolveImportedMemberLookup(imports.TypeBindings, candidateSymbols);
+        var fieldTypeLookup = ParsePhpFieldTypes(source, fileSymbols);
+        var callableTypeHintLookup = ParsePhpCallableTypeHints(source, fileSymbols, fieldTypeLookup);
+        var contexts = BuildBraceContexts(source, fileSymbols, MultiLanguageSymbolParser.PhpTypeRegex, MultiLanguageSymbolParser.PhpFunctionRegex);
+        var references = new List<ReferenceRecord>();
+
+        foreach (var context in contexts)
+        {
+            if (context.Callable is null || context.LineNumber == context.Callable.Range.StartLine)
+            {
+                continue;
+            }
+
+            foreach (Match match in PhpCallRegex.Matches(context.Line))
+            {
+                var callableName = match.Groups["name"].Value;
+                if (IgnoredCallNames.Contains(callableName))
+                {
+                    continue;
+                }
+
+                var qualifier = match.Groups["qualifier"].Success ? match.Groups["qualifier"].Value : null;
+                var target = ResolvePhpCallableTarget(context.Type, context.Callable, qualifier, callableName, methodLookup, topLevelFunctionLookup, typeLookup, importedTypeLookup, importedFunctionLookup, fieldTypeLookup, callableTypeHintLookup);
+                if (target is null)
+                {
+                    continue;
+                }
+
+                references.Add(CreateReference(target, context.Callable.Id, file.Id, context.LineNumber, match.Groups["name"].Index + 1, callableName, context.Line));
+            }
+
+            foreach (Match match in PhpConstructorReferenceRegex.Matches(context.Line))
+            {
+                var typeName = match.Groups["name"].Value;
+                if (ResolvePhpTypeTarget(typeName, typeLookup, importedTypeLookup) is { } targetType)
+                {
+                    references.Add(CreateReference(targetType, context.Callable.Id, file.Id, context.LineNumber, match.Groups["name"].Index + 1, typeName, context.Line));
+                }
+            }
+        }
+
+        return references;
+    }
+
     private static SymbolRecord? ResolveJavaMethodTarget(
         SymbolRecord? currentType,
         string? qualifier,
         string methodName,
+        string packageName,
+        JavaImportInfo imports,
+        IReadOnlyDictionary<string, SymbolRecord> callableLookup,
         IReadOnlyDictionary<(string? ParentId, string Name), SymbolRecord[]> methodLookup,
         IReadOnlyDictionary<string, SymbolRecord> typeLookup)
     {
@@ -571,7 +794,8 @@ internal static class MultiLanguageUsageParser
                 return currentTypeMethods[0];
             }
 
-            if (typeLookup.TryGetValue(qualifier, out var qualifiedType) && methodLookup.TryGetValue((qualifiedType.Id, methodName), out var qualifiedTypeMethods))
+            var qualifiedType = ResolveJavaTypeTarget(qualifier, packageName, imports, typeLookup);
+            if (qualifiedType is not null && methodLookup.TryGetValue((qualifiedType.Id, methodName), out var qualifiedTypeMethods))
             {
                 return qualifiedTypeMethods[0];
             }
@@ -582,20 +806,123 @@ internal static class MultiLanguageUsageParser
             return methods[0];
         }
 
+        if (ResolveJavaStaticMethodTarget(methodName, imports, callableLookup, methodLookup, typeLookup) is { } staticTarget)
+        {
+            return staticTarget;
+        }
+
         return null;
+    }
+
+    private static SymbolRecord? ResolveJavaStaticMethodTarget(
+        string methodName,
+        JavaImportInfo imports,
+        IReadOnlyDictionary<string, SymbolRecord> callableLookup,
+        IReadOnlyDictionary<(string? ParentId, string Name), SymbolRecord[]> methodLookup,
+        IReadOnlyDictionary<string, SymbolRecord> typeLookup)
+    {
+        if (imports.ImportedStaticMemberAliases.TryGetValue(methodName, out var staticMemberQualifiedName) && callableLookup.TryGetValue(staticMemberQualifiedName, out var explicitStaticTarget))
+        {
+            return explicitStaticTarget;
+        }
+
+        foreach (var staticTypeQualifiedName in imports.ImportedStaticTypes)
+        {
+            var typeName = staticTypeQualifiedName.Split('.').Last();
+            if (typeLookup.TryGetValue(typeName, out var staticType) && string.Equals(staticType.QualifiedName, staticTypeQualifiedName, StringComparison.Ordinal) && methodLookup.TryGetValue((staticType.Id, methodName), out var staticMethods))
+            {
+                return staticMethods[0];
+            }
+        }
+
+        return null;
+    }
+
+    private static SymbolRecord? ResolveJavaTypeTarget(string typeName, string packageName, JavaImportInfo imports, IReadOnlyDictionary<string, SymbolRecord> typeLookup)
+    {
+        if (typeLookup.TryGetValue(typeName, out var localType))
+        {
+            return localType;
+        }
+
+        if (imports.ImportedTypeAliases.TryGetValue(typeName, out var importedTypeName))
+        {
+            var importedSimpleName = importedTypeName.Split('.').Last();
+            if (typeLookup.TryGetValue(importedSimpleName, out var importedType) && string.Equals(importedType.QualifiedName, importedTypeName, StringComparison.Ordinal))
+            {
+                return importedType;
+            }
+        }
+
+        foreach (var importedPackage in imports.ImportedPackages)
+        {
+            var importedSimpleName = typeName;
+            if (typeLookup.TryGetValue(importedSimpleName, out var candidate) && string.Equals(MultiLanguageSymbolParser.GetQualifierPrefix(candidate.QualifiedName), importedPackage, StringComparison.Ordinal))
+            {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private static JavaImportInfo ParseJavaImports(string source)
+    {
+        var importedTypeAliases = new Dictionary<string, string>(StringComparer.Ordinal);
+        var importedPackages = new HashSet<string>(StringComparer.Ordinal);
+        var importedStaticMemberAliases = new Dictionary<string, string>(StringComparer.Ordinal);
+        var importedStaticTypes = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (Match match in JavaImportRegex.Matches(source))
+        {
+            var importPath = match.Groups["path"].Value;
+            if (string.IsNullOrWhiteSpace(importPath))
+            {
+                continue;
+            }
+
+            if (match.Groups["static"].Success)
+            {
+                if (importPath.EndsWith(".*", StringComparison.Ordinal))
+                {
+                    importedStaticTypes.Add(importPath[..^2]);
+                }
+                else
+                {
+                    importedStaticMemberAliases[importPath.Split('.').Last()] = importPath;
+                }
+
+                continue;
+            }
+
+            if (importPath.EndsWith(".*", StringComparison.Ordinal))
+            {
+                importedPackages.Add(importPath[..^2]);
+                continue;
+            }
+
+            var alias = importPath.Split('.').Last();
+            importedTypeAliases[alias] = importPath;
+        }
+
+        return new JavaImportInfo(importedTypeAliases, importedPackages, importedStaticMemberAliases, importedStaticTypes);
     }
 
     private static SymbolRecord? ResolveTypeScriptCallableTarget(
         SymbolRecord? currentType,
+        SymbolRecord? currentCallable,
         string? qualifier,
         string methodName,
+        IReadOnlyDictionary<string, string> importedBindings,
         IReadOnlyDictionary<(string? ParentId, string Name), SymbolRecord[]> methodLookup,
         IReadOnlyDictionary<string, SymbolRecord[]> topLevelFunctionLookup,
+        IReadOnlyDictionary<(string ModuleName, string Name), SymbolRecord[]> importedModuleFunctionLookup,
         IReadOnlyDictionary<string, SymbolRecord> typeLookup,
         IReadOnlyDictionary<string, SymbolRecord> importedTypeLookup,
         IReadOnlyDictionary<string, SymbolRecord> importedCallableLookup,
         IReadOnlyList<SymbolRecord> propertySymbols,
-        IReadOnlyDictionary<(string OwnerId, string Name), string> fieldTypeLookup)
+        IReadOnlyDictionary<(string OwnerId, string Name), string> fieldTypeLookup,
+        IReadOnlyDictionary<(string CallableId, string Name), string> callableTypeHintLookup)
     {
         if (!string.IsNullOrWhiteSpace(qualifier))
         {
@@ -615,6 +942,19 @@ internal static class MultiLanguageUsageParser
                 methodLookup.TryGetValue((fieldType.Id, methodName), out var fieldTypeMethods))
             {
                 return fieldTypeMethods[0];
+            }
+
+            if (currentCallable is not null && callableTypeHintLookup.TryGetValue((currentCallable.Id, qualifier), out var hintedTypeName) &&
+                (typeLookup.TryGetValue(hintedTypeName, out var hintedType) || importedTypeLookup.TryGetValue(hintedTypeName, out hintedType)) &&
+                methodLookup.TryGetValue((hintedType.Id, methodName), out var hintedTypeMethods))
+            {
+                return hintedTypeMethods[0];
+            }
+
+            if (importedBindings.TryGetValue(qualifier, out var importedModuleName) &&
+                importedModuleFunctionLookup.TryGetValue((importedModuleName, methodName), out var importedModuleFunctions))
+            {
+                return importedModuleFunctions[0];
             }
 
             if (importedCallableLookup.TryGetValue(methodName, out var importedCallable))
@@ -639,6 +979,75 @@ internal static class MultiLanguageUsageParser
         }
 
         return topLevelFunctionLookup.TryGetValue(methodName, out var topLevelMethods) ? topLevelMethods[0] : null;
+    }
+
+    private static IReadOnlyDictionary<(string CallableId, string Name), string> ParseTypeScriptCallableTypeHints(string source, IReadOnlyList<SymbolRecord> fileSymbols, IReadOnlyDictionary<(string OwnerId, string Name), string> fieldTypeLookup)
+    {
+        var lines = MultiLanguageSymbolParser.SplitLines(source);
+        var callableByLine = fileSymbols
+            .Where(symbol => symbol.Kind is SymbolKinds.Method or SymbolKinds.Constructor)
+            .ToDictionary(symbol => symbol.Range.StartLine, symbol => symbol);
+        var typeHints = new Dictionary<(string CallableId, string Name), string>();
+
+        foreach (var entry in callableByLine)
+        {
+            var declarationLine = lines[entry.Key - 1];
+            var openParen = declarationLine.IndexOf('(');
+            var closeParen = declarationLine.LastIndexOf(')');
+            if (openParen < 0 || closeParen <= openParen)
+            {
+                continue;
+            }
+
+            var parameterList = declarationLine[(openParen + 1)..closeParen];
+            foreach (Match match in TypeScriptCallableParameterRegex.Matches(parameterList))
+            {
+                typeHints[(entry.Value.Id, match.Groups["name"].Value)] = match.Groups["type"].Value;
+            }
+        }
+
+        var contexts = BuildBraceContexts(source, fileSymbols, MultiLanguageSymbolParser.TypeScriptTypeRegex, MultiLanguageSymbolParser.TypeScriptMethodRegex);
+        foreach (var context in contexts)
+        {
+            if (context.Callable is null)
+            {
+                continue;
+            }
+
+            var typedVariableMatch = TypeScriptVariableTypeRegex.Match(context.Line);
+            if (typedVariableMatch.Success)
+            {
+                typeHints[(context.Callable.Id, typedVariableMatch.Groups["name"].Value)] = typedVariableMatch.Groups["type"].Value;
+            }
+
+            var newVariableMatch = TypeScriptVariableNewRegex.Match(context.Line);
+            if (newVariableMatch.Success)
+            {
+                typeHints[(context.Callable.Id, newVariableMatch.Groups["name"].Value)] = newVariableMatch.Groups["type"].Value;
+            }
+
+            var aliasMatch = TypeScriptVariableAliasRegex.Match(context.Line);
+            if (aliasMatch.Success)
+            {
+                var sourceName = aliasMatch.Groups["source"].Value;
+                string? sourceType = null;
+                if (context.Type is not null && aliasMatch.Groups["owner"].Success)
+                {
+                    fieldTypeLookup.TryGetValue((context.Type.Id, sourceName), out sourceType);
+                }
+                else
+                {
+                    typeHints.TryGetValue((context.Callable.Id, sourceName), out sourceType);
+                }
+
+                if (!string.IsNullOrWhiteSpace(sourceType))
+                {
+                    typeHints[(context.Callable.Id, aliasMatch.Groups["name"].Value)] = sourceType;
+                }
+            }
+        }
+
+        return typeHints;
     }
 
     private static IReadOnlyDictionary<string, SymbolRecord> ResolveImportedTypeLookup(IReadOnlyDictionary<string, string> importedBindings, IReadOnlyList<SymbolRecord> candidateSymbols)
@@ -681,6 +1090,457 @@ internal static class MultiLanguageUsageParser
         return lookup;
     }
 
+    private static IReadOnlyDictionary<string, SymbolRecord> ResolveImportedMemberLookup(IReadOnlyDictionary<string, string> importedBindings, IReadOnlyList<SymbolRecord> candidateSymbols)
+    {
+        var lookup = new Dictionary<string, SymbolRecord>(StringComparer.Ordinal);
+
+        foreach (var binding in importedBindings)
+        {
+            var target = candidateSymbols.FirstOrDefault(symbol => string.Equals(symbol.QualifiedName, binding.Value, StringComparison.Ordinal));
+            if (target is not null)
+            {
+                lookup[binding.Key] = target;
+            }
+        }
+
+        return lookup;
+    }
+
+    private static GoImportInfo ParseGoImports(string source)
+    {
+        var bindings = new Dictionary<string, string>(StringComparer.Ordinal);
+        var importedPackages = new HashSet<string>(StringComparer.Ordinal);
+        var inImportBlock = false;
+
+        foreach (var rawLine in MultiLanguageSymbolParser.SplitLines(source))
+        {
+            var line = rawLine.Trim();
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
+            if (string.Equals(line, "import (", StringComparison.Ordinal))
+            {
+                inImportBlock = true;
+                continue;
+            }
+
+            if (inImportBlock && string.Equals(line, ")", StringComparison.Ordinal))
+            {
+                inImportBlock = false;
+                continue;
+            }
+
+            var importSpec = inImportBlock
+                ? line
+                : line.StartsWith("import ", StringComparison.Ordinal) ? line[7..].Trim() : null;
+
+            if (string.IsNullOrWhiteSpace(importSpec))
+            {
+                continue;
+            }
+
+            var match = GoImportSpecRegex.Match(importSpec);
+            if (!match.Success)
+            {
+                continue;
+            }
+
+            var packageName = match.Groups["path"].Value.Split('/').Last();
+            var alias = match.Groups["alias"].Success ? match.Groups["alias"].Value : packageName;
+            if (alias is "_" or ".")
+            {
+                continue;
+            }
+
+            bindings[alias] = packageName;
+            importedPackages.Add(packageName);
+        }
+
+        return new GoImportInfo(bindings, importedPackages);
+    }
+
+    private static PythonImportInfo ParsePythonImports(string source)
+    {
+        var bindings = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (Match match in PythonImportRegex.Matches(source))
+        {
+            var moduleName = match.Groups["module"].Value;
+            var alias = match.Groups["alias"].Success ? match.Groups["alias"].Value : moduleName.Split('.').Last();
+            bindings[alias] = moduleName;
+        }
+
+        foreach (Match match in PythonFromImportRegex.Matches(source))
+        {
+            var moduleName = match.Groups["module"].Value;
+            foreach (var nameBinding in match.Groups["names"].Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                var aliasParts = nameBinding.Split(" as ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                if (aliasParts.Length == 0)
+                {
+                    continue;
+                }
+
+                var importedName = aliasParts[0];
+                var alias = aliasParts.Length > 1 ? aliasParts[1] : importedName;
+                bindings[alias] = $"{moduleName}.{importedName}";
+            }
+        }
+
+        return new PythonImportInfo(bindings);
+    }
+
+    private static IReadOnlyDictionary<(string OwnerId, string Name), string> ParsePythonFieldTypes(string source, IReadOnlyList<SymbolRecord> fileSymbols)
+    {
+        var contexts = BuildPythonContexts(source, fileSymbols);
+        var fieldTypes = new Dictionary<(string OwnerId, string Name), string>();
+
+        foreach (var context in contexts)
+        {
+            if (context.Type is null)
+            {
+                continue;
+            }
+
+            var assignmentMatch = PythonAssignmentTypeRegex.Match(context.Line);
+            if (assignmentMatch.Success && assignmentMatch.Groups["owner"].Success)
+            {
+                fieldTypes[(context.Type.Id, assignmentMatch.Groups["name"].Value)] = assignmentMatch.Groups["type"].Value;
+                continue;
+            }
+
+            var aliasMatch = PythonAliasAssignmentRegex.Match(context.Line);
+            if (aliasMatch.Success && aliasMatch.Groups["owner"].Success)
+            {
+                if (aliasMatch.Groups["sourceOwner"].Success && fieldTypes.TryGetValue((context.Type.Id, aliasMatch.Groups["source"].Value), out var fieldType))
+                {
+                    fieldTypes[(context.Type.Id, aliasMatch.Groups["name"].Value)] = fieldType;
+                }
+            }
+        }
+
+        return fieldTypes;
+    }
+
+    private static IReadOnlyDictionary<(string CallableId, string Name), string> ParsePythonCallableTypeHints(string source, IReadOnlyList<SymbolRecord> fileSymbols, IReadOnlyDictionary<(string OwnerId, string Name), string> fieldTypeLookup)
+    {
+        var typeHints = new Dictionary<(string CallableId, string Name), string>();
+        var lines = MultiLanguageSymbolParser.SplitLines(source);
+        var callableByLine = fileSymbols.Where(symbol => symbol.Kind is SymbolKinds.Method or SymbolKinds.Constructor).ToDictionary(symbol => symbol.Range.StartLine, symbol => symbol);
+
+        foreach (var entry in callableByLine)
+        {
+            var declarationLine = lines[entry.Key - 1];
+            var openParen = declarationLine.IndexOf('(');
+            var closeParen = declarationLine.LastIndexOf(')');
+            if (openParen < 0 || closeParen <= openParen)
+            {
+                continue;
+            }
+
+            foreach (Match match in PythonCallableParameterRegex.Matches(declarationLine[(openParen + 1)..closeParen]))
+            {
+                typeHints[(entry.Value.Id, match.Groups["name"].Value)] = match.Groups["type"].Value;
+            }
+        }
+
+        foreach (var context in BuildPythonContexts(source, fileSymbols))
+        {
+            if (context.Callable is null)
+            {
+                continue;
+            }
+
+            var assignmentMatch = PythonAssignmentTypeRegex.Match(context.Line);
+            if (assignmentMatch.Success && !assignmentMatch.Groups["owner"].Success)
+            {
+                typeHints[(context.Callable.Id, assignmentMatch.Groups["name"].Value)] = assignmentMatch.Groups["type"].Value;
+                continue;
+            }
+
+            var aliasMatch = PythonAliasAssignmentRegex.Match(context.Line);
+            if (!aliasMatch.Success || aliasMatch.Groups["owner"].Success)
+            {
+                continue;
+            }
+
+            string? sourceType = null;
+            if (context.Type is not null && aliasMatch.Groups["sourceOwner"].Success)
+            {
+                fieldTypeLookup.TryGetValue((context.Type.Id, aliasMatch.Groups["source"].Value), out sourceType);
+            }
+            else
+            {
+                typeHints.TryGetValue((context.Callable.Id, aliasMatch.Groups["source"].Value), out sourceType);
+            }
+
+            if (!string.IsNullOrWhiteSpace(sourceType))
+            {
+                typeHints[(context.Callable.Id, aliasMatch.Groups["name"].Value)] = sourceType;
+            }
+        }
+
+        return typeHints;
+    }
+
+    private static PhpImportInfo ParsePhpImports(string source)
+    {
+        var typeBindings = new Dictionary<string, string>(StringComparer.Ordinal);
+        var functionBindings = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (Match match in PhpUseRegex.Matches(source))
+        {
+            var path = match.Groups["path"].Value.Replace('\\', '.');
+            var alias = match.Groups["alias"].Success ? match.Groups["alias"].Value : path.Split('.').Last();
+            if (match.Groups["function"].Success)
+            {
+                functionBindings[alias] = path;
+            }
+            else
+            {
+                typeBindings[alias] = path;
+            }
+        }
+
+        return new PhpImportInfo(typeBindings, functionBindings);
+    }
+
+    private static IReadOnlyDictionary<(string OwnerId, string Name), string> ParsePhpFieldTypes(string source, IReadOnlyList<SymbolRecord> fileSymbols)
+    {
+        var fieldTypes = new Dictionary<(string OwnerId, string Name), string>();
+
+        foreach (var context in BuildBraceContexts(source, fileSymbols, MultiLanguageSymbolParser.PhpTypeRegex, MultiLanguageSymbolParser.PhpFunctionRegex))
+        {
+            if (context.Type is null)
+            {
+                continue;
+            }
+
+            var declaredFieldMatch = PhpFieldTypeRegex.Match(context.Line);
+            if (declaredFieldMatch.Success)
+            {
+                fieldTypes[(context.Type.Id, declaredFieldMatch.Groups["name"].Value)] = NormalizePhpTypeName(declaredFieldMatch.Groups["type"].Value);
+                continue;
+            }
+
+            var assignmentMatch = PhpAssignmentNewTypeRegex.Match(context.Line);
+            if (assignmentMatch.Success && assignmentMatch.Groups["owner"].Success)
+            {
+                fieldTypes[(context.Type.Id, assignmentMatch.Groups["name"].Value)] = assignmentMatch.Groups["type"].Value;
+                continue;
+            }
+
+            var aliasMatch = PhpAliasAssignmentRegex.Match(context.Line);
+            if (aliasMatch.Success && aliasMatch.Groups["owner"].Success && aliasMatch.Groups["sourceOwner"].Success && fieldTypes.TryGetValue((context.Type.Id, aliasMatch.Groups["source"].Value), out var fieldType))
+            {
+                fieldTypes[(context.Type.Id, aliasMatch.Groups["name"].Value)] = fieldType;
+            }
+        }
+
+        return fieldTypes;
+    }
+
+    private static IReadOnlyDictionary<(string CallableId, string Name), string> ParsePhpCallableTypeHints(string source, IReadOnlyList<SymbolRecord> fileSymbols, IReadOnlyDictionary<(string OwnerId, string Name), string> fieldTypeLookup)
+    {
+        var typeHints = new Dictionary<(string CallableId, string Name), string>();
+        var lines = MultiLanguageSymbolParser.SplitLines(source);
+        var callableByLine = fileSymbols.Where(symbol => symbol.Kind is SymbolKinds.Method or SymbolKinds.Constructor).ToDictionary(symbol => symbol.Range.StartLine, symbol => symbol);
+
+        foreach (var entry in callableByLine)
+        {
+            var declarationLine = lines[entry.Key - 1];
+            var openParen = declarationLine.IndexOf('(');
+            var closeParen = declarationLine.LastIndexOf(')');
+            if (openParen < 0 || closeParen <= openParen)
+            {
+                continue;
+            }
+
+            foreach (Match match in PhpCallableParameterRegex.Matches(declarationLine[(openParen + 1)..closeParen]))
+            {
+                typeHints[(entry.Value.Id, match.Groups["name"].Value)] = NormalizePhpTypeName(match.Groups["type"].Value);
+            }
+        }
+
+        foreach (var context in BuildBraceContexts(source, fileSymbols, MultiLanguageSymbolParser.PhpTypeRegex, MultiLanguageSymbolParser.PhpFunctionRegex))
+        {
+            if (context.Callable is null)
+            {
+                continue;
+            }
+
+            var assignmentMatch = PhpAssignmentNewTypeRegex.Match(context.Line);
+            if (assignmentMatch.Success && !assignmentMatch.Groups["owner"].Success)
+            {
+                typeHints[(context.Callable.Id, assignmentMatch.Groups["name"].Value)] = assignmentMatch.Groups["type"].Value;
+                continue;
+            }
+
+            var aliasMatch = PhpAliasAssignmentRegex.Match(context.Line);
+            if (!aliasMatch.Success || aliasMatch.Groups["owner"].Success)
+            {
+                continue;
+            }
+
+            string? sourceType = null;
+            if (context.Type is not null && aliasMatch.Groups["sourceOwner"].Success)
+            {
+                fieldTypeLookup.TryGetValue((context.Type.Id, aliasMatch.Groups["source"].Value), out sourceType);
+            }
+            else
+            {
+                typeHints.TryGetValue((context.Callable.Id, aliasMatch.Groups["source"].Value), out sourceType);
+            }
+
+            if (!string.IsNullOrWhiteSpace(sourceType))
+            {
+                typeHints[(context.Callable.Id, aliasMatch.Groups["name"].Value)] = sourceType;
+            }
+        }
+
+        return typeHints;
+    }
+
+    private static string NormalizePhpTypeName(string value)
+    {
+        return value.TrimStart('?', '\\').Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)[0].Split('\\').Last();
+    }
+
+    private static SymbolRecord? ResolvePythonCallableTarget(
+        SymbolRecord? currentType,
+        SymbolRecord? currentCallable,
+        string? qualifier,
+        string callableName,
+        IReadOnlyDictionary<string, string> importedBindings,
+        IReadOnlyDictionary<(string? ParentId, string Name), SymbolRecord[]> methodLookup,
+        IReadOnlyDictionary<string, SymbolRecord[]> topLevelFunctionLookup,
+        IReadOnlyDictionary<(string ModuleName, string Name), SymbolRecord[]> importedModuleFunctionLookup,
+        IReadOnlyDictionary<string, SymbolRecord> typeLookup,
+        IReadOnlyDictionary<string, SymbolRecord> importedMemberLookup,
+        IReadOnlyDictionary<(string OwnerId, string Name), string> fieldTypeLookup,
+        IReadOnlyDictionary<(string CallableId, string Name), string> callableTypeHintLookup)
+    {
+        if (!string.IsNullOrWhiteSpace(qualifier))
+        {
+            if (currentType is not null && (string.Equals(qualifier, "self", StringComparison.Ordinal) || string.Equals(qualifier, "cls", StringComparison.Ordinal)) &&
+                methodLookup.TryGetValue((currentType.Id, callableName), out var currentTypeMethods))
+            {
+                return currentTypeMethods[0];
+            }
+
+            if (importedBindings.TryGetValue(qualifier, out var importedTarget))
+            {
+                if (importedModuleFunctionLookup.TryGetValue((importedTarget, callableName), out var importedModuleFunctions))
+                {
+                    return importedModuleFunctions[0];
+                }
+
+                if (importedMemberLookup.TryGetValue(qualifier, out var importedMember) && MultiLanguageSymbolParser.IsTypeSymbol(importedMember) && methodLookup.TryGetValue((importedMember.Id, callableName), out var importedTypeMethods))
+                {
+                    return importedTypeMethods[0];
+                }
+            }
+
+            if (typeLookup.TryGetValue(qualifier, out var qualifiedType) && methodLookup.TryGetValue((qualifiedType.Id, callableName), out var qualifiedTypeMethods))
+            {
+                return qualifiedTypeMethods[0];
+            }
+
+            if (currentType is not null && fieldTypeLookup.TryGetValue((currentType.Id, qualifier), out var fieldTypeName) && typeLookup.TryGetValue(fieldTypeName, out var fieldType) && methodLookup.TryGetValue((fieldType.Id, callableName), out var fieldTypeMethods))
+            {
+                return fieldTypeMethods[0];
+            }
+
+            if (currentCallable is not null && callableTypeHintLookup.TryGetValue((currentCallable.Id, qualifier), out var localTypeName) && typeLookup.TryGetValue(localTypeName, out var localType) && methodLookup.TryGetValue((localType.Id, callableName), out var localTypeMethods))
+            {
+                return localTypeMethods[0];
+            }
+
+            return null;
+        }
+
+        if (currentType is not null && methodLookup.TryGetValue((currentType.Id, callableName), out var methods))
+        {
+            return methods[0];
+        }
+
+        if (importedMemberLookup.TryGetValue(callableName, out var importedMemberTarget))
+        {
+            return importedMemberTarget;
+        }
+
+        if (topLevelFunctionLookup.TryGetValue(callableName, out var topLevelMethods))
+        {
+            return topLevelMethods[0];
+        }
+
+        return typeLookup.TryGetValue(callableName, out var constructorType) ? constructorType : null;
+    }
+
+    private static SymbolRecord? ResolvePhpCallableTarget(
+        SymbolRecord? currentType,
+        SymbolRecord? currentCallable,
+        string? qualifier,
+        string callableName,
+        IReadOnlyDictionary<(string? ParentId, string Name), SymbolRecord[]> methodLookup,
+        IReadOnlyDictionary<string, SymbolRecord[]> topLevelFunctionLookup,
+        IReadOnlyDictionary<string, SymbolRecord> typeLookup,
+        IReadOnlyDictionary<string, SymbolRecord> importedTypeLookup,
+        IReadOnlyDictionary<string, SymbolRecord> importedFunctionLookup,
+        IReadOnlyDictionary<(string OwnerId, string Name), string> fieldTypeLookup,
+        IReadOnlyDictionary<(string CallableId, string Name), string> callableTypeHintLookup)
+    {
+        if (!string.IsNullOrWhiteSpace(qualifier))
+        {
+            var normalizedQualifier = qualifier.TrimStart('$');
+            if (currentType is not null && string.Equals(qualifier, "$this", StringComparison.Ordinal) && methodLookup.TryGetValue((currentType.Id, callableName), out var currentTypeMethods))
+            {
+                return currentTypeMethods[0];
+            }
+
+            if (ResolvePhpTypeTarget(normalizedQualifier, typeLookup, importedTypeLookup) is { } qualifiedType && methodLookup.TryGetValue((qualifiedType.Id, callableName), out var qualifiedTypeMethods))
+            {
+                return qualifiedTypeMethods[0];
+            }
+
+            if (currentType is not null && fieldTypeLookup.TryGetValue((currentType.Id, normalizedQualifier), out var fieldTypeName) && ResolvePhpTypeTarget(fieldTypeName, typeLookup, importedTypeLookup) is { } fieldType && methodLookup.TryGetValue((fieldType.Id, callableName), out var fieldTypeMethods))
+            {
+                return fieldTypeMethods[0];
+            }
+
+            if (currentCallable is not null && callableTypeHintLookup.TryGetValue((currentCallable.Id, normalizedQualifier), out var localTypeName) && ResolvePhpTypeTarget(localTypeName, typeLookup, importedTypeLookup) is { } localType && methodLookup.TryGetValue((localType.Id, callableName), out var localTypeMethods))
+            {
+                return localTypeMethods[0];
+            }
+
+            return null;
+        }
+
+        if (currentType is not null && methodLookup.TryGetValue((currentType.Id, callableName), out var methods))
+        {
+            return methods[0];
+        }
+
+        if (importedFunctionLookup.TryGetValue(callableName, out var importedFunction))
+        {
+            return importedFunction;
+        }
+
+        return topLevelFunctionLookup.TryGetValue(callableName, out var topLevelMethods) ? topLevelMethods[0] : null;
+    }
+
+    private static SymbolRecord? ResolvePhpTypeTarget(string typeName, IReadOnlyDictionary<string, SymbolRecord> typeLookup, IReadOnlyDictionary<string, SymbolRecord> importedTypeLookup)
+    {
+        if (importedTypeLookup.TryGetValue(typeName, out var importedType))
+        {
+            return importedType;
+        }
+
+        return typeLookup.TryGetValue(typeName, out var localType) ? localType : null;
+    }
+
     private static IReadOnlyDictionary<(string OwnerId, string Name), string> ParseTypeScriptFieldTypes(string source, IReadOnlyList<SymbolRecord> fileSymbols)
     {
         var lines = MultiLanguageSymbolParser.SplitLines(source);
@@ -706,6 +1566,25 @@ internal static class MultiLanguageUsageParser
             if (currentOwner is not null && fieldMatch.Success)
             {
                 fieldTypes[(currentOwner.Id, fieldMatch.Groups["name"].Value)] = fieldMatch.Groups["type"].Value;
+            }
+
+            if (currentOwner is not null)
+            {
+                var newAssignmentMatch = TypeScriptFieldAssignmentNewRegex.Match(line);
+                if (newAssignmentMatch.Success)
+                {
+                    fieldTypes[(currentOwner.Id, newAssignmentMatch.Groups["name"].Value)] = newAssignmentMatch.Groups["type"].Value;
+                }
+
+                var aliasAssignmentMatch = TypeScriptFieldAssignmentAliasRegex.Match(line);
+                if (aliasAssignmentMatch.Success)
+                {
+                    var sourceName = aliasAssignmentMatch.Groups["source"].Value;
+                    if (aliasAssignmentMatch.Groups["owner"].Success && fieldTypes.TryGetValue((currentOwner.Id, sourceName), out var fieldType))
+                    {
+                        fieldTypes[(currentOwner.Id, aliasAssignmentMatch.Groups["name"].Value)] = fieldType;
+                    }
+                }
             }
 
             var openBraceCount = MultiLanguageSymbolParser.CountOccurrences(line, '{');
@@ -944,9 +1823,77 @@ internal static class MultiLanguageUsageParser
         return results;
     }
 
+    private static IReadOnlyList<ScopedLineContext> BuildPythonContexts(string source, IReadOnlyList<SymbolRecord> fileSymbols)
+    {
+        var lines = MultiLanguageSymbolParser.SplitLines(source);
+        var results = new List<ScopedLineContext>(lines.Length);
+        var typeByLine = fileSymbols.Where(MultiLanguageSymbolParser.IsTypeSymbol).ToDictionary(symbol => symbol.Range.StartLine, symbol => symbol);
+        var callableByLine = fileSymbols.Where(symbol => symbol.Kind is SymbolKinds.Method or SymbolKinds.Constructor).ToDictionary(symbol => symbol.Range.StartLine, symbol => symbol);
+        var typeScopes = new Stack<IndentScope>();
+        var callableScopes = new Stack<IndentScope>();
+
+        for (var index = 0; index < lines.Length; index++)
+        {
+            var line = lines[index];
+            var lineNumber = index + 1;
+            var trimmedLine = line.TrimStart();
+            var indent = MultiLanguageSymbolParser.GetIndentWidth(line);
+
+            if (!string.IsNullOrWhiteSpace(trimmedLine) && !trimmedLine.StartsWith("#", StringComparison.Ordinal))
+            {
+                while (callableScopes.Count > 0 && indent <= callableScopes.Peek().Indent)
+                {
+                    callableScopes.Pop();
+                }
+
+                while (typeScopes.Count > 0 && indent <= typeScopes.Peek().Indent)
+                {
+                    typeScopes.Pop();
+                }
+            }
+
+            results.Add(new ScopedLineContext(lineNumber, line, typeScopes.Count > 0 ? typeScopes.Peek().Symbol : null, callableScopes.Count > 0 ? callableScopes.Peek().Symbol : null));
+
+            if (typeByLine.TryGetValue(lineNumber, out var declaredType))
+            {
+                typeScopes.Push(new IndentScope(indent, declaredType));
+            }
+
+            if (callableByLine.TryGetValue(lineNumber, out var declaredCallable))
+            {
+                callableScopes.Push(new IndentScope(indent, declaredCallable));
+            }
+        }
+
+        return results;
+    }
+
     private sealed record ScopedLineContext(int LineNumber, string Line, SymbolRecord? Type, SymbolRecord? Callable);
 
     private sealed record ScopedSymbol(int BodyDepth, SymbolRecord Symbol);
+
+    private sealed record JavaImportInfo(
+        IReadOnlyDictionary<string, string> ImportedTypeAliases,
+        IReadOnlySet<string> ImportedPackages,
+        IReadOnlyDictionary<string, string> ImportedStaticMemberAliases,
+        IReadOnlySet<string> ImportedStaticTypes)
+    {
+        public IEnumerable<string> ImportedTypes => ImportedTypeAliases.Values;
+
+        public IEnumerable<string> ImportedStaticMembers => ImportedStaticMemberAliases.Values;
+    }
+
+    private sealed record GoImportInfo(
+        IReadOnlyDictionary<string, string> Bindings,
+        IReadOnlySet<string> ImportedPackages);
+
+    private sealed record PythonImportInfo(IReadOnlyDictionary<string, string> Bindings);
+
+    private sealed record PhpImportInfo(
+        IReadOnlyDictionary<string, string> TypeBindings,
+        IReadOnlyDictionary<string, string> FunctionBindings);
+
+    private sealed record IndentScope(int Indent, SymbolRecord Symbol);
 }
 
 internal static class MultiLanguageSymbolParser
@@ -965,9 +1912,9 @@ internal static class MultiLanguageSymbolParser
     private static readonly Regex GoPackageRegex = new(@"^\s*package\s+([A-Za-z_][A-Za-z0-9_]*)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex GoTypeRegex = new(@"^\s*type\s+([A-Za-z_][A-Za-z0-9_]*)\s+(struct|interface|map|chan|func|\[|[A-Za-z_*])", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex GoFuncRegex = new(@"^\s*func\s*(\((?<receiver>[^)]*)\)\s*)?(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-    private static readonly Regex PhpTypeRegex = new(@"\b(class|interface|trait|enum)\s+([A-Za-z_][A-Za-z0-9_]*)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-    private static readonly Regex PhpFunctionRegex = new(@"^(?<indent>\s*)(?:(?:public|private|protected|static|final|abstract)\s+)*function\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-    private static readonly Regex PhpFieldRegex = new(@"^(?<indent>\s*)(?:(?:public|private|protected|static|readonly)\s+)*(?:[A-Za-z_\\][A-Za-z0-9_\\|?]*\s+)?\$(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*(?:=[^;]+)?;", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    internal static readonly Regex PhpTypeRegex = new(@"\b(class|interface|trait|enum)\s+([A-Za-z_][A-Za-z0-9_]*)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    internal static readonly Regex PhpFunctionRegex = new(@"^(?<indent>\s*)(?:(?:public|private|protected|static|final|abstract)\s+)*function\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex PhpFieldRegex = new(@"^(?<indent>\s*)(?:(?:public|private|protected|static|readonly)\s+)+(?:[A-Za-z_\\][A-Za-z0-9_\\|?]*\s+)?\$(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*(?:=[^;]+)?;", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly HashSet<string> ControlKeywords = new(StringComparer.Ordinal)
     {
         "if",
@@ -1022,7 +1969,7 @@ internal static class MultiLanguageSymbolParser
         var namespaceLine = PhpNamespaceRegex.Match(source) is { Success: true } phpNamespaceMatch ? GetLineNumber(source, phpNamespaceMatch.Index) : 1;
         var namespaceSymbol = CreateContainerSymbol(file, namespaceName.Split('.').Last(), namespaceName, SymbolKinds.Namespace, namespaceLine);
         symbols.Add(namespaceSymbol);
-        symbols.AddRange(ParseBraceLanguage(file, source, namespaceName, PhpTypeRegex, PhpFunctionRegex, "__construct", fieldRegex: PhpFieldRegex, rootParentId: namespaceSymbol.Id));
+        symbols.AddRange(ParseBraceLanguage(file, source, namespaceName, PhpTypeRegex, PhpFunctionRegex, "__construct", PhpFunctionRegex, fieldRegex: PhpFieldRegex, rootParentId: namespaceSymbol.Id));
         return symbols;
     }
 
@@ -1407,6 +2354,13 @@ internal static class MultiLanguageSymbolParser
             : Path.GetFileNameWithoutExtension(file.Path);
     }
 
+    internal static string GetPhpNamespaceName(FileRecord file, string source)
+    {
+        return PhpNamespaceRegex.Match(source) is { Success: true } namespaceMatch
+            ? namespaceMatch.Groups[1].Value.Replace('\\', '.')
+            : BuildLogicalModuleQualifier(file.Path);
+    }
+
     private static bool IsCommonSourceRootSegment(string segment)
     {
         return string.Equals(segment, "src", StringComparison.OrdinalIgnoreCase) ||
@@ -1488,7 +2442,7 @@ internal static class MultiLanguageSymbolParser
 
     private static bool IsOverride(string line) => line.Contains("override", StringComparison.Ordinal);
 
-    private static int GetIndentWidth(string line)
+    internal static int GetIndentWidth(string line)
     {
         var indent = 0;
 

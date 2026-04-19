@@ -333,6 +333,122 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
     }
 
     [Fact]
+    public async Task Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput()
+    {
+        var sourceDirectory = Path.Combine(Path.GetTempPath(), $"code-index-java-imports-{Guid.NewGuid():N}");
+        var outputDirectory = Path.Combine(Path.GetTempPath(), $"code-index-java-imports-out-{Guid.NewGuid():N}");
+
+        Directory.CreateDirectory(Path.Combine(sourceDirectory, "src"));
+
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "Helpers.java"),
+                "package util;\npublic class Helpers\n{\n    public static void log() {}\n}\n");
+
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "Greeter.java"),
+                "package demo;\nimport util.Helpers;\npublic class Greeter\n{\n    public void greet()\n    {\n        Helpers.log();\n    }\n}\n");
+
+            await fixture.RunCliAsync("build", sourceDirectory, "--out", outputDirectory);
+
+            using var symbolsDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.symbols.json")));
+            var symbols = symbolsDocument.RootElement.EnumerateArray().ToArray();
+
+            string GetSymbolId(string qualifiedName, string fileId)
+            {
+                return symbols
+                    .Single(symbol =>
+                        symbol.GetProperty("qualifiedName").GetString() == qualifiedName &&
+                        symbol.GetProperty("fileId").GetString() == fileId)
+                    .GetProperty("id")
+                    .GetString()!;
+            }
+
+            using var edgesDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.edges.json")));
+            var edges = edgesDocument.RootElement.EnumerateArray().ToArray();
+            Assert.Contains(edges, edge => edge.GetProperty("type").GetString() == "calls" && edge.GetProperty("from").GetString() == GetSymbolId("demo.Greeter.greet", "f:src/Greeter.java") && edge.GetProperty("to").GetString() == GetSymbolId("util.Helpers.log", "f:src/Helpers.java"));
+        }
+        finally
+        {
+            if (Directory.Exists(sourceDirectory))
+            {
+                Directory.Delete(sourceDirectory, recursive: true);
+            }
+
+            if (Directory.Exists(outputDirectory))
+            {
+                Directory.Delete(outputDirectory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput()
+    {
+        var sourceDirectory = Path.Combine(Path.GetTempPath(), $"code-index-java-go-imports-{Guid.NewGuid():N}");
+        var outputDirectory = Path.Combine(Path.GetTempPath(), $"code-index-java-go-imports-out-{Guid.NewGuid():N}");
+
+        Directory.CreateDirectory(Path.Combine(sourceDirectory, "src", "helper"));
+        Directory.CreateDirectory(Path.Combine(sourceDirectory, "src", "demo"));
+
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "Helpers.java"),
+                "package util;\npublic class Helpers\n{\n    public static void log() {}\n}\n");
+
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "Greeter.java"),
+                "package demo;\nimport static util.Helpers.log;\npublic class Greeter\n{\n    public void greet()\n    {\n        log();\n    }\n}\n");
+
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "helper", "helper.go"),
+                "package helper\n\nfunc Log() {}\n\ntype Greeter struct{}\n");
+
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "demo", "greeter.go"),
+                "package demo\n\nimport helper \"example/helper\"\n\nfunc Greet() {\n    helper.Log()\n    _ = helper.Greeter{}\n}\n");
+
+            await fixture.RunCliAsync("build", sourceDirectory, "--out", outputDirectory);
+
+            using var symbolsDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.symbols.json")));
+            var symbols = symbolsDocument.RootElement.EnumerateArray().ToArray();
+
+            string GetSymbolId(string qualifiedName, string fileId)
+            {
+                return symbols
+                    .Single(symbol =>
+                        symbol.GetProperty("qualifiedName").GetString() == qualifiedName &&
+                        symbol.GetProperty("fileId").GetString() == fileId)
+                    .GetProperty("id")
+                    .GetString()!;
+            }
+
+            using var edgesDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.edges.json")));
+            var edges = edgesDocument.RootElement.EnumerateArray().ToArray();
+            Assert.Contains(edges, edge => edge.GetProperty("type").GetString() == "calls" && edge.GetProperty("from").GetString() == GetSymbolId("demo.Greeter.greet", "f:src/Greeter.java") && edge.GetProperty("to").GetString() == GetSymbolId("util.Helpers.log", "f:src/Helpers.java"));
+            Assert.Contains(edges, edge => edge.GetProperty("type").GetString() == "calls" && edge.GetProperty("from").GetString() == GetSymbolId("demo.Greet", "f:src/demo/greeter.go") && edge.GetProperty("to").GetString() == GetSymbolId("helper.Log", "f:src/helper/helper.go"));
+
+            using var referencesDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.references.json")));
+            var references = referencesDocument.RootElement.EnumerateArray().ToArray();
+            Assert.Contains(references, reference => reference.GetProperty("targetSymbolId").GetString() == GetSymbolId("helper.Greeter", "f:src/helper/helper.go") && reference.GetProperty("sourceSymbolId").GetString() == GetSymbolId("demo.Greet", "f:src/demo/greeter.go"));
+        }
+        finally
+        {
+            if (Directory.Exists(sourceDirectory))
+            {
+                Directory.Delete(sourceDirectory, recursive: true);
+            }
+
+            if (Directory.Exists(outputDirectory))
+            {
+                Directory.Delete(outputDirectory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput()
     {
         var sourceDirectory = Path.Combine(Path.GetTempPath(), $"code-index-typescript-graph-{Guid.NewGuid():N}");
@@ -374,6 +490,235 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
             var references = referencesDocument.RootElement.EnumerateArray().ToArray();
             Assert.Contains(references, reference => reference.GetProperty("targetSymbolId").GetString() == GetSymbolId("ui.helper.boot", "f:src/ui/helper.ts") && reference.GetProperty("sourceSymbolId").GetString() == GetSymbolId("ui.greeter.Greeter.constructor", "f:src/ui/greeter.ts"));
             Assert.Contains(references, reference => reference.GetProperty("targetSymbolId").GetString() == GetSymbolId("ui.helper.Helper.log", "f:src/ui/helper.ts") && reference.GetProperty("sourceSymbolId").GetString() == GetSymbolId("ui.greeter.Greeter.greet", "f:src/ui/greeter.ts"));
+        }
+        finally
+        {
+            if (Directory.Exists(sourceDirectory))
+            {
+                Directory.Delete(sourceDirectory, recursive: true);
+            }
+
+            if (Directory.Exists(outputDirectory))
+            {
+                Directory.Delete(outputDirectory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput()
+    {
+        var sourceDirectory = Path.Combine(Path.GetTempPath(), $"code-index-typescript-types-{Guid.NewGuid():N}");
+        var outputDirectory = Path.Combine(Path.GetTempPath(), $"code-index-typescript-types-out-{Guid.NewGuid():N}");
+
+        Directory.CreateDirectory(Path.Combine(sourceDirectory, "src", "ui"));
+
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "ui", "helper.ts"),
+                "export class Helper {\n    log(): string {\n        return 'ok';\n    }\n}\n\nexport function boot(): Helper {\n    return new Helper();\n}\n");
+
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "ui", "greeter.ts"),
+                "import { Helper, boot } from './helper';\n\nexport class Greeter {\n    greet(): string {\n        const helper: Helper = boot();\n        return helper.log();\n    }\n\n    render(helper: Helper): string {\n        return helper.log();\n    }\n}\n");
+
+            await fixture.RunCliAsync("build", sourceDirectory, "--out", outputDirectory);
+
+            using var symbolsDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.symbols.json")));
+            var symbols = symbolsDocument.RootElement.EnumerateArray().ToArray();
+
+            string GetSymbolId(string qualifiedName, string fileId)
+            {
+                return symbols
+                    .Single(symbol =>
+                        symbol.GetProperty("qualifiedName").GetString() == qualifiedName &&
+                        symbol.GetProperty("fileId").GetString() == fileId)
+                    .GetProperty("id")
+                    .GetString()!;
+            }
+
+            using var edgesDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.edges.json")));
+            var edges = edgesDocument.RootElement.EnumerateArray().ToArray();
+            Assert.Contains(edges, edge => edge.GetProperty("type").GetString() == "calls" && edge.GetProperty("from").GetString() == GetSymbolId("ui.greeter.Greeter.greet", "f:src/ui/greeter.ts") && edge.GetProperty("to").GetString() == GetSymbolId("ui.helper.Helper.log", "f:src/ui/helper.ts"));
+            Assert.Contains(edges, edge => edge.GetProperty("type").GetString() == "calls" && edge.GetProperty("from").GetString() == GetSymbolId("ui.greeter.Greeter.render", "f:src/ui/greeter.ts") && edge.GetProperty("to").GetString() == GetSymbolId("ui.helper.Helper.log", "f:src/ui/helper.ts"));
+        }
+        finally
+        {
+            if (Directory.Exists(sourceDirectory))
+            {
+                Directory.Delete(sourceDirectory, recursive: true);
+            }
+
+            if (Directory.Exists(outputDirectory))
+            {
+                Directory.Delete(outputDirectory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Build_TracksTypeScriptFlowAssignments_ForDirectoryInput()
+    {
+        var sourceDirectory = Path.Combine(Path.GetTempPath(), $"code-index-typescript-flow-{Guid.NewGuid():N}");
+        var outputDirectory = Path.Combine(Path.GetTempPath(), $"code-index-typescript-flow-out-{Guid.NewGuid():N}");
+
+        Directory.CreateDirectory(Path.Combine(sourceDirectory, "src", "ui"));
+
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "ui", "helper.ts"),
+                "export class Helper {\n    log(): string {\n        return 'ok';\n    }\n}\n");
+
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "ui", "greeter.ts"),
+                "import { Helper } from './helper';\n\nexport class Greeter {\n    private helper;\n\n    constructor() {\n        this.helper = new Helper();\n    }\n\n    greet(): string {\n        const alias = this.helper;\n        return alias.log();\n    }\n}\n");
+
+            await fixture.RunCliAsync("build", sourceDirectory, "--out", outputDirectory);
+
+            using var symbolsDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.symbols.json")));
+            var symbols = symbolsDocument.RootElement.EnumerateArray().ToArray();
+
+            string GetSymbolId(string qualifiedName, string fileId)
+            {
+                return symbols
+                    .Single(symbol =>
+                        symbol.GetProperty("qualifiedName").GetString() == qualifiedName &&
+                        symbol.GetProperty("fileId").GetString() == fileId)
+                    .GetProperty("id")
+                    .GetString()!;
+            }
+
+            using var edgesDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.edges.json")));
+            var edges = edgesDocument.RootElement.EnumerateArray().ToArray();
+            Assert.Contains(edges, edge => edge.GetProperty("type").GetString() == "calls" && edge.GetProperty("from").GetString() == GetSymbolId("ui.greeter.Greeter.greet", "f:src/ui/greeter.ts") && edge.GetProperty("to").GetString() == GetSymbolId("ui.helper.Helper.log", "f:src/ui/helper.ts"));
+        }
+        finally
+        {
+            if (Directory.Exists(sourceDirectory))
+            {
+                Directory.Delete(sourceDirectory, recursive: true);
+            }
+
+            if (Directory.Exists(outputDirectory))
+            {
+                Directory.Delete(outputDirectory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput()
+    {
+        var sourceDirectory = Path.Combine(Path.GetTempPath(), $"code-index-python-php-graph-{Guid.NewGuid():N}");
+        var outputDirectory = Path.Combine(Path.GetTempPath(), $"code-index-python-php-graph-out-{Guid.NewGuid():N}");
+
+        Directory.CreateDirectory(Path.Combine(sourceDirectory, "src", "pkg"));
+
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "pkg", "helper.py"),
+                "class Helper:\n    def log(self):\n        return 'ok'\n\ndef boot():\n    return Helper()\n");
+
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "pkg", "greeter.py"),
+                "from pkg.helper import Helper, boot\n\nclass Greeter:\n    def greet(self):\n        return boot()\n\n    def build(self):\n        return Helper()\n");
+
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "Helper.php"),
+                "<?php\nnamespace Demo\\Support;\n\nclass Helper\n{\n    public static function log() {}\n}\n\nfunction boot() {}\n");
+
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "Greeter.php"),
+                "<?php\nnamespace Demo;\n\nuse Demo\\Support\\Helper;\nuse function Demo\\Support\\boot;\n\nclass Greeter\n{\n    public function greet()\n    {\n        boot();\n        Helper::log();\n        $this->format();\n    }\n\n    private function format()\n    {\n    }\n}\n");
+
+            await fixture.RunCliAsync("build", sourceDirectory, "--out", outputDirectory);
+
+            using var symbolsDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.symbols.json")));
+            var symbols = symbolsDocument.RootElement.EnumerateArray().ToArray();
+
+            string GetSymbolId(string qualifiedName, string fileId)
+            {
+                return symbols
+                    .Single(symbol =>
+                        symbol.GetProperty("qualifiedName").GetString() == qualifiedName &&
+                        symbol.GetProperty("fileId").GetString() == fileId)
+                    .GetProperty("id")
+                    .GetString()!;
+            }
+
+            using var edgesDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.edges.json")));
+            var edges = edgesDocument.RootElement.EnumerateArray().ToArray();
+            Assert.Contains(edges, edge => edge.GetProperty("type").GetString() == "calls" && edge.GetProperty("from").GetString() == GetSymbolId("pkg.greeter.Greeter.greet", "f:src/pkg/greeter.py") && edge.GetProperty("to").GetString() == GetSymbolId("pkg.helper.boot", "f:src/pkg/helper.py"));
+            Assert.Contains(edges, edge => edge.GetProperty("type").GetString() == "calls" && edge.GetProperty("from").GetString() == GetSymbolId("Demo.Greeter.greet", "f:src/Greeter.php") && edge.GetProperty("to").GetString() == GetSymbolId("Demo.Support.boot", "f:src/Helper.php"));
+            Assert.Contains(edges, edge => edge.GetProperty("type").GetString() == "calls" && edge.GetProperty("from").GetString() == GetSymbolId("Demo.Greeter.greet", "f:src/Greeter.php") && edge.GetProperty("to").GetString() == GetSymbolId("Demo.Support.Helper.log", "f:src/Helper.php"));
+            Assert.Contains(edges, edge => edge.GetProperty("type").GetString() == "calls" && edge.GetProperty("from").GetString() == GetSymbolId("Demo.Greeter.greet", "f:src/Greeter.php") && edge.GetProperty("to").GetString() == GetSymbolId("Demo.Greeter.format", "f:src/Greeter.php"));
+
+            using var referencesDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.references.json")));
+            var references = referencesDocument.RootElement.EnumerateArray().ToArray();
+            Assert.Contains(references, reference => reference.GetProperty("targetSymbolId").GetString() == GetSymbolId("pkg.helper.Helper", "f:src/pkg/helper.py") && reference.GetProperty("sourceSymbolId").GetString() == GetSymbolId("pkg.greeter.Greeter.build", "f:src/pkg/greeter.py"));
+        }
+        finally
+        {
+            if (Directory.Exists(sourceDirectory))
+            {
+                Directory.Delete(sourceDirectory, recursive: true);
+            }
+
+            if (Directory.Exists(outputDirectory))
+            {
+                Directory.Delete(outputDirectory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput()
+    {
+        var sourceDirectory = Path.Combine(Path.GetTempPath(), $"code-index-python-php-types-{Guid.NewGuid():N}");
+        var outputDirectory = Path.Combine(Path.GetTempPath(), $"code-index-python-php-types-out-{Guid.NewGuid():N}");
+
+        Directory.CreateDirectory(Path.Combine(sourceDirectory, "src", "pkg"));
+
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "pkg", "helper.py"),
+                "class Helper:\n    def log(self):\n        return 'ok'\n");
+
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "pkg", "greeter.py"),
+                "from pkg.helper import Helper\n\nclass Greeter:\n    def __init__(self):\n        self.helper = Helper()\n\n    def greet(self):\n        helper = self.helper\n        return helper.log()\n");
+
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "Helper.php"),
+                "<?php\nnamespace Demo\\Support;\n\nclass Helper\n{\n    public function log() {}\n}\n");
+
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "Greeter.php"),
+                "<?php\nnamespace Demo;\n\nuse Demo\\Support\\Helper;\n\nclass Greeter\n{\n    private $helper;\n\n    public function __construct()\n    {\n        $this->helper = new Helper();\n    }\n\n    public function greet()\n    {\n        $helper = $this->helper;\n        $helper->log();\n    }\n}\n");
+
+            await fixture.RunCliAsync("build", sourceDirectory, "--out", outputDirectory);
+
+            using var symbolsDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.symbols.json")));
+            var symbols = symbolsDocument.RootElement.EnumerateArray().ToArray();
+
+            string GetSymbolId(string qualifiedName, string fileId)
+            {
+                return symbols
+                    .Single(symbol =>
+                        symbol.GetProperty("qualifiedName").GetString() == qualifiedName &&
+                        symbol.GetProperty("fileId").GetString() == fileId)
+                    .GetProperty("id")
+                    .GetString()!;
+            }
+
+            using var edgesDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.edges.json")));
+            var edges = edgesDocument.RootElement.EnumerateArray().ToArray();
+            Assert.Contains(edges, edge => edge.GetProperty("type").GetString() == "calls" && edge.GetProperty("from").GetString() == GetSymbolId("pkg.greeter.Greeter.greet", "f:src/pkg/greeter.py") && edge.GetProperty("to").GetString() == GetSymbolId("pkg.helper.Helper.log", "f:src/pkg/helper.py"));
+            Assert.Contains(edges, edge => edge.GetProperty("type").GetString() == "calls" && edge.GetProperty("from").GetString() == GetSymbolId("Demo.Greeter.greet", "f:src/Greeter.php") && edge.GetProperty("to").GetString() == GetSymbolId("Demo.Support.Helper.log", "f:src/Helper.php"));
         }
         finally
         {
