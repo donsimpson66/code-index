@@ -2,7 +2,7 @@ using CodeIndex.Core;
 
 namespace CodeIndex.Cli;
 
-internal sealed class CodeIndexBuildService(CliRuntime runtime)
+public sealed class CodeIndexBuildService(CliRuntime runtime)
 {
     public async Task<CodeIndexBuildResult> BuildAsync(CodeIndexBuildRequest request, CancellationToken cancellationToken)
     {
@@ -153,11 +153,11 @@ internal sealed class CodeIndexBuildService(CliRuntime runtime)
     }
 }
 
-internal sealed record CodeIndexBuildRequest(string InputPath, bool IncludeGenerated, string? IncrementalFromIndex);
+public sealed record CodeIndexBuildRequest(string InputPath, bool IncludeGenerated, string? IncrementalFromIndex);
 
-internal sealed record CodeIndexBuildResult(CodeIndexSnapshot Snapshot, CodeIndexBuildStats Stats);
+public sealed record CodeIndexBuildResult(CodeIndexSnapshot Snapshot, CodeIndexBuildStats Stats);
 
-internal sealed record CodeIndexBuildStats(
+public sealed record CodeIndexBuildStats(
     bool UsedIncrementalBaseline,
     bool ReusedIncrementalBaseline,
     int FileCount,
@@ -173,7 +173,7 @@ internal sealed record CodeIndexBuildStats(
     int RebuiltEdgeFileCount = 0,
     int RebuiltReferenceFileCount = 0);
 
-internal sealed record CodeIndexSnapshotOutputPaths(
+public sealed record CodeIndexSnapshotOutputPaths(
     string MetaPath,
     string FilesPath,
     string SymbolsPath,

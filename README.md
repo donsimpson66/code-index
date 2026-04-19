@@ -50,6 +50,35 @@ The project does not aim to replace an IDE or full code intelligence platform.
 dotnet build code-index.sln
 ```
 
+## Experimental MCP Server
+
+The repository now includes a local stdio MCP server in `src/CodeIndex.Mcp`.
+It uses the official .NET MCP SDK and calls the shared build/query services
+directly instead of shelling out to the CLI.
+
+Run it locally with:
+
+```bash
+dotnet run --project src/CodeIndex.Mcp
+```
+
+Current MCP tools:
+
+- `build_index`
+- `find_symbol`
+- `get_symbol`
+- `get_children`
+- `find_references`
+- `semantic_search`
+- `get_callees`
+- `get_callers`
+- `get_tests`
+- `get_test_targets`
+- `get_excerpt`
+
+The MCP surface still requires explicit artifact paths for now. Workspace
+defaults and editor-specific configuration examples are planned next.
+
 ## Quick Start
 
 Build an index for this repository:

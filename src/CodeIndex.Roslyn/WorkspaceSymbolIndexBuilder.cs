@@ -214,7 +214,9 @@ public sealed class WorkspaceSymbolIndexBuilder
         var stableId = SymbolIdentity.CreateStableId(symbol);
         var sourceLocation = GetCanonicalSourceLocation(symbol, declaration, fileId, sourceRoot, fileIdByPath);
 
-        var parentId = GetParentId(symbol, symbol.ContainingSymbol);
+        var parentId = symbol is ILocalSymbol && declaration.Ancestors().OfType<GlobalStatementSyntax>().Any()
+            ? null
+            : GetParentId(symbol, symbol.ContainingSymbol);
         var signature = FormatSignature(symbol, symbolKind);
         var qualifiedName = symbol.ToDisplayString(QualifiedNameFormat);
 
@@ -358,6 +360,16 @@ public sealed class WorkspaceSymbolIndexBuilder
             return null;
         }
 
+        if (containingSymbol.IsImplicitlyDeclared)
+        {
+            return null;
+        }
+
+        if (symbol is ILocalSymbol && !CanIndexAsLocalParent(containingSymbol))
+        {
+            return null;
+        }
+
         if (symbol is INamespaceSymbol)
         {
             return null;
@@ -377,6 +389,15 @@ public sealed class WorkspaceSymbolIndexBuilder
 
         var stableId = SymbolIdentity.CreateStableId(containingSymbol);
         return DeterministicId.CreateSymbolId(stableId);
+    }
+
+    private static bool CanIndexAsLocalParent(ISymbol containingSymbol)
+    {
+        return containingSymbol is IMethodSymbol
+        {
+            MethodKind: MethodKind.Ordinary or MethodKind.Constructor,
+            ContainingType.IsImplicitlyDeclared: false
+        };
     }
 
     private static string GetSummary(ISymbol symbol, string symbolKind)

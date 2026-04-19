@@ -1,4 +1,5 @@
 using System.Text.Json;
+using ModelContextProtocol.Client;
 
 namespace CodeIndex.Cli.Tests;
 
@@ -23,6 +24,43 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
             20
         }
     };
+
+    [Fact]
+    public async Task McpServer_ListsTools_AndFindsSymbols() 
+    {
+        await using var client = await McpClient.CreateAsync(
+            new StdioClientTransport(new StdioClientTransportOptions
+            {
+                Command = "dotnet",
+                Arguments = [fixture.McpServerDllPath],
+                WorkingDirectory = fixture.RepoRoot,
+                Name = "code-index-mcp-test",
+                StandardErrorLines = _ => { }
+            }));
+
+        var tools = await client.ListToolsAsync();
+
+        Assert.Contains(tools, tool => tool.Name == "build_index");
+        Assert.Contains(tools, tool => tool.Name == "find_symbol");
+
+        var result = await client.CallToolAsync(
+            "find_symbol",
+            new Dictionary<string, object?>
+            {
+                ["query"] = "WorkspaceSymbolIndexBuilder",
+                ["indexDirectory"] = fixture.IndexDirectory,
+                ["limit"] = 5
+            });
+
+        Assert.False(result.IsError ?? false);
+        Assert.NotNull(result.StructuredContent);
+
+        var symbols = ExtractStructuredArray(result.StructuredContent.Value);
+
+        Assert.Contains(
+            symbols.EnumerateArray(),
+            symbol => symbol.GetProperty("qualifiedName").GetString() == "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder");
+    }
 
     [Fact]
     public async Task Build_WritesExpectedArtifacts_ForRoslynProject()
@@ -70,6 +108,27 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
                 Directory.Delete(outputDirectory, recursive: true);
             }
         }
+    }
+
+    private static JsonElement ExtractStructuredArray(JsonElement structuredContent)
+    {
+        if (structuredContent.ValueKind == JsonValueKind.Array)
+        {
+            return structuredContent;
+        }
+
+        if (structuredContent.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var property in structuredContent.EnumerateObject())
+            {
+                if (property.Value.ValueKind == JsonValueKind.Array)
+                {
+                    return property.Value;
+                }
+            }
+        }
+
+        throw new Xunit.Sdk.XunitException($"Expected structuredContent to contain an array payload but got: {structuredContent.GetRawText()}");
     }
 
     [Fact]
@@ -1168,12 +1227,34 @@ public sealed class IndexFixture : IAsyncLifetime
 
     public string IndexDirectory { get; } = Path.Combine(FindRepoRoot(), "artifacts", "code-index");
 
+    public string McpServerDllPath
+    {
+        get
+        {
+            var debugPath = Path.Combine(RepoRoot, "src", "CodeIndex.Mcp", "bin", "Debug", "net10.0", "CodeIndex.Mcp.dll");
+            if (File.Exists(debugPath))
+            {
+                return debugPath;
+            }
+
+            var releasePath = Path.Combine(RepoRoot, "src", "CodeIndex.Mcp", "bin", "Release", "net10.0", "CodeIndex.Mcp.dll");
+            if (File.Exists(releasePath))
+            {
+                return releasePath;
+            }
+
+            throw new InvalidOperationException("Could not locate the built CodeIndex.Mcp server assembly.");
+        }
+    }
+
     public Task InitializeAsync()
     {
         if (!Directory.Exists(IndexDirectory))
         {
             throw new InvalidOperationException($"Index directory not found at {IndexDirectory}");
         }
+
+        _ = McpServerDllPath;
 
         return Task.CompletedTask;
     }

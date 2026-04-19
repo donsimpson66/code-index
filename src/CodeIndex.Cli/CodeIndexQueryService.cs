@@ -2,7 +2,7 @@ using CodeIndex.Core;
 
 namespace CodeIndex.Cli;
 
-internal sealed class CodeIndexQueryService(CliRuntime runtime)
+public sealed class CodeIndexQueryService(CliRuntime runtime)
 {
     public async Task<IReadOnlyList<SymbolRecord>> FindSymbolsAsync(CodeIndexFindSymbolsRequest request, CancellationToken cancellationToken)
     {
@@ -372,17 +372,17 @@ internal sealed class CodeIndexQueryService(CliRuntime runtime)
     }
 }
 
-internal sealed record CodeIndexFindSymbolsRequest(string Query, string? IndexDirectory, int Limit, string? Kind, string? Accessibility, string? Sort);
+public sealed record CodeIndexFindSymbolsRequest(string Query, string? IndexDirectory, int Limit, string? Kind, string? Accessibility, string? Sort);
 
-internal sealed record CodeIndexSemanticSearchRequest(string Query, string? IndexDirectory, int Limit, string? ItemType);
+public sealed record CodeIndexSemanticSearchRequest(string Query, string? IndexDirectory, int Limit, string? ItemType);
 
-internal sealed record CodeIndexReferenceQuery(string Query, string? IndexDirectory, int Limit);
+public sealed record CodeIndexReferenceQuery(string Query, string? IndexDirectory, int Limit);
 
-internal sealed record CodeIndexChildQueryRequest(string Query, string? IndexDirectory, int Limit, string? Kind, string? Accessibility, string? Sort);
+public sealed record CodeIndexChildQueryRequest(string Query, string? IndexDirectory, int Limit, string? Kind, string? Accessibility, string? Sort);
 
-internal sealed record CodeIndexExcerptQuery(string FilePath, string? IndexDirectory, int StartLine, int EndLine);
+public sealed record CodeIndexExcerptQuery(string FilePath, string? IndexDirectory, int StartLine, int EndLine);
 
-internal sealed record CodeIndexSemanticSearchResult(
+public sealed record CodeIndexSemanticSearchResult(
     string ItemType,
     string ItemId,
     double Score,
@@ -398,7 +398,7 @@ internal sealed record CodeIndexSemanticSearchResult(
     string? Signature,
     string? SymbolSummary);
 
-internal sealed record CodeIndexReferenceSearchResult(
+public sealed record CodeIndexReferenceSearchResult(
     string TargetSymbolId,
     string TargetQualifiedName,
     string? SourceSymbolId,
@@ -407,4 +407,4 @@ internal sealed record CodeIndexReferenceSearchResult(
     TextRangeRecord Range,
     string LineText);
 
-internal sealed record CodeIndexExcerptLine(int Line, string Text);
+public sealed record CodeIndexExcerptLine(int Line, string Text);

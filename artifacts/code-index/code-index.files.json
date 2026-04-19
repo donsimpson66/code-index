@@ -12,7 +12,7 @@
     "path": "src/CodeIndex.Cli/CodeIndexBuildService.cs",
     "projectName": "CodeIndex.Cli",
     "language": "C#",
-    "hash": "sha256:74185dabdf0b00948926fd32f159b72530c48ca7dd42eee3b9d4a17cee298d92",
+    "hash": "sha256:1942b8e43a6bc0facaf889e83a06ccc17628c1d77edefd543c6e832f55a1dc8c",
     "summary": "Defines 5 declarations in namespace CodeIndex.Cli, including CodeIndexBuildService, CodeIndexBuildRequest, CodeIndexBuildResult."
   },
   {
@@ -20,7 +20,7 @@
     "path": "src/CodeIndex.Cli/CodeIndexQueryService.cs",
     "projectName": "CodeIndex.Cli",
     "language": "C#",
-    "hash": "sha256:3ebab6187a319fa8cd5911d29cd773c31db878d99a43cf76bf80838c4d171507",
+    "hash": "sha256:95fd5310752421351e92ba45fa3d99bd66c9d441f50e1bf70069e52914dcc4ad",
     "summary": "Defines 9 declarations in namespace CodeIndex.Cli, including CodeIndexQueryService, CodeIndexFindSymbolsRequest, CodeIndexSemanticSearchRequest."
   },
   {
@@ -232,6 +232,22 @@
     "summary": "Defines 2 declarations in namespace CodeIndex.Core, including TextRangeRecord, SymbolRecord."
   },
   {
+    "id": "f:src/CodeIndex.Mcp/CodeIndexMcpTools.cs",
+    "path": "src/CodeIndex.Mcp/CodeIndexMcpTools.cs",
+    "projectName": "CodeIndex.Mcp",
+    "language": "C#",
+    "hash": "sha256:c3cd0057257232916c034d32d3ec466eb107e53c372099c9033260123a77b8d4",
+    "summary": "Defines 2 declarations in namespace CodeIndex.Mcp, including CodeIndexMcpTools, BuildIndexToolResult."
+  },
+  {
+    "id": "f:src/CodeIndex.Mcp/Program.cs",
+    "path": "src/CodeIndex.Mcp/Program.cs",
+    "projectName": "CodeIndex.Mcp",
+    "language": "C#",
+    "hash": "sha256:51a49a1e6d2c743c0cc6d25b23e0a88415e5a44f923b43eff41c8b9bf451fee4",
+    "summary": "Contains top-level statements for project CodeIndex.Mcp."
+  },
+  {
     "id": "f:src/CodeIndex.Roslyn/CSharpFileSummaryGenerator.cs",
     "path": "src/CodeIndex.Roslyn/CSharpFileSummaryGenerator.cs",
     "projectName": "CodeIndex.Roslyn",
@@ -292,7 +308,7 @@
     "path": "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
     "projectName": "CodeIndex.Roslyn",
     "language": "C#",
-    "hash": "sha256:3252a701820f42cf057496ad9434b916a7237d39aba4e89bb8f6721c3c7db499",
+    "hash": "sha256:c86659018a41a863a5c9e9c4d5fc14d36273fa744ac2bb984a3ffe3a7a38878f",
     "summary": "Defines class WorkspaceSymbolIndexBuilder in namespace CodeIndex.Roslyn."
   },
   {
@@ -300,7 +316,7 @@
     "path": "tests/CodeIndex.Cli.Tests/CliSmokeTests.cs",
     "projectName": "CodeIndex.Cli.Tests",
     "language": "C#",
-    "hash": "sha256:c3dea868d9c640139e08a9566ddcddf9d76d80ae69b92172f7637b76e88484f5",
+    "hash": "sha256:76a4ab48725422cf8ef2c106db9831de532ed1fae69158dd5bbe99ef1dd549f1",
     "summary": "Defines 3 declarations in namespace CodeIndex.Cli.Tests, including CliInvocationResult, CliSmokeTests, IndexFixture."
   },
   {

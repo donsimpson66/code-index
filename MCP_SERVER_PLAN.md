@@ -148,6 +148,8 @@ server can call the same code directly.
 
 ## Phase 4: Add A Dedicated MCP Server Project
 
+Status: complete
+
 ### Goal
 
 Create a local stdio MCP server that editors and coding agents can launch as a
@@ -174,6 +176,8 @@ Create a local stdio MCP server that editors and coding agents can launch as a
 - no CLI shelling-out is required for normal MCP tool execution
 
 ## Phase 5: Define The MCP Tool Surface
+
+Status: complete
 
 ### Goal
 
@@ -232,6 +236,8 @@ CLI-specific options into the protocol unnecessarily.
 
 ## Phase 6: Add Workspace-Aware Defaults
 
+Status: not started
+
 ### Goal
 
 Make the MCP server easy to use against any project without requiring repetitive
@@ -261,12 +267,14 @@ manual path setup.
 
 Document how to run the MCP server from local editors and agent clients.
 
+Status: in progress
+
 ### Tasks
 
 1. Add a README section for the MCP server.
-2. Provide an example VS Code MCP configuration.
-3. Provide an example OpenCode configuration.
-4. Document the expected local workflow: build first, then query.
+2. Expand the README with the recommended local workflow: build first, then query.
+3. Provide an example VS Code MCP configuration.
+4. Provide an example OpenCode configuration.
 
 ### Acceptance Criteria
 
@@ -280,15 +288,19 @@ Document how to run the MCP server from local editors and agent clients.
 
 Make the server reliable enough for repeated daily editor usage.
 
+Status: in progress
+
 ### Tasks
 
 1. Add focused MCP/server integration tests.
-2. Harden cancellation, path validation, and error handling.
-3. Confirm large-repository behavior is predictable.
-4. Ensure logs and protocol traffic stay separated.
+2. Extend MCP integration coverage from tool listing/query flow into build flow and failure cases.
+3. Harden cancellation, path validation, and error handling.
+4. Confirm large-repository behavior is predictable.
+5. Ensure logs and protocol traffic stay separated.
 
 ### Validation Focus
 
+- list tools and run a real query against a live stdio server session
 - build a repository index through MCP
 - run each query tool against the built index
 - verify invalid path, missing index, and bad symbol inputs return clean errors

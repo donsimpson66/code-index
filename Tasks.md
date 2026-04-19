@@ -435,18 +435,18 @@ Still open:
 
 ### Tasks
 
-- [ ] Add `src/CodeIndex.Mcp`
-- [ ] Add the project to `code-index.sln`
-- [ ] Add official .NET MCP SDK dependencies
-- [ ] Configure stdio transport
-- [ ] Keep logs on stderr only
-- [ ] Wire the MCP server to the shared build/query service layer
+- [x] Add `src/CodeIndex.Mcp`
+- [x] Add the project to `code-index.sln`
+- [x] Add official .NET MCP SDK dependencies
+- [x] Configure stdio transport
+- [x] Keep logs on stderr only
+- [x] Wire the MCP server to the shared build/query service layer
 
 ### Done Criteria
 
-- [ ] MCP server starts over stdio
-- [ ] MCP tools can be listed by a client
-- [ ] No CLI shell-out is needed for tool execution
+- [x] MCP server starts over stdio
+- [x] MCP tools can be listed by a client
+- [x] No CLI shell-out is needed for tool execution
 
 ---
 
@@ -454,23 +454,24 @@ Still open:
 
 ### Tasks
 
-- [ ] Implement `build_index`
-- [ ] Implement `find_symbol`
-- [ ] Implement `get_symbol`
-- [ ] Implement `get_children`
-- [ ] Implement `find_references`
-- [ ] Implement `semantic_search`
-- [ ] Implement `get_callees`
-- [ ] Implement `get_callers`
-- [ ] Implement `get_tests`
-- [ ] Implement `get_test_targets`
-- [ ] Implement `get_excerpt`
-- [ ] Keep tool responses compact and agent-friendly
+- [x] Implement `build_index`
+- [x] Implement `find_symbol`
+- [x] Implement `get_symbol`
+- [x] Implement `get_children`
+- [x] Implement `find_references`
+- [x] Implement `semantic_search`
+- [x] Implement `get_callees`
+- [x] Implement `get_callers`
+- [x] Implement `get_tests`
+- [x] Implement `get_test_targets`
+- [x] Implement `get_excerpt`
+- [x] Keep tool responses compact and agent-friendly
 
 ### Done Criteria
 
-- [ ] MCP tool surface covers the index-first workflow
-- [ ] MCP server can build indexes, not just query them
+- [x] MCP tool surface covers the index-first workflow
+- [x] MCP server can build indexes, not just query them
+- [x] Checked-in `artifacts/code-index` artifacts refreshed after MCP changes
 
 ---
 
@@ -480,10 +481,12 @@ Still open:
 
 - [ ] Define a default local artifact directory such as `.code-index/`
 - [ ] Support safe workspace-relative path resolution
-- [ ] Add README documentation for MCP setup and workflow
+- [x] Add an initial README section for the experimental MCP server
+- [ ] Expand README documentation for MCP setup and workflow
 - [ ] Add VS Code MCP configuration example
 - [ ] Add OpenCode MCP configuration example
-- [ ] Add MCP integration tests for build and query flows
+- [x] Add a live MCP integration test for tool listing and query flow
+- [ ] Expand MCP integration tests to cover build and query flows
 - [ ] Harden cancellation, path validation, and error handling
 
 ### Done Criteria

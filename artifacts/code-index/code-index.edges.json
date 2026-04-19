@@ -606,6 +606,11 @@
   },
   {
     "type": "calls",
+    "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.McpServer_ListsTools_AndFindsSymbols",
+    "to": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.ExtractStructuredArray(System.Text.Json.JsonElement)"
+  },
+  {
+    "type": "calls",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot",
     "to": "s:M:CodeIndex.Cli.Tests.IndexFixture.RunCliAsync(CodeIndex.Cli.CliRuntime,System.String[])"
   },
@@ -1606,6 +1611,66 @@
   },
   {
     "type": "calls",
+    "from": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.BuildIndexAsync(System.String,System.String,System.Boolean,System.String,System.Threading.CancellationToken)",
+    "to": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "calls",
+    "from": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.BuildIndexAsync(System.String,System.String,System.Boolean,System.String,System.Threading.CancellationToken)",
+    "to": "s:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "calls",
+    "from": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.FindReferencesAsync(System.String,System.String,System.Int32,System.Threading.CancellationToken)",
+    "to": "s:M:CodeIndex.Cli.CodeIndexQueryService.FindReferencesAsync(CodeIndex.Cli.CodeIndexReferenceQuery,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "calls",
+    "from": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.FindSymbolAsync(System.String,System.String,System.Int32,System.String,System.String,System.String,System.Threading.CancellationToken)",
+    "to": "s:M:CodeIndex.Cli.CodeIndexQueryService.FindSymbolsAsync(CodeIndex.Cli.CodeIndexFindSymbolsRequest,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "calls",
+    "from": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.GetCalleesAsync(System.String,System.String,System.Int32,System.String,System.String,System.String,System.Threading.CancellationToken)",
+    "to": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetCalleesAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "calls",
+    "from": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.GetCallersAsync(System.String,System.String,System.Int32,System.String,System.String,System.String,System.Threading.CancellationToken)",
+    "to": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetCallersAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "calls",
+    "from": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.GetChildrenAsync(System.String,System.String,System.Int32,System.String,System.String,System.String,System.Threading.CancellationToken)",
+    "to": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetChildrenAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "calls",
+    "from": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.GetExcerptAsync(System.String,System.String,System.Int32,System.Int32,System.Threading.CancellationToken)",
+    "to": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetExcerptAsync(CodeIndex.Cli.CodeIndexExcerptQuery,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "calls",
+    "from": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.GetSymbolAsync(System.String,System.String,System.Threading.CancellationToken)",
+    "to": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetSymbolAsync(System.String,System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "calls",
+    "from": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.GetTestTargetsAsync(System.String,System.String,System.Int32,System.String,System.String,System.String,System.Threading.CancellationToken)",
+    "to": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetTestTargetsAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "calls",
+    "from": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.GetTestsAsync(System.String,System.String,System.Int32,System.String,System.String,System.String,System.Threading.CancellationToken)",
+    "to": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetTestsAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "calls",
+    "from": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.SemanticSearchAsync(System.String,System.String,System.Int32,System.String,System.Threading.CancellationToken)",
+    "to": "s:M:CodeIndex.Cli.CodeIndexQueryService.SemanticSearchAsync(CodeIndex.Cli.CodeIndexSemanticSearchRequest,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "calls",
     "from": "s:M:CodeIndex.Roslyn.CSharpFileSummaryGenerator.CreateDeclarationSummary(Microsoft.CodeAnalysis.SyntaxNode)",
     "to": "s:M:CodeIndex.Roslyn.CSharpFileSummaryGenerator.IsTopLevelDeclaration(Microsoft.CodeAnalysis.CSharp.Syntax.MemberDeclarationSyntax)"
   },
@@ -2387,6 +2452,11 @@
   {
     "type": "calls",
     "from": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetParentId(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.ISymbol)",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.CanIndexAsLocalParent(Microsoft.CodeAnalysis.ISymbol)"
+  },
+  {
+    "type": "calls",
+    "from": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetParentId(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.ISymbol)",
     "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetSymbolKind(Microsoft.CodeAnalysis.ISymbol)"
   },
   {
@@ -2622,1137 +2692,1157 @@
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):canReuseIncrementalBaseline:851"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):canReuseIncrementalBaseline:849"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):edges:1108"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):edges:1106"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):embeddingBuilder:783"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):embeddingBuilder:781"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):embeddings:1205"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):embeddings:1203"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):fileChanges:2161"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):fileChanges:2159"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):files:519"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):files:517"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):incrementalBaseline:271"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):incrementalBaseline:269"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):incrementalMergeService:709"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):incrementalMergeService:707"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):inputKind:634"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):inputKind:632"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):mergePlan:2692"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):mergePlan:2690"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):meta:6001"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):meta:5999"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):rebuiltEdges:2818"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):rebuiltEdges:2816"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):rebuiltReferences:3228"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):rebuiltReferences:3226"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):rebuiltSymbols:2257"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):rebuiltSymbols:2255"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):references:1154"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):references:1152"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):snapshot:6079"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):snapshot:6077"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):stats:1245"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):stats:1243"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):symbols:1065"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.BuildAsync(CodeIndex.Cli.CodeIndexBuildRequest,System.Threading.CancellationToken):symbols:1063"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken):edgesOutputPath:6794"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken):edgesOutputPath:6792"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken):embeddingsOutputPath:6984"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken):embeddingsOutputPath:6982"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken):filesOutputPath:6610"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken):filesOutputPath:6608"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken):fullOutputDirectory:6453"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken):fullOutputDirectory:6451"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken):metaOutputPath:6522"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken):metaOutputPath:6520"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken):referencesOutputPath:6884"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken):referencesOutputPath:6882"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken):symbolsOutputPath:6700"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexBuildService.WriteSnapshotAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Threading.CancellationToken):symbolsOutputPath:6698"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.CreateSemanticSearchResult(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Core.EmbeddingSearchResult)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.CreateSemanticSearchResult(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Core.EmbeddingSearchResult):file:11557"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.CreateSemanticSearchResult(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Core.EmbeddingSearchResult):file:11555"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.CreateSemanticSearchResult(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Core.EmbeddingSearchResult)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.CreateSemanticSearchResult(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Core.EmbeddingSearchResult):filesById:11251"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.CreateSemanticSearchResult(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Core.EmbeddingSearchResult):filesById:11249"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.CreateSemanticSearchResult(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Core.EmbeddingSearchResult)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.CreateSemanticSearchResult(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Core.EmbeddingSearchResult):symbol:12053"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.CreateSemanticSearchResult(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Core.EmbeddingSearchResult):symbol:12051"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.CreateSemanticSearchResult(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Core.EmbeddingSearchResult)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.CreateSemanticSearchResult(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Core.EmbeddingSearchResult):symbolsById:11345"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.CreateSemanticSearchResult(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Core.EmbeddingSearchResult):symbolsById:11343"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.FindReferences(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexReferenceQuery)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.FindReferences(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexReferenceQuery):filesById:5900"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.FindReferences(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexReferenceQuery):filesById:5898"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.FindReferences(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexReferenceQuery)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.FindReferences(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexReferenceQuery):referencesForSymbol:6096"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.FindReferences(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexReferenceQuery):referencesForSymbol:6094"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.FindReferences(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexReferenceQuery)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.FindReferences(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexReferenceQuery):symbolsById:5994"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.FindReferences(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexReferenceQuery):symbolsById:5992"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.FindReferences(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexReferenceQuery)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.FindReferences(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexReferenceQuery):targetSymbol:5833"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.FindReferences(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexReferenceQuery):targetSymbol:5831"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.FindReferencesAsync(CodeIndex.Cli.CodeIndexReferenceQuery,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.FindReferencesAsync(CodeIndex.Cli.CodeIndexReferenceQuery,System.Threading.CancellationToken):snapshot:1831"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.FindReferencesAsync(CodeIndex.Cli.CodeIndexReferenceQuery,System.Threading.CancellationToken):snapshot:1829"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.FindSymbolsAsync(CodeIndex.Cli.CodeIndexFindSymbolsRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.FindSymbolsAsync(CodeIndex.Cli.CodeIndexFindSymbolsRequest,System.Threading.CancellationToken):snapshot:319"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.FindSymbolsAsync(CodeIndex.Cli.CodeIndexFindSymbolsRequest,System.Threading.CancellationToken):snapshot:317"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetCallees(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexChildQueryRequest)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetCallees(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexChildQueryRequest):symbol:7554"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetCallees(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexChildQueryRequest):symbol:7552"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetCalleesAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetCalleesAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken):snapshot:2810"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetCalleesAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken):snapshot:2808"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetCallers(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexChildQueryRequest)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetCallers(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexChildQueryRequest):symbol:7841"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetCallers(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexChildQueryRequest):symbol:7839"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetCallersAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetCallersAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken):snapshot:3144"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetCallersAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken):snapshot:3142"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetChildren(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexChildQueryRequest)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetChildren(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexChildQueryRequest):parent:7264"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetChildren(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexChildQueryRequest):parent:7262"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetChildrenAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetChildrenAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken):snapshot:2475"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetChildrenAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken):snapshot:2473"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetExcerptAsync(CodeIndex.Cli.CodeIndexExcerptQuery,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetExcerptAsync(CodeIndex.Cli.CodeIndexExcerptQuery,System.Threading.CancellationToken):snapshot:4150"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetExcerptAsync(CodeIndex.Cli.CodeIndexExcerptQuery,System.Threading.CancellationToken):snapshot:4148"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetExcerptAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Int32,System.Int32,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetExcerptAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Int32,System.Int32,System.Threading.CancellationToken):fileRecord:8777"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetExcerptAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Int32,System.Int32,System.Threading.CancellationToken):fileRecord:8775"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetExcerptAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Int32,System.Int32,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetExcerptAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Int32,System.Int32,System.Threading.CancellationToken):fullFilePath:9072"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetExcerptAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Int32,System.Int32,System.Threading.CancellationToken):fullFilePath:9070"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetExcerptAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Int32,System.Int32,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetExcerptAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Int32,System.Int32,System.Threading.CancellationToken):lines:9198"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetExcerptAsync(CodeIndex.Core.CodeIndexSnapshot,System.String,System.Int32,System.Int32,System.Threading.CancellationToken):lines:9196"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetRelatedSymbols(CodeIndex.Core.CodeIndexSnapshot,System.String,System.String,System.Boolean,CodeIndex.Cli.CodeIndexChildQueryRequest)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetRelatedSymbols(CodeIndex.Core.CodeIndexSnapshot,System.String,System.String,System.Boolean,CodeIndex.Cli.CodeIndexChildQueryRequest):relatedSymbols:9798"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetRelatedSymbols(CodeIndex.Core.CodeIndexSnapshot,System.String,System.String,System.Boolean,CodeIndex.Cli.CodeIndexChildQueryRequest):relatedSymbols:9796"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetSymbolAsync(System.String,System.String,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetSymbolAsync(System.String,System.String,System.Threading.CancellationToken):snapshot:2147"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetSymbolAsync(System.String,System.String,System.Threading.CancellationToken):snapshot:2145"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetTestTargets(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexChildQueryRequest)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetTestTargets(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexChildQueryRequest):symbol:8133"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetTestTargets(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexChildQueryRequest):symbol:8131"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetTestTargetsAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetTestTargetsAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken):snapshot:3482"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetTestTargetsAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken):snapshot:3480"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetTests(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexChildQueryRequest)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetTests(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexChildQueryRequest):symbol:8418"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetTests(CodeIndex.Core.CodeIndexSnapshot,CodeIndex.Cli.CodeIndexChildQueryRequest):symbol:8416"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.GetTestsAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetTestsAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken):snapshot:3818"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.GetTestsAsync(CodeIndex.Cli.CodeIndexChildQueryRequest,System.Threading.CancellationToken):snapshot:3816"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.SemanticSearchAsync(CodeIndex.Cli.CodeIndexSemanticSearchRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.SemanticSearchAsync(CodeIndex.Cli.CodeIndexSemanticSearchRequest,System.Threading.CancellationToken):embeddingBuilder:1321"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.SemanticSearchAsync(CodeIndex.Cli.CodeIndexSemanticSearchRequest,System.Threading.CancellationToken):embeddingBuilder:1319"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.SemanticSearchAsync(CodeIndex.Cli.CodeIndexSemanticSearchRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.SemanticSearchAsync(CodeIndex.Cli.CodeIndexSemanticSearchRequest,System.Threading.CancellationToken):itemType:799"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.SemanticSearchAsync(CodeIndex.Cli.CodeIndexSemanticSearchRequest,System.Threading.CancellationToken):itemType:797"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.CodeIndexQueryService.SemanticSearchAsync(CodeIndex.Cli.CodeIndexSemanticSearchRequest,System.Threading.CancellationToken)",
-    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.SemanticSearchAsync(CodeIndex.Cli.CodeIndexSemanticSearchRequest,System.Threading.CancellationToken):snapshot:1230"
+    "to": "s:local:M:CodeIndex.Cli.CodeIndexQueryService.SemanticSearchAsync(CodeIndex.Cli.CodeIndexSemanticSearchRequest,System.Threading.CancellationToken):snapshot:1228"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Benchmark_ReturnsProjectAndTargetedComparisonMetrics_ForCommonAgentSearches(System.String,System.String,System.String,System.Int32,System.Int32)",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Benchmark_ReturnsProjectAndTargetedComparisonMetrics_ForCommonAgentSearches(System.String,System.String,System.String,System.Int32,System.Int32):document:52275"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Benchmark_ReturnsProjectAndTargetedComparisonMetrics_ForCommonAgentSearches(System.String,System.String,System.String,System.Int32,System.Int32):document:54350"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Benchmark_ReturnsProjectAndTargetedComparisonMetrics_ForCommonAgentSearches(System.String,System.String,System.String,System.Int32,System.Int32)",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Benchmark_ReturnsProjectAndTargetedComparisonMetrics_ForCommonAgentSearches(System.String,System.String,System.String,System.Int32,System.Int32):output:51916"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Benchmark_ReturnsProjectAndTargetedComparisonMetrics_ForCommonAgentSearches(System.String,System.String,System.String,System.Int32,System.Int32):output:53991"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Benchmark_ReturnsProjectAndTargetedComparisonMetrics_ForCommonAgentSearches(System.String,System.String,System.String,System.Int32,System.Int32)",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Benchmark_ReturnsProjectAndTargetedComparisonMetrics_ForCommonAgentSearches(System.String,System.String,System.String,System.Int32,System.Int32):root:52326"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Benchmark_ReturnsProjectAndTargetedComparisonMetrics_ForCommonAgentSearches(System.String,System.String,System.String,System.Int32,System.Int32):root:54401"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:edges:13547"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:edges:15622"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:edgesDocument:13410"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:edgesDocument:15485"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:goFileId:12948"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:goFileId:15023"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:javaFileId:12897"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:javaFileId:14972"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:outputDirectory:11702"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:outputDirectory:13777"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:references:14571"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:references:16646"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:referencesDocument:14424"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:referencesDocument:16499"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:sourceDirectory:11590"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:sourceDirectory:13665"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:symbols:12815"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:symbols:14890"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:symbolsDocument:12674"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsJavaAndGoCallEdgesAndReferences_ForDirectoryInput:symbolsDocument:14749"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput:edges:37157"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput:edges:39232"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput:edgesDocument:37020"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput:edgesDocument:39095"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput:outputDirectory:34891"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput:outputDirectory:36966"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput:references:38549"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput:references:40624"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput:referencesDocument:38402"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput:referencesDocument:40477"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput:sourceDirectory:34776"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput:sourceDirectory:36851"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput:symbols:36523"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput:symbols:38598"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput:symbolsDocument:36382"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsPythonAndPhpCallEdgesAndReferences_ForDirectoryInput:symbolsDocument:38457"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput:edges:27199"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput:edges:29274"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput:edgesDocument:27062"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput:edgesDocument:29137"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput:outputDirectory:25456"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput:outputDirectory:27531"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput:references:28027"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput:references:30102"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput:referencesDocument:27880"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput:referencesDocument:29955"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput:sourceDirectory:25341"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput:sourceDirectory:27416"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput:symbols:26565"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput:symbols:28640"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput:symbolsDocument:26424"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ExtractsTypeScriptCallEdgesAndReferences_ForDirectoryInput:symbolsDocument:28499"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput:edges:17924"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput:edges:19999"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput:edgesDocument:17787"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput:edgesDocument:19862"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput:outputDirectory:15994"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput:outputDirectory:18069"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput:sourceDirectory:15877"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput:sourceDirectory:17952"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput:symbols:17290"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput:symbols:19365"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput:symbolsDocument:17149"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaAndGoReferencesAcrossFiles_ForDirectoryInput:symbolsDocument:19224"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput:edges:20682"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput:edges:22757"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput:edgesDocument:20545"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput:edgesDocument:22620"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput:outputDirectory:19121"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput:outputDirectory:21196"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput:sourceDirectory:19010"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput:sourceDirectory:21085"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput:symbols:20048"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput:symbols:22123"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput:symbolsDocument:19907"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput:symbolsDocument:21982"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput:edges:23729"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput:edges:25804"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput:edgesDocument:23592"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput:edgesDocument:25667"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput:outputDirectory:21617"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput:outputDirectory:23692"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput:references:24528"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput:references:26603"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput:referencesDocument:24381"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput:referencesDocument:26456"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput:sourceDirectory:21503"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput:sourceDirectory:23578"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput:symbols:23095"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput:symbols:25170"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput:symbolsDocument:22954"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_ResolvesJavaStaticImportsAndGoImportedPackages_ForDirectoryInput:symbolsDocument:25029"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TightensTypeScriptPythonAndPhpSymbolFidelity_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TightensTypeScriptPythonAndPhpSymbolFidelity_ForDirectoryInput:outputDirectory:7013"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TightensTypeScriptPythonAndPhpSymbolFidelity_ForDirectoryInput:outputDirectory:9088"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TightensTypeScriptPythonAndPhpSymbolFidelity_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TightensTypeScriptPythonAndPhpSymbolFidelity_ForDirectoryInput:sourceDirectory:6899"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TightensTypeScriptPythonAndPhpSymbolFidelity_ForDirectoryInput:sourceDirectory:8974"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TightensTypeScriptPythonAndPhpSymbolFidelity_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TightensTypeScriptPythonAndPhpSymbolFidelity_ForDirectoryInput:symbols:8749"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TightensTypeScriptPythonAndPhpSymbolFidelity_ForDirectoryInput:symbols:10824"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TightensTypeScriptPythonAndPhpSymbolFidelity_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TightensTypeScriptPythonAndPhpSymbolFidelity_ForDirectoryInput:symbolsDocument:8608"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TightensTypeScriptPythonAndPhpSymbolFidelity_ForDirectoryInput:symbolsDocument:10683"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput:edges:41747"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput:edges:43822"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput:edgesDocument:41610"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput:edgesDocument:43685"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput:outputDirectory:39482"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput:outputDirectory:41557"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput:sourceDirectory:39367"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput:sourceDirectory:41442"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput:symbols:41113"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput:symbols:43188"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput:symbolsDocument:40972"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksPythonAndPhpAssignedTypes_ForDirectoryInput:symbolsDocument:43047"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput:edges:33948"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput:edges:36023"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput:edgesDocument:33811"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput:edgesDocument:35886"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput:outputDirectory:32249"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput:outputDirectory:34324"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput:sourceDirectory:32135"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput:sourceDirectory:34210"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput:symbols:33314"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput:symbols:35389"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput:symbolsDocument:33173"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptFlowAssignments_ForDirectoryInput:symbolsDocument:35248"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput:edges:31019"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput:edges:33094"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput:edgesDocument:30882"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput:edgesDocument:32957"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput:outputDirectory:29256"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput:outputDirectory:31331"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput:sourceDirectory:29141"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput:sourceDirectory:31216"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput:symbols:30385"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput:symbols:32460"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput:symbolsDocument:30244"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_TracksTypeScriptLocalAndParameterTypes_ForDirectoryInput:symbolsDocument:32319"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:baseline:60742"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:baseline:62817"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:changedFile:59661"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:changedFile:61736"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:derived:60200"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:derived:62275"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:edges:65430"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:edges:67505"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:edgesDocument:65293"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:edgesDocument:67368"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:newBase:60472"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:newBase:62547"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:oldBase:59930"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:oldBase:62005"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:output:63938"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:output:66013"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:outputDirectory:59553"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:outputDirectory:61628"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:references:65775"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:references:67850"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:referencesDocument:65628"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:referencesDocument:67703"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:runtime:61608"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:runtime:63683"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:symbols:64798"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:symbols:66873"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:symbolsDocument:64657"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:symbolsDocument:66732"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:unchangedFile:59793"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndChangedFiles_MergesRebuiltSymbols_RecomputesImpactedEdges_AndRefreshesReferences:unchangedFile:61868"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:baseline:56886"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:baseline:58961"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:document:58607"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:document:60682"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:file:56203"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:file:58278"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:output:58105"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:output:60180"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:outputDirectory:56095"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:outputDirectory:58170"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:reference:56708"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:reference:58783"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:referencesDocument:58978"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:referencesDocument:61053"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:runtime:57315"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:runtime:59390"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:symbol:56367"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:symbol:58442"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:symbols:58741"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WithIncrementalFromIndex_AndUnchangedFiles_ReusesSymbolsEdgesAndReferences:symbols:60816"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory:edgesDocument:6234"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory:edgesDocument:8309"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory:filesDocument:5305"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory:filesDocument:7380"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory:metaDocument:5061"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory:metaDocument:7136"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory:output:4739"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory:output:6814"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory:outputDirectory:3512"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory:outputDirectory:5587"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory:sourceDirectory:3403"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory:sourceDirectory:5478"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory:symbolNames:5663"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory:symbolNames:7738"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory:symbolsDocument:5522"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForMixedLanguageDirectory:symbolsDocument:7597"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForRoslynProject",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForRoslynProject:document:2757"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForRoslynProject:document:4130"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForRoslynProject",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForRoslynProject:meta:2888"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForRoslynProject:meta:4261"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForRoslynProject",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForRoslynProject:output:1882"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForRoslynProject:output:3255"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForRoslynProject",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForRoslynProject:outputDirectory:858"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForRoslynProject:outputDirectory:2231"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForRoslynProject",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForRoslynProject:runtime:966"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Build_WritesExpectedArtifacts_ForRoslynProject:runtime:2339"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.FindReferences_UsingRepositorySolutionIndex_ReturnsReferenceLocations",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindReferences_UsingRepositorySolutionIndex_ReturnsReferenceLocations:document:55499"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindReferences_UsingRepositorySolutionIndex_ReturnsReferenceLocations:document:57574"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.FindReferences_UsingRepositorySolutionIndex_ReturnsReferenceLocations",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindReferences_UsingRepositorySolutionIndex_ReturnsReferenceLocations:output:55229"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindReferences_UsingRepositorySolutionIndex_ReturnsReferenceLocations:output:57304"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.FindReferences_UsingRepositorySolutionIndex_ReturnsReferenceLocations",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindReferences_UsingRepositorySolutionIndex_ReturnsReferenceLocations:results:55550"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindReferences_UsingRepositorySolutionIndex_ReturnsReferenceLocations:results:57625"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_ReturnsLimitedFilteredResults",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_ReturnsLimitedFilteredResults:document:43709"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_ReturnsLimitedFilteredResults:document:45784"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_ReturnsLimitedFilteredResults",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_ReturnsLimitedFilteredResults:output:43397"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_ReturnsLimitedFilteredResults:output:45472"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_ReturnsLimitedFilteredResults",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_ReturnsLimitedFilteredResults:results:43760"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_ReturnsLimitedFilteredResults:results:45835"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_ReturnsLimitedFilteredResults",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_ReturnsLimitedFilteredResults:symbol:43917"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_ReturnsLimitedFilteredResults:symbol:45992"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_UsingRepositorySolutionIndex_ReturnsCliApplication",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_UsingRepositorySolutionIndex_ReturnsCliApplication:document:54765"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_UsingRepositorySolutionIndex_ReturnsCliApplication:document:56840"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_UsingRepositorySolutionIndex_ReturnsCliApplication",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_UsingRepositorySolutionIndex_ReturnsCliApplication:output:54515"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_UsingRepositorySolutionIndex_ReturnsCliApplication:output:56590"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_UsingRepositorySolutionIndex_ReturnsCliApplication",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_UsingRepositorySolutionIndex_ReturnsCliApplication:results:54816"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_UsingRepositorySolutionIndex_ReturnsCliApplication:results:56891"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_WithoutIndex_ReturnsClearError",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_WithoutIndex_ReturnsClearError:result:66277"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.FindSymbol_WithoutIndex_ReturnsClearError:result:68352"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:callee:45563"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:callee:47638"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:calleeFile:45131"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:calleeFile:47206"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:caller:45267"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:caller:47342"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:callerFile:44995"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:callerFile:47070"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:document:46818"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:document:48893"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:output:46597"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:output:48672"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:results:46869"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:results:48944"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:runtime:46448"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:runtime:48523"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:snapshot:45907"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetCallees_ReturnsCallTargets_FromIndexSnapshot:snapshot:47982"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetChildren_SupportsDeclarationSort",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetChildren_SupportsDeclarationSort:document:44557"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetChildren_SupportsDeclarationSort:document:46632"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetChildren_SupportsDeclarationSort",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetChildren_SupportsDeclarationSort:output:44270"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetChildren_SupportsDeclarationSort:output:46345"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetChildren_SupportsDeclarationSort",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetChildren_SupportsDeclarationSort:results:44608"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetChildren_SupportsDeclarationSort:results:46683"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:document:49361"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:document:51436"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:output:49131"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:output:51206"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:productionFile:47241"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:productionFile:49316"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:results:49412"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:results:51487"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:runtime:48982"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:runtime:51057"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:snapshot:48431"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:snapshot:50506"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:target:47531"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:target:49606"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:testFile:47381"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:testFile:49456"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:testMethod:47947"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.GetTestTargets_ReturnsTargets_FromIndexSnapshot:testMethod:50022"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Inspect_ListsRoslynProject",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Inspect_ListsRoslynProject:output:42830"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Inspect_ListsRoslynProject:output:44905"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Inspect_ListsSampleProject",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Inspect_ListsSampleProject:output:43107"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.Inspect_ListsSampleProject:output:45182"
+  },
+  {
+    "type": "contains",
+    "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.McpServer_ListsTools_AndFindsSymbols",
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.McpServer_ListsTools_AndFindsSymbols:client:896"
+  },
+  {
+    "type": "contains",
+    "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.McpServer_ListsTools_AndFindsSymbols",
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.McpServer_ListsTools_AndFindsSymbols:result:1473"
+  },
+  {
+    "type": "contains",
+    "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.McpServer_ListsTools_AndFindsSymbols",
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.McpServer_ListsTools_AndFindsSymbols:symbols:1872"
+  },
+  {
+    "type": "contains",
+    "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.McpServer_ListsTools_AndFindsSymbols",
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.McpServer_ListsTools_AndFindsSymbols:tools:1284"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot:document:51277"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot:document:53352"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot:embeddings:50290"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot:embeddings:52365"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot:file:49799"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot:file:51874"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot:output:50967"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot:output:53042"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot:results:51328"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot:results:53403"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot:runtime:50818"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot:runtime:52893"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot:snapshot:50399"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot:snapshot:52474"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot:symbol:49955"
+    "to": "s:local:M:CodeIndex.Cli.Tests.CliSmokeTests.SemanticSearch_ReturnsRankedSymbols_FromIndexSnapshot:symbol:52030"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.FindRepoRoot",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.FindRepoRoot:directory:72917"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.FindRepoRoot:directory:75675"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:edgeBuilder:68617"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:edgeBuilder:71375"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:edges:69045"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:edges:71803"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:embeddingBuilder:68803"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:embeddingBuilder:71561"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:embeddings:69207"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:embeddings:71965"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:fileBuilder:68437"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:fileBuilder:71195"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:files:68898"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:files:71656"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:meta:69276"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:meta:72034"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:referenceBuilder:68705"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:referenceBuilder:71463"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:references:69113"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:references:71871"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:snapshot:69377"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:snapshot:72135"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:symbolBuilder:68525"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:symbolBuilder:71283"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:symbols:68966"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:symbols:71724"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:validator:69503"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.GetSolutionIndexDirectoryAsync:validator:72261"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.InvokeCliAsync(CodeIndex.Cli.CliRuntime,System.String[])",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.InvokeCliAsync(CodeIndex.Cli.CliRuntime,System.String[]):errorWriter:72338"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.InvokeCliAsync(CodeIndex.Cli.CliRuntime,System.String[]):errorWriter:75096"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.InvokeCliAsync(CodeIndex.Cli.CliRuntime,System.String[])",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.InvokeCliAsync(CodeIndex.Cli.CliRuntime,System.String[]):exitCode:72497"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.InvokeCliAsync(CodeIndex.Cli.CliRuntime,System.String[]):exitCode:75255"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.InvokeCliAsync(CodeIndex.Cli.CliRuntime,System.String[])",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.InvokeCliAsync(CodeIndex.Cli.CliRuntime,System.String[]):originalError:72236"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.InvokeCliAsync(CodeIndex.Cli.CliRuntime,System.String[]):originalError:74994"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.InvokeCliAsync(CodeIndex.Cli.CliRuntime,System.String[])",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.InvokeCliAsync(CodeIndex.Cli.CliRuntime,System.String[]):originalOut:72197"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.InvokeCliAsync(CodeIndex.Cli.CliRuntime,System.String[]):originalOut:74955"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.InvokeCliAsync(CodeIndex.Cli.CliRuntime,System.String[])",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.InvokeCliAsync(CodeIndex.Cli.CliRuntime,System.String[]):outputWriter:72285"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.InvokeCliAsync(CodeIndex.Cli.CliRuntime,System.String[]):outputWriter:75043"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.RunCliAsync(CodeIndex.Cli.CliRuntime,System.String[])",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.RunCliAsync(CodeIndex.Cli.CliRuntime,System.String[]):result:71232"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.RunCliAsync(CodeIndex.Cli.CliRuntime,System.String[]):result:73990"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.RunCliAsync(System.String[])",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.RunCliAsync(System.String[]):result:70719"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.RunCliAsync(System.String[]):result:73477"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Cli.Tests.IndexFixture.RunCliExpectFailureAsync(System.String[])",
-    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.RunCliExpectFailureAsync(System.String[]):result:71732"
+    "to": "s:local:M:CodeIndex.Cli.Tests.IndexFixture.RunCliExpectFailureAsync(System.String[]):result:74490"
   },
   {
     "type": "contains",
@@ -6071,6 +6161,26 @@
   },
   {
     "type": "contains",
+    "from": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.BuildIndexAsync(System.String,System.String,System.Boolean,System.String,System.Threading.CancellationToken)",
+    "to": "s:local:M:CodeIndex.Mcp.CodeIndexMcpTools.BuildIndexAsync(System.String,System.String,System.Boolean,System.String,System.Threading.CancellationToken):outputPaths:1419"
+  },
+  {
+    "type": "contains",
+    "from": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.BuildIndexAsync(System.String,System.String,System.Boolean,System.String,System.Threading.CancellationToken)",
+    "to": "s:local:M:CodeIndex.Mcp.CodeIndexMcpTools.BuildIndexAsync(System.String,System.String,System.Boolean,System.String,System.Threading.CancellationToken):request:1244"
+  },
+  {
+    "type": "contains",
+    "from": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.BuildIndexAsync(System.String,System.String,System.Boolean,System.String,System.Threading.CancellationToken)",
+    "to": "s:local:M:CodeIndex.Mcp.CodeIndexMcpTools.BuildIndexAsync(System.String,System.String,System.Boolean,System.String,System.Threading.CancellationToken):result:1339"
+  },
+  {
+    "type": "contains",
+    "from": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.BuildIndexAsync(System.String,System.String,System.Boolean,System.String,System.Threading.CancellationToken)",
+    "to": "s:local:M:CodeIndex.Mcp.CodeIndexMcpTools.BuildIndexAsync(System.String,System.String,System.Boolean,System.String,System.Threading.CancellationToken):stopwatch:1198"
+  },
+  {
+    "type": "contains",
     "from": "s:M:CodeIndex.Roslyn.CSharpFileSummaryGenerator.CreateSummaryAsync(Microsoft.CodeAnalysis.Document,System.String,System.Threading.CancellationToken)",
     "to": "s:local:M:CodeIndex.Roslyn.CSharpFileSummaryGenerator.CreateSummaryAsync(Microsoft.CodeAnalysis.Document,System.String,System.Threading.CancellationToken):declaration:1040"
   },
@@ -7027,67 +7137,67 @@
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatConstructorSignature(Microsoft.CodeAnalysis.IMethodSymbol)",
-    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatConstructorSignature(Microsoft.CodeAnalysis.IMethodSymbol):containingType:15249"
+    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatConstructorSignature(Microsoft.CodeAnalysis.IMethodSymbol):containingType:15370"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatConstructorSignature(Microsoft.CodeAnalysis.IMethodSymbol)",
-    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatConstructorSignature(Microsoft.CodeAnalysis.IMethodSymbol):parameters:15403"
+    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatConstructorSignature(Microsoft.CodeAnalysis.IMethodSymbol):parameters:15524"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatDelegateSignature(Microsoft.CodeAnalysis.INamedTypeSymbol)",
-    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatDelegateSignature(Microsoft.CodeAnalysis.INamedTypeSymbol):parameters:15905"
+    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatDelegateSignature(Microsoft.CodeAnalysis.INamedTypeSymbol):parameters:16026"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatDelegateSignature(Microsoft.CodeAnalysis.INamedTypeSymbol)",
-    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatDelegateSignature(Microsoft.CodeAnalysis.INamedTypeSymbol):returnType:15800"
+    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatDelegateSignature(Microsoft.CodeAnalysis.INamedTypeSymbol):returnType:15921"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatLocalSignature(Microsoft.CodeAnalysis.ILocalSymbol)",
-    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatLocalSignature(Microsoft.CodeAnalysis.ILocalSymbol):containingSymbol:14554"
+    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatLocalSignature(Microsoft.CodeAnalysis.ILocalSymbol):containingSymbol:14675"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatParameter(Microsoft.CodeAnalysis.IParameterSymbol)",
-    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatParameter(Microsoft.CodeAnalysis.IParameterSymbol):prefix:16221"
+    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.FormatParameter(Microsoft.CodeAnalysis.IParameterSymbol):prefix:16342"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetCanonicalSourceLocation(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.SyntaxNode,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})",
-    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetCanonicalSourceLocation(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.SyntaxNode,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}):candidates:11992"
+    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetCanonicalSourceLocation(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.SyntaxNode,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}):candidates:12113"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetCanonicalSourceLocation(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.SyntaxNode,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})",
-    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetCanonicalSourceLocation(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.SyntaxNode,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}):location:13281"
+    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetCanonicalSourceLocation(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.SyntaxNode,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}):location:13402"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetParentId(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.ISymbol)",
-    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetParentId(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.ISymbol):kind:16962"
+    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetParentId(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.ISymbol):kind:17306"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetParentId(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.ISymbol)",
-    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetParentId(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.ISymbol):stableId:17087"
+    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetParentId(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.ISymbol):stableId:17431"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetSummary(Microsoft.CodeAnalysis.ISymbol,System.String)",
-    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetSummary(Microsoft.CodeAnalysis.ISymbol,System.String):displayName:17991"
+    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetSummary(Microsoft.CodeAnalysis.ISymbol,System.String):displayName:18616"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetSummary(Microsoft.CodeAnalysis.ISymbol,System.String)",
-    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetSummary(Microsoft.CodeAnalysis.ISymbol,System.String):summary:17498"
+    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetSummary(Microsoft.CodeAnalysis.ISymbol,System.String):summary:18123"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetSummary(Microsoft.CodeAnalysis.ISymbol,System.String)",
-    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetSummary(Microsoft.CodeAnalysis.ISymbol,System.String):xml:17301"
+    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.GetSummary(Microsoft.CodeAnalysis.ISymbol,System.String):xml:17926"
   },
   {
     "type": "contains",
@@ -7097,12 +7207,12 @@
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.TryCreateSymbolRecord(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.SyntaxNode,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},CodeIndex.Core.SymbolRecord@)",
-    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.TryCreateSymbolRecord(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.SyntaxNode,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},CodeIndex.Core.SymbolRecord@):qualifiedName:10857"
+    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.TryCreateSymbolRecord(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.SyntaxNode,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},CodeIndex.Core.SymbolRecord@):qualifiedName:10978"
   },
   {
     "type": "contains",
     "from": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.TryCreateSymbolRecord(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.SyntaxNode,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},CodeIndex.Core.SymbolRecord@)",
-    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.TryCreateSymbolRecord(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.SyntaxNode,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},CodeIndex.Core.SymbolRecord@):signature:10796"
+    "to": "s:local:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.TryCreateSymbolRecord(Microsoft.CodeAnalysis.ISymbol,Microsoft.CodeAnalysis.SyntaxNode,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},CodeIndex.Core.SymbolRecord@):signature:10917"
   },
   {
     "type": "contains",
@@ -7398,6 +7508,16 @@
     "type": "contains",
     "from": "s:N:CodeIndex.Core.Tests",
     "to": "s:T:CodeIndex.Core.Tests.MultiLanguageIndexingTests"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Mcp",
+    "to": "s:T:CodeIndex.Mcp.BuildIndexToolResult"
+  },
+  {
+    "type": "contains",
+    "from": "s:N:CodeIndex.Mcp",
+    "to": "s:T:CodeIndex.Mcp.CodeIndexMcpTools"
   },
   {
     "type": "contains",
@@ -7847,6 +7967,11 @@
   {
     "type": "contains",
     "from": "s:T:CodeIndex.Cli.Tests.CliSmokeTests",
+    "to": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.ExtractStructuredArray(System.Text.Json.JsonElement)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.CliSmokeTests",
     "to": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.FindReferences_UsingRepositorySolutionIndex_ReturnsReferenceLocations"
   },
   {
@@ -7888,6 +8013,11 @@
     "type": "contains",
     "from": "s:T:CodeIndex.Cli.Tests.CliSmokeTests",
     "to": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.Inspect_ListsSampleProject"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.CliSmokeTests",
+    "to": "s:M:CodeIndex.Cli.Tests.CliSmokeTests.McpServer_ListsTools_AndFindsSymbols"
   },
   {
     "type": "contains",
@@ -7958,6 +8088,11 @@
     "type": "contains",
     "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
     "to": "s:P:CodeIndex.Cli.Tests.IndexFixture.IndexDirectory"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Cli.Tests.IndexFixture",
+    "to": "s:P:CodeIndex.Cli.Tests.IndexFixture.McpServerDllPath"
   },
   {
     "type": "contains",
@@ -9071,6 +9206,61 @@
   },
   {
     "type": "contains",
+    "from": "s:T:CodeIndex.Mcp.CodeIndexMcpTools",
+    "to": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.BuildIndexAsync(System.String,System.String,System.Boolean,System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Mcp.CodeIndexMcpTools",
+    "to": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.FindReferencesAsync(System.String,System.String,System.Int32,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Mcp.CodeIndexMcpTools",
+    "to": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.FindSymbolAsync(System.String,System.String,System.Int32,System.String,System.String,System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Mcp.CodeIndexMcpTools",
+    "to": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.GetCalleesAsync(System.String,System.String,System.Int32,System.String,System.String,System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Mcp.CodeIndexMcpTools",
+    "to": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.GetCallersAsync(System.String,System.String,System.Int32,System.String,System.String,System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Mcp.CodeIndexMcpTools",
+    "to": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.GetChildrenAsync(System.String,System.String,System.Int32,System.String,System.String,System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Mcp.CodeIndexMcpTools",
+    "to": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.GetExcerptAsync(System.String,System.String,System.Int32,System.Int32,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Mcp.CodeIndexMcpTools",
+    "to": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.GetSymbolAsync(System.String,System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Mcp.CodeIndexMcpTools",
+    "to": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.GetTestTargetsAsync(System.String,System.String,System.Int32,System.String,System.String,System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Mcp.CodeIndexMcpTools",
+    "to": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.GetTestsAsync(System.String,System.String,System.Int32,System.String,System.String,System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Mcp.CodeIndexMcpTools",
+    "to": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.SemanticSearchAsync(System.String,System.String,System.Int32,System.String,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
     "from": "s:T:CodeIndex.Roslyn.CSharpFileSummaryGenerator",
     "to": "s:M:CodeIndex.Roslyn.CSharpFileSummaryGenerator.CreateDeclarationSummary(Microsoft.CodeAnalysis.SyntaxNode)"
   },
@@ -9508,6 +9698,11 @@
     "type": "contains",
     "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
     "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.BuildAsync(System.String,System.Collections.Generic.IReadOnlyList{CodeIndex.Core.FileRecord},System.Collections.Generic.IReadOnlyCollection{System.String},System.Boolean,System.Threading.CancellationToken)"
+  },
+  {
+    "type": "contains",
+    "from": "s:T:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+    "to": "s:M:CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder.CanIndexAsLocalParent(Microsoft.CodeAnalysis.ISymbol)"
   },
   {
     "type": "contains",
@@ -10063,6 +10258,11 @@
     "type": "tests",
     "from": "s:M:CodeIndex.Core.Tests.MultiLanguageIndexingTests.BuildIndexAsync(System.String)",
     "to": "s:M:CodeIndex.Core.SemanticEmbeddingIndexBuilder.Build(System.Collections.Generic.IReadOnlyList{CodeIndex.Core.FileRecord},System.Collections.Generic.IReadOnlyList{CodeIndex.Core.SymbolRecord},System.Int32)"
+  },
+  {
+    "type": "tests",
+    "from": "s:M:CodeIndex.Core.Tests.MultiLanguageIndexingTests.BuildIndexAsync(System.String)",
+    "to": "s:M:CodeIndex.Mcp.CodeIndexMcpTools.BuildIndexAsync(System.String,System.String,System.Boolean,System.String,System.Threading.CancellationToken)"
   },
   {
     "type": "tests",
