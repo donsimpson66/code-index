@@ -398,19 +398,19 @@ Still open:
 
 ### Tasks
 
-- [ ] Split `MultiLanguageSourceIndexing.cs` by concern
-- [ ] Move per-language parser logic into separate files
-- [ ] Move per-language usage/reference logic into separate files
-- [ ] Extract shared multi-language parsing helpers
-- [ ] Centralize input-kind/indexing-strategy selection in one place
-- [ ] Reduce repeated `Directory.Exists(path)` branching in `CliRuntime`
-- [ ] Add dedicated multi-language tests for Java, Go, TypeScript, Python, and PHP
+- [x] Split `MultiLanguageSourceIndexing.cs` by concern
+- [x] Move per-language parser logic into separate files
+- [x] Move per-language usage/reference logic into separate files
+- [x] Extract shared multi-language parsing helpers
+- [x] Centralize input-kind/indexing-strategy selection in one place
+- [x] Reduce repeated `Directory.Exists(path)` branching in `CliRuntime`
+- [x] Add dedicated multi-language tests for Java, Go, TypeScript, Python, and PHP
 
 ### Done Criteria
 
-- [ ] Multi-language support no longer depends on one monolithic implementation file
-- [ ] One language can change without editing one giant parser/usage file
-- [ ] Multi-language behavior has focused automated coverage
+- [x] Multi-language support no longer depends on one monolithic implementation file
+- [x] One language can change without editing one giant parser/usage file
+- [x] Multi-language behavior has focused automated coverage
 
 ---
 
@@ -418,16 +418,16 @@ Still open:
 
 ### Tasks
 
-- [ ] Extract build orchestration out of CLI command handlers
-- [ ] Extract query orchestration out of CLI command handlers
-- [ ] Define a reusable internal service API for build and query operations
-- [ ] Keep the CLI as a thin adapter over the shared service layer
-- [ ] Standardize result shapes used by both CLI and MCP surfaces
+- [x] Extract build orchestration out of CLI command handlers
+- [x] Extract query orchestration out of CLI command handlers
+- [x] Define a reusable internal service API for build and query operations
+- [x] Keep the CLI as a thin adapter over the shared service layer
+- [x] Standardize result shapes used by both CLI and MCP surfaces
 
 ### Done Criteria
 
-- [ ] Build/query logic can run without `System.CommandLine`
-- [ ] CLI and MCP can share one service boundary
+- [x] Build/query logic can run without `System.CommandLine`
+- [x] CLI and MCP can share one service boundary
 
 ---
 

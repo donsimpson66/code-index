@@ -9,6 +9,11 @@ namespace CodeIndex.Cli;
 
 public sealed class CliRuntime
 {
+	private static bool UsesDirectoryIndexing(string path)
+	{
+		return SourceInputKindDetector.IsDirectoryInput(path);
+	}
+
 	public Func<string, CancellationToken, Task<WorkspaceInspectionResult>> InspectAsync { get; init; } = async (path, cancellationToken) =>
 	{
 		var inspector = new WorkspaceInspector();
@@ -17,7 +22,7 @@ public sealed class CliRuntime
 
 	public Func<string, bool, CancellationToken, Task<IReadOnlyList<FileRecord>>> BuildFilesAsync { get; init; } = async (path, includeGenerated, cancellationToken) =>
 	{
-		if (Directory.Exists(path))
+		if (UsesDirectoryIndexing(path))
 		{
 			var multiLanguageBuilder = new MultiLanguageFileIndexBuilder();
 			return await multiLanguageBuilder.BuildAsync(path, includeGenerated, cancellationToken);
@@ -29,7 +34,7 @@ public sealed class CliRuntime
 
 	public Func<string, IReadOnlyList<FileRecord>, bool, CancellationToken, Task<IReadOnlyList<SymbolRecord>>> BuildSymbolsAsync { get; init; } = async (path, files, includeGenerated, cancellationToken) =>
 	{
-		if (Directory.Exists(path))
+		if (UsesDirectoryIndexing(path))
 		{
 			var multiLanguageBuilder = new MultiLanguageSymbolIndexBuilder();
 			return await multiLanguageBuilder.BuildAsync(path, files, includeGenerated, cancellationToken);
@@ -41,7 +46,7 @@ public sealed class CliRuntime
 
 	public Func<string, IReadOnlyList<FileRecord>, IReadOnlyCollection<string>, bool, CancellationToken, Task<IReadOnlyList<SymbolRecord>>> BuildSymbolsForFilesAsync { get; init; } = async (path, files, indexedFilePaths, includeGenerated, cancellationToken) =>
 	{
-		if (Directory.Exists(path))
+		if (UsesDirectoryIndexing(path))
 		{
 			var multiLanguageBuilder = new MultiLanguageSymbolIndexBuilder();
 			return await multiLanguageBuilder.BuildAsync(path, files, indexedFilePaths, includeGenerated, cancellationToken);
@@ -53,7 +58,7 @@ public sealed class CliRuntime
 
 	public Func<string, bool, CancellationToken, Task<IReadOnlyList<EdgeRecord>>> BuildEdgesAsync { get; init; } = async (path, includeGenerated, cancellationToken) =>
 	{
-		if (Directory.Exists(path))
+		if (UsesDirectoryIndexing(path))
 		{
 			var multiLanguageBuilder = new MultiLanguageEdgeIndexBuilder();
 			return await multiLanguageBuilder.BuildAsync(path, includeGenerated, cancellationToken);
@@ -65,7 +70,7 @@ public sealed class CliRuntime
 
 	public Func<string, IReadOnlyCollection<string>, IReadOnlySet<string>, bool, CancellationToken, Task<IReadOnlyList<EdgeRecord>>> BuildEdgesForFilesAsync { get; init; } = async (path, indexedFilePaths, knownSymbolIds, includeGenerated, cancellationToken) =>
 	{
-		if (Directory.Exists(path))
+		if (UsesDirectoryIndexing(path))
 		{
 			var multiLanguageBuilder = new MultiLanguageEdgeIndexBuilder();
 			return await multiLanguageBuilder.BuildAsync(path, indexedFilePaths, knownSymbolIds, includeGenerated, cancellationToken);
@@ -77,7 +82,7 @@ public sealed class CliRuntime
 
 	public Func<string, IReadOnlyList<FileRecord>, IReadOnlyList<SymbolRecord>, bool, CancellationToken, Task<IReadOnlyList<ReferenceRecord>>> BuildReferencesAsync { get; init; } = async (path, files, symbols, includeGenerated, cancellationToken) =>
 	{
-		if (Directory.Exists(path))
+		if (UsesDirectoryIndexing(path))
 		{
 			var multiLanguageBuilder = new MultiLanguageReferenceIndexBuilder();
 			return await multiLanguageBuilder.BuildAsync(path, files, symbols, includeGenerated, cancellationToken);
@@ -89,7 +94,7 @@ public sealed class CliRuntime
 
 	public Func<string, IReadOnlyList<FileRecord>, IReadOnlyList<SymbolRecord>, IReadOnlyCollection<string>, bool, CancellationToken, Task<IReadOnlyList<ReferenceRecord>>> BuildReferencesForFilesAsync { get; init; } = async (path, files, symbols, indexedFilePaths, includeGenerated, cancellationToken) =>
 	{
-		if (Directory.Exists(path))
+		if (UsesDirectoryIndexing(path))
 		{
 			var multiLanguageBuilder = new MultiLanguageReferenceIndexBuilder();
 			return await multiLanguageBuilder.BuildAsync(path, files, symbols, indexedFilePaths, includeGenerated, cancellationToken);
@@ -143,6 +148,8 @@ public static class CliApplication
 	public static RootCommand CreateRootCommand(CliRuntime? runtime = null)
 	{
 		runtime ??= new CliRuntime();
+		var buildService = new CodeIndexBuildService(runtime);
+		var queryService = new CodeIndexQueryService(runtime);
 
 		var pathArgument = new Argument<string>("path")
 		{
@@ -294,169 +301,56 @@ public static class CliApplication
 				Console.WriteLine(includeGenerated ? "Including generated files." : "Excluding generated files.");
 			}
 
-			CodeIndexSnapshot? incrementalBaseline = null;
-
-			if (!string.IsNullOrWhiteSpace(incrementalFromIndex))
+			if (verbose && !string.IsNullOrWhiteSpace(incrementalFromIndex))
 			{
-				incrementalBaseline = await runtime.ReadSnapshotAsync(incrementalFromIndex, cancellationToken);
-
-				if (verbose)
-				{
-					Console.WriteLine($"Loaded incremental baseline from {Path.GetFullPath(incrementalFromIndex)}");
-				}
+				Console.WriteLine($"Loaded incremental baseline from {Path.GetFullPath(incrementalFromIndex)}");
 			}
 
-			var files = await runtime.BuildFilesAsync(path, includeGenerated, cancellationToken);
+			var buildResult = await buildService.BuildAsync(new CodeIndexBuildRequest(path, includeGenerated, incrementalFromIndex), cancellationToken);
+			var snapshot = buildResult.Snapshot;
+			var stats = buildResult.Stats;
 
 			if (verbose)
 			{
-				Console.WriteLine($"Indexed {files.Count} files.");
-			}
+				Console.WriteLine($"Indexed {stats.FileCount} files.");
 
-			var inputKind = Directory.Exists(path)
-				? "directory"
-				: Path.GetExtension(path).Equals(".sln", StringComparison.OrdinalIgnoreCase)
-					? "solution"
-					: "project";
-			var incrementalMergeService = new IncrementalIndexMergeService();
-			var embeddingBuilder = new SemanticEmbeddingIndexBuilder();
-			var canReuseIncrementalBaseline = incrementalBaseline is not null &&
-				incrementalMergeService.CanReuseBaseline(path, inputKind, files, incrementalBaseline);
-
-			IReadOnlyList<SymbolRecord> symbols;
-			IReadOnlyList<EdgeRecord> edges;
-			IReadOnlyList<ReferenceRecord> references;
-			IReadOnlyList<EmbeddingRecord> embeddings;
-
-			if (canReuseIncrementalBaseline)
-			{
-				symbols = incrementalBaseline!.Symbols;
-				edges = incrementalBaseline.Edges;
-				references = incrementalBaseline.References;
-				embeddings = incrementalBaseline.Embeddings;
-
-				if (verbose)
+				if (stats.ReusedIncrementalBaseline)
 				{
 					Console.WriteLine("No file changes detected against the incremental baseline. Reusing symbols, edges, references, and embeddings.");
-					Console.WriteLine($"Reused {symbols.Count} symbols.");
-					Console.WriteLine($"Reused {edges.Count} edges.");
-					Console.WriteLine($"Reused {references.Count} references.");
-					Console.WriteLine($"Reused {embeddings.Count} embeddings.");
+					Console.WriteLine($"Reused {stats.SymbolCount} symbols.");
+					Console.WriteLine($"Reused {stats.EdgeCount} edges.");
+					Console.WriteLine($"Reused {stats.ReferenceCount} references.");
+					Console.WriteLine($"Reused {stats.EmbeddingCount} embeddings.");
 				}
-			}
-			else if (incrementalBaseline is not null)
-			{
-				var fileChanges = incrementalMergeService.AnalyzeFiles(files, incrementalBaseline);
-				var rebuiltSymbols = fileChanges.ChangedCurrentFiles.Count == 0
-					? Array.Empty<SymbolRecord>()
-					: (await runtime.BuildSymbolsForFilesAsync(
-						path,
-						files,
-						fileChanges.ChangedCurrentFiles.Select(file => file.Path).ToArray(),
-						includeGenerated,
-						cancellationToken)).ToArray();
-
-				var mergePlan = incrementalMergeService.CreateMergePlan(files, incrementalBaseline, fileChanges, rebuiltSymbols);
-				var rebuiltEdges = mergePlan.EdgeRebuildFilePaths.Count == 0
-					? Array.Empty<EdgeRecord>()
-					: (await runtime.BuildEdgesForFilesAsync(
-						path,
-						mergePlan.EdgeRebuildFilePaths,
-						mergePlan.MergedSymbolIds,
-						includeGenerated,
-						cancellationToken)).ToArray();
-				var rebuiltReferences = mergePlan.ReferenceRebuildFilePaths.Count == 0
-					? Array.Empty<ReferenceRecord>()
-					: (await runtime.BuildReferencesForFilesAsync(
-						path,
-						files,
-						mergePlan.MergedSymbols,
-						mergePlan.ReferenceRebuildFilePaths,
-						includeGenerated,
-						cancellationToken)).ToArray();
-
-				symbols = mergePlan.MergedSymbols;
-				edges = incrementalMergeService.MergeEdges(incrementalBaseline, mergePlan, rebuiltEdges);
-				references = incrementalMergeService.MergeReferences(incrementalBaseline, mergePlan, rebuiltReferences);
-				embeddings = embeddingBuilder.Build(files, symbols);
-
-				if (verbose)
+				else if (stats.UsedIncrementalBaseline)
 				{
-					Console.WriteLine($"Detected {fileChanges.ChangedCurrentFiles.Count} changed files and {fileChanges.RemovedFiles.Count} removed files against the incremental baseline.");
-					Console.WriteLine($"Rebuilt {rebuiltSymbols.Length} symbols across {fileChanges.ChangedCurrentFiles.Count} changed files.");
-					Console.WriteLine($"Rebuilt {rebuiltEdges.Length} edges across {mergePlan.EdgeRebuildFilePaths.Count} impacted files.");
-					Console.WriteLine($"Rebuilt {rebuiltReferences.Length} references across {mergePlan.ReferenceRebuildFilePaths.Count} impacted files.");
-					Console.WriteLine($"Rebuilt {embeddings.Count} embeddings from merged files and symbols.");
+					Console.WriteLine($"Detected {stats.ChangedFileCount} changed files and {stats.RemovedFileCount} removed files against the incremental baseline.");
+					Console.WriteLine($"Rebuilt {stats.RebuiltSymbolCount} symbols across {stats.ChangedFileCount} changed files.");
+					Console.WriteLine($"Rebuilt {stats.RebuiltEdgeCount} edges across {stats.RebuiltEdgeFileCount} impacted files.");
+					Console.WriteLine($"Rebuilt {stats.RebuiltReferenceCount} references across {stats.RebuiltReferenceFileCount} impacted files.");
+					Console.WriteLine($"Rebuilt {stats.EmbeddingCount} embeddings from merged files and symbols.");
 				}
-			}
-			else
-			{
-				if (verbose && incrementalBaseline is not null)
+				else
 				{
-					Console.WriteLine("Detected file changes against the incremental baseline. Rebuilding symbols, edges, and references.");
+					Console.WriteLine($"Indexed {stats.SymbolCount} symbols.");
+					Console.WriteLine($"Indexed {stats.EdgeCount} edges.");
+					Console.WriteLine($"Indexed {stats.ReferenceCount} references.");
+					Console.WriteLine($"Indexed {stats.EmbeddingCount} embeddings.");
 				}
 
-				symbols = await runtime.BuildSymbolsAsync(path, files, includeGenerated, cancellationToken);
-
-				if (verbose)
-				{
-					Console.WriteLine($"Indexed {symbols.Count} symbols.");
-				}
-
-				edges = await runtime.BuildEdgesAsync(path, includeGenerated, cancellationToken);
-
-				if (verbose)
-				{
-					Console.WriteLine($"Indexed {edges.Count} edges.");
-				}
-
-				references = await runtime.BuildReferencesAsync(path, files, symbols, includeGenerated, cancellationToken);
-
-				if (verbose)
-				{
-					Console.WriteLine($"Indexed {references.Count} references.");
-				}
-
-				embeddings = embeddingBuilder.Build(files, symbols);
-
-				if (verbose)
-				{
-					Console.WriteLine($"Indexed {embeddings.Count} embeddings.");
-				}
-			}
-
-			var meta = CodeIndexMetaFactory.Create(path, inputKind);
-			var snapshot = new CodeIndexSnapshot(meta, files, symbols, edges, references, embeddings);
-			runtime.ValidateSnapshot(snapshot);
-
-			if (verbose)
-			{
 				Console.WriteLine("Validation passed.");
 			}
 
 			if (!string.IsNullOrWhiteSpace(outputDirectory))
 			{
-				var fullOutputDirectory = Path.GetFullPath(outputDirectory);
-				var metaOutputPath = Path.Combine(fullOutputDirectory, "code-index.meta.json");
-				var filesOutputPath = Path.Combine(fullOutputDirectory, "code-index.files.json");
-				var symbolsOutputPath = Path.Combine(fullOutputDirectory, "code-index.symbols.json");
-				var edgesOutputPath = Path.Combine(fullOutputDirectory, "code-index.edges.json");
-				var referencesOutputPath = Path.Combine(fullOutputDirectory, "code-index.references.json");
-				var embeddingsOutputPath = Path.Combine(fullOutputDirectory, "code-index.embeddings.json");
+				var outputPaths = await buildService.WriteSnapshotAsync(snapshot, outputDirectory, cancellationToken);
 
-				await CodeIndexJson.WriteToFileAsync(metaOutputPath, meta, cancellationToken);
-				await CodeIndexJson.WriteToFileAsync(filesOutputPath, files, cancellationToken);
-				await CodeIndexJson.WriteToFileAsync(symbolsOutputPath, symbols, cancellationToken);
-				await CodeIndexJson.WriteToFileAsync(edgesOutputPath, edges, cancellationToken);
-				await CodeIndexJson.WriteToFileAsync(referencesOutputPath, references, cancellationToken);
-				await CodeIndexJson.WriteToFileAsync(embeddingsOutputPath, embeddings, cancellationToken);
-
-				Console.WriteLine($"Wrote metadata to {metaOutputPath}");
-				Console.WriteLine($"Wrote {files.Count} file records to {filesOutputPath}");
-				Console.WriteLine($"Wrote {symbols.Count} symbol records to {symbolsOutputPath}");
-				Console.WriteLine($"Wrote {edges.Count} edge records to {edgesOutputPath}");
-				Console.WriteLine($"Wrote {references.Count} reference records to {referencesOutputPath}");
-				Console.WriteLine($"Wrote {embeddings.Count} embedding records to {embeddingsOutputPath}");
+				Console.WriteLine($"Wrote metadata to {outputPaths.MetaPath}");
+				Console.WriteLine($"Wrote {snapshot.Files.Count} file records to {outputPaths.FilesPath}");
+				Console.WriteLine($"Wrote {snapshot.Symbols.Count} symbol records to {outputPaths.SymbolsPath}");
+				Console.WriteLine($"Wrote {snapshot.Edges.Count} edge records to {outputPaths.EdgesPath}");
+				Console.WriteLine($"Wrote {snapshot.References.Count} reference records to {outputPaths.ReferencesPath}");
+				Console.WriteLine($"Wrote {snapshot.Embeddings.Count} embedding records to {outputPaths.EmbeddingsPath}");
 			}
 
 			return 0;
@@ -483,15 +377,8 @@ public static class CliApplication
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
-			var matches = LimitResults(OrderFindSymbolResults(snapshot.Symbols
-				.Where(symbol =>
-					string.Equals(symbol.Name, query, StringComparison.OrdinalIgnoreCase) ||
-					string.Equals(symbol.QualifiedName, query, StringComparison.OrdinalIgnoreCase) ||
-					symbol.QualifiedName.Contains(query, StringComparison.OrdinalIgnoreCase))
-				.Where(symbol => string.IsNullOrWhiteSpace(kind) || string.Equals(symbol.Kind, kind, StringComparison.OrdinalIgnoreCase))
-				.Where(symbol => string.IsNullOrWhiteSpace(accessibility) || string.Equals(symbol.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), query, sort), limit)
-				.ToArray();
+
+			var matches = await queryService.FindSymbolsAsync(new CodeIndexFindSymbolsRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
 
 			WriteJson(matches);
 			return 0;
@@ -514,18 +401,7 @@ public static class CliApplication
 				throw new InvalidOperationException("A semantic search query is required.");
 			}
 
-			if (itemType is not null &&
-				!string.Equals(itemType, EmbeddingItemTypes.File, StringComparison.OrdinalIgnoreCase) &&
-				!string.Equals(itemType, EmbeddingItemTypes.Symbol, StringComparison.OrdinalIgnoreCase))
-			{
-				throw new InvalidOperationException("Unsupported --type for semantic-search. Use file or symbol.");
-			}
-
-			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
-			var embeddingBuilder = new SemanticEmbeddingIndexBuilder();
-			var results = embeddingBuilder.Search(query, snapshot.Embeddings, itemType, limit <= 0 ? 10 : limit)
-				.Select(result => CreateSemanticSearchResult(snapshot, result))
-				.ToArray();
+			var results = await queryService.SemanticSearchAsync(new CodeIndexSemanticSearchRequest(query, indexDirectory, limit, itemType), cancellationToken);
 
 			WriteJson(results);
 			return 0;
@@ -546,36 +422,7 @@ public static class CliApplication
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
-			var targetSymbol = snapshot.Symbols.FirstOrDefault(candidate =>
-				string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
-				string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
-
-			if (targetSymbol is null)
-			{
-				throw new InvalidOperationException($"No symbol found for query: {query}");
-			}
-
-			var filesById = snapshot.Files.ToDictionary(file => file.Id, StringComparer.Ordinal);
-			var symbolsById = snapshot.Symbols.ToDictionary(symbol => symbol.Id, StringComparer.Ordinal);
-			var referencesForSymbol = snapshot.References
-				.Where(reference => string.Equals(reference.TargetSymbolId, targetSymbol.Id, StringComparison.Ordinal))
-				.OrderBy(reference => filesById.TryGetValue(reference.FileId, out var file) ? file.Path : reference.FileId, StringComparer.Ordinal)
-				.ThenBy(reference => reference.Range.StartLine)
-				.ThenBy(reference => reference.Range.StartColumn);
-
-			var results = LimitResults(referencesForSymbol.Select(reference => new
-			{
-				TargetSymbolId = reference.TargetSymbolId,
-				TargetQualifiedName = targetSymbol.QualifiedName,
-				SourceSymbolId = reference.SourceSymbolId,
-				SourceQualifiedName = reference.SourceSymbolId is not null && symbolsById.TryGetValue(reference.SourceSymbolId, out var sourceSymbol)
-					? sourceSymbol.QualifiedName
-					: null,
-				File = filesById.TryGetValue(reference.FileId, out var file) ? file.Path : reference.FileId,
-				Range = reference.Range,
-				reference.LineText
-			}), limit).ToArray();
+			var results = await queryService.FindReferencesAsync(new CodeIndexReferenceQuery(query, indexDirectory, limit), cancellationToken);
 
 			WriteJson(results);
 			return 0;
@@ -594,15 +441,7 @@ public static class CliApplication
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
-			var symbol = snapshot.Symbols.FirstOrDefault(candidate =>
-				string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
-				string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
-
-			if (symbol is null)
-			{
-				throw new InvalidOperationException($"No symbol found for query: {query}");
-			}
+			var symbol = await queryService.GetSymbolAsync(query, indexDirectory, cancellationToken);
 
 			WriteJson(symbol);
 			return 0;
@@ -629,22 +468,7 @@ public static class CliApplication
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
-			var parent = snapshot.Symbols.FirstOrDefault(candidate =>
-				string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
-				string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
-
-			if (parent is null)
-			{
-				throw new InvalidOperationException($"No symbol found for query: {query}");
-			}
-
-			var children = LimitResults(OrderChildResults(snapshot.Edges
-				.Where(edge => edge.Type == EdgeTypes.Contains && edge.From == parent.Id)
-				.Join(snapshot.Symbols, edge => edge.To, symbol => symbol.Id, (_, symbol) => symbol)
-				.Where(symbol => string.IsNullOrWhiteSpace(kind) || string.Equals(symbol.Kind, kind, StringComparison.OrdinalIgnoreCase))
-				.Where(symbol => string.IsNullOrWhiteSpace(accessibility) || string.Equals(symbol.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), sort), limit)
-				.ToArray();
+			var children = await queryService.GetChildrenAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
 
 			WriteJson(children);
 			return 0;
@@ -671,22 +495,7 @@ public static class CliApplication
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
-			var symbol = snapshot.Symbols.FirstOrDefault(candidate =>
-				string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
-				string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
-
-			if (symbol is null)
-			{
-				throw new InvalidOperationException($"No symbol found for query: {query}");
-			}
-
-			var callees = LimitResults(OrderChildResults(snapshot.Edges
-				.Where(edge => edge.Type == EdgeTypes.Calls && edge.From == symbol.Id)
-				.Join(snapshot.Symbols, edge => edge.To, candidate => candidate.Id, (_, candidate) => candidate)
-				.Where(candidate => string.IsNullOrWhiteSpace(kind) || string.Equals(candidate.Kind, kind, StringComparison.OrdinalIgnoreCase))
-				.Where(candidate => string.IsNullOrWhiteSpace(accessibility) || string.Equals(candidate.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), sort), limit)
-				.ToArray();
+			var callees = await queryService.GetCalleesAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
 
 			WriteJson(callees);
 			return 0;
@@ -713,22 +522,7 @@ public static class CliApplication
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
-			var symbol = snapshot.Symbols.FirstOrDefault(candidate =>
-				string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
-				string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
-
-			if (symbol is null)
-			{
-				throw new InvalidOperationException($"No symbol found for query: {query}");
-			}
-
-			var callers = LimitResults(OrderChildResults(snapshot.Edges
-				.Where(edge => edge.Type == EdgeTypes.Calls && edge.To == symbol.Id)
-				.Join(snapshot.Symbols, edge => edge.From, candidate => candidate.Id, (_, candidate) => candidate)
-				.Where(candidate => string.IsNullOrWhiteSpace(kind) || string.Equals(candidate.Kind, kind, StringComparison.OrdinalIgnoreCase))
-				.Where(candidate => string.IsNullOrWhiteSpace(accessibility) || string.Equals(candidate.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), sort), limit)
-				.ToArray();
+			var callers = await queryService.GetCallersAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
 
 			WriteJson(callers);
 			return 0;
@@ -755,22 +549,7 @@ public static class CliApplication
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
-			var symbol = snapshot.Symbols.FirstOrDefault(candidate =>
-				string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
-				string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
-
-			if (symbol is null)
-			{
-				throw new InvalidOperationException($"No symbol found for query: {query}");
-			}
-
-			var targets = LimitResults(OrderChildResults(snapshot.Edges
-				.Where(edge => edge.Type == EdgeTypes.Tests && edge.From == symbol.Id)
-				.Join(snapshot.Symbols, edge => edge.To, candidate => candidate.Id, (_, candidate) => candidate)
-				.Where(candidate => string.IsNullOrWhiteSpace(kind) || string.Equals(candidate.Kind, kind, StringComparison.OrdinalIgnoreCase))
-				.Where(candidate => string.IsNullOrWhiteSpace(accessibility) || string.Equals(candidate.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), sort), limit)
-				.ToArray();
+			var targets = await queryService.GetTestTargetsAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
 
 			WriteJson(targets);
 			return 0;
@@ -797,22 +576,7 @@ public static class CliApplication
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
-			var symbol = snapshot.Symbols.FirstOrDefault(candidate =>
-				string.Equals(candidate.Id, query, StringComparison.Ordinal) ||
-				string.Equals(candidate.QualifiedName, query, StringComparison.OrdinalIgnoreCase));
-
-			if (symbol is null)
-			{
-				throw new InvalidOperationException($"No symbol found for query: {query}");
-			}
-
-			var tests = LimitResults(OrderChildResults(snapshot.Edges
-				.Where(edge => edge.Type == EdgeTypes.Tests && edge.To == symbol.Id)
-				.Join(snapshot.Symbols, edge => edge.From, candidate => candidate.Id, (_, candidate) => candidate)
-				.Where(candidate => string.IsNullOrWhiteSpace(kind) || string.Equals(candidate.Kind, kind, StringComparison.OrdinalIgnoreCase))
-				.Where(candidate => string.IsNullOrWhiteSpace(accessibility) || string.Equals(candidate.Accessibility, accessibility, StringComparison.OrdinalIgnoreCase)), sort), limit)
-				.ToArray();
+			var tests = await queryService.GetTestsAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
 
 			WriteJson(tests);
 			return 0;
@@ -835,24 +599,7 @@ public static class CliApplication
 				throw new InvalidOperationException("A file path is required.");
 			}
 
-			if (start <= 0 || end < start)
-			{
-				throw new InvalidOperationException("Use positive line numbers and ensure --end is greater than or equal to --start.");
-			}
-
-			var snapshot = await ReadSnapshotAsync(runtime, indexDirectory, cancellationToken);
-			var fileRecord = snapshot.Files.FirstOrDefault(candidate => string.Equals(candidate.Path, file, StringComparison.OrdinalIgnoreCase));
-
-			if (fileRecord is null)
-			{
-				throw new InvalidOperationException($"No indexed file found for path: {file}");
-			}
-
-			var fullFilePath = Path.Combine(snapshot.Meta.SourceRoot, fileRecord.Path.Replace('/', Path.DirectorySeparatorChar));
-			var lines = await File.ReadAllLinesAsync(fullFilePath, cancellationToken);
-			var excerpt = Enumerable.Range(start, Math.Min(end, lines.Length) - start + 1)
-				.Select(lineNumber => new { line = lineNumber, text = lines[lineNumber - 1] })
-				.ToArray();
+			var excerpt = await queryService.GetExcerptAsync(new CodeIndexExcerptQuery(file, indexDirectory, start, end), cancellationToken);
 
 			WriteJson(excerpt);
 			return 0;
