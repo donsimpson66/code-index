@@ -28,15 +28,7 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
     [Fact]
     public async Task McpServer_ListsTools_AndFindsSymbols() 
     {
-        await using var client = await McpClient.CreateAsync(
-            new StdioClientTransport(new StdioClientTransportOptions
-            {
-                Command = "dotnet",
-                Arguments = [fixture.McpServerDllPath],
-                WorkingDirectory = fixture.RepoRoot,
-                Name = "code-index-mcp-test",
-                StandardErrorLines = _ => { }
-            }));
+        await using var client = await CreateMcpClientAsync();
 
         var tools = await client.ListToolsAsync();
 
@@ -60,6 +52,217 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
         Assert.Contains(
             symbols.EnumerateArray(),
             symbol => symbol.GetProperty("qualifiedName").GetString() == "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder");
+    }
+
+    [Fact]
+    public async Task McpServer_BuildIndex_UsesDefaultWorkspaceArtifactDirectory()
+    {
+        var sourceDirectory = Path.Combine(Path.GetTempPath(), $"code-index-mcp-build-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(sourceDirectory);
+
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "greeter.ts"),
+                "export class Greeter {\n    greet(): string {\n        return 'hi';\n    }\n}\n");
+
+            await using var client = await CreateMcpClientAsync();
+
+            var result = await client.CallToolAsync(
+                "build_index",
+                new Dictionary<string, object?>
+                {
+                    ["path"] = sourceDirectory
+                });
+
+            Assert.False(result.IsError ?? false);
+            Assert.NotNull(result.StructuredContent);
+
+            var buildResult = ExtractStructuredObject(result.StructuredContent.Value, "outputDirectory");
+            var outputDirectory = buildResult.GetProperty("outputDirectory").GetString();
+            var metaPath = buildResult.GetProperty("metaPath").GetString();
+
+            Assert.Equal(Path.Combine(sourceDirectory, ".code-index"), outputDirectory);
+            Assert.Equal("directory", buildResult.GetProperty("inputKind").GetString());
+            Assert.True(File.Exists(metaPath));
+            Assert.True(File.Exists(Path.Combine(outputDirectory!, "code-index.symbols.json")));
+        }
+        finally
+        {
+            if (Directory.Exists(sourceDirectory))
+            {
+                Directory.Delete(sourceDirectory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task McpServer_FindSymbol_AllowsRelativeIndexDirectory()
+    {
+        await using var client = await CreateMcpClientAsync();
+
+        var result = await client.CallToolAsync(
+            "find_symbol",
+            new Dictionary<string, object?>
+            {
+                ["query"] = "WorkspaceSymbolIndexBuilder",
+                ["indexDirectory"] = Path.GetRelativePath(fixture.RepoRoot, fixture.IndexDirectory),
+                ["limit"] = 5
+            });
+
+        Assert.False(result.IsError ?? false);
+        Assert.NotNull(result.StructuredContent);
+
+        var symbols = ExtractStructuredArray(result.StructuredContent.Value);
+
+        Assert.Contains(
+            symbols.EnumerateArray(),
+            symbol => symbol.GetProperty("qualifiedName").GetString() == "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder");
+    }
+
+    [Fact]
+    public async Task McpServer_BuildIndex_ReturnsCleanError_ForMissingSourcePath()
+    {
+        await using var client = await CreateMcpClientAsync();
+
+        var result = await client.CallToolAsync(
+            "build_index",
+            new Dictionary<string, object?>
+            {
+                ["path"] = "does-not-exist/code-index.sln"
+            });
+
+        Assert.True(result.IsError ?? false);
+    }
+
+    [Fact]
+    public async Task McpServer_GetSymbol_ReturnsCleanError_ForMissingIndexDirectory()
+    {
+        await using var client = await CreateMcpClientAsync();
+
+        var result = await client.CallToolAsync(
+            "get_symbol",
+            new Dictionary<string, object?>
+            {
+                ["query"] = "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder",
+                ["indexDirectory"] = "missing-index"
+            });
+
+        Assert.True(result.IsError ?? false);
+    }
+
+    [Fact]
+    public async Task McpServer_GetSymbol_ReturnsCleanError_ForUnknownSymbol()
+    {
+        await using var client = await CreateMcpClientAsync();
+
+        var result = await client.CallToolAsync(
+            "get_symbol",
+            new Dictionary<string, object?>
+            {
+                ["query"] = "CodeIndex.UnknownSymbol",
+                ["indexDirectory"] = fixture.IndexDirectory
+            });
+
+        Assert.True(result.IsError ?? false);
+    }
+
+    [Fact]
+    public async Task McpServer_GetExcerpt_ReturnsCleanError_ForInvalidLineRange()
+    {
+        await using var client = await CreateMcpClientAsync();
+
+        var result = await client.CallToolAsync(
+            "get_excerpt",
+            new Dictionary<string, object?>
+            {
+                ["filePath"] = "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs",
+                ["indexDirectory"] = fixture.IndexDirectory,
+                ["startLine"] = 0,
+                ["endLine"] = 1
+            });
+
+        Assert.True(result.IsError ?? false);
+    }
+
+    [Fact]
+    public async Task BuildService_StopsWhenCanceledAfterFilesAreLoaded()
+    {
+        var buildSymbolsCallCount = 0;
+        var buildEdgesCallCount = 0;
+        var buildReferencesCallCount = 0;
+        using var cancellationTokenSource = new CancellationTokenSource();
+
+        var runtime = new global::CodeIndex.Cli.CliRuntime
+        {
+            BuildFilesAsync = (_, _, _) =>
+            {
+                cancellationTokenSource.Cancel();
+                return Task.FromResult<IReadOnlyList<global::CodeIndex.Core.FileRecord>>(
+                [
+                    new global::CodeIndex.Core.FileRecord("f:sample.ts", "sample.ts", "sample", "TypeScript", "sha256:test", "summary")
+                ]);
+            },
+            BuildSymbolsAsync = (_, _, _, _) =>
+            {
+                buildSymbolsCallCount++;
+                return Task.FromResult<IReadOnlyList<global::CodeIndex.Core.SymbolRecord>>(Array.Empty<global::CodeIndex.Core.SymbolRecord>());
+            },
+            BuildEdgesAsync = (_, _, _) =>
+            {
+                buildEdgesCallCount++;
+                return Task.FromResult<IReadOnlyList<global::CodeIndex.Core.EdgeRecord>>(Array.Empty<global::CodeIndex.Core.EdgeRecord>());
+            },
+            BuildReferencesAsync = (_, _, _, _, _) =>
+            {
+                buildReferencesCallCount++;
+                return Task.FromResult<IReadOnlyList<global::CodeIndex.Core.ReferenceRecord>>(Array.Empty<global::CodeIndex.Core.ReferenceRecord>());
+            },
+            ValidateSnapshot = _ => throw new Xunit.Sdk.XunitException("Validation should not run after cancellation.")
+        };
+
+        var service = new global::CodeIndex.Cli.CodeIndexBuildService(runtime);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => service.BuildAsync(new global::CodeIndex.Cli.CodeIndexBuildRequest(fixture.RepoRoot, false, null), cancellationTokenSource.Token));
+
+        Assert.Equal(0, buildSymbolsCallCount);
+        Assert.Equal(0, buildEdgesCallCount);
+        Assert.Equal(0, buildReferencesCallCount);
+    }
+
+    [Fact]
+    public async Task QueryService_StopsWhenCanceledAfterSnapshotLoads()
+    {
+        using var cancellationTokenSource = new CancellationTokenSource();
+        var snapshot = new global::CodeIndex.Core.CodeIndexSnapshot(
+            new global::CodeIndex.Core.CodeIndexMeta(
+                "1",
+                "test",
+                "code-index",
+                DateTimeOffset.UtcNow,
+                fixture.RepoRoot,
+                fixture.RepoRoot,
+                "directory"),
+            Array.Empty<global::CodeIndex.Core.FileRecord>(),
+            Array.Empty<global::CodeIndex.Core.SymbolRecord>(),
+            Array.Empty<global::CodeIndex.Core.EdgeRecord>(),
+            Array.Empty<global::CodeIndex.Core.ReferenceRecord>(),
+            Array.Empty<global::CodeIndex.Core.EmbeddingRecord>());
+
+        var runtime = new global::CodeIndex.Cli.CliRuntime
+        {
+            ReadSnapshotAsync = (_, _) =>
+            {
+                cancellationTokenSource.Cancel();
+                return Task.FromResult(snapshot);
+            }
+        };
+
+        var service = new global::CodeIndex.Cli.CodeIndexQueryService(runtime);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => service.GetSymbolAsync("CodeIndex.UnknownSymbol", fixture.IndexDirectory, cancellationTokenSource.Token));
     }
 
     [Fact]
@@ -129,6 +332,40 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
         }
 
         throw new Xunit.Sdk.XunitException($"Expected structuredContent to contain an array payload but got: {structuredContent.GetRawText()}");
+    }
+
+    private static JsonElement ExtractStructuredObject(JsonElement structuredContent, string requiredProperty)
+    {
+        if (structuredContent.ValueKind == JsonValueKind.Object && structuredContent.TryGetProperty(requiredProperty, out _))
+        {
+            return structuredContent;
+        }
+
+        if (structuredContent.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var property in structuredContent.EnumerateObject())
+            {
+                if (property.Value.ValueKind == JsonValueKind.Object && property.Value.TryGetProperty(requiredProperty, out _))
+                {
+                    return property.Value;
+                }
+            }
+        }
+
+        throw new Xunit.Sdk.XunitException($"Expected structuredContent to contain an object payload with property '{requiredProperty}' but got: {structuredContent.GetRawText()}");
+    }
+
+    private Task<McpClient> CreateMcpClientAsync()
+    {
+        return McpClient.CreateAsync(
+            new StdioClientTransport(new StdioClientTransportOptions
+            {
+                Command = "dotnet",
+                Arguments = [fixture.McpServerDllPath],
+                WorkingDirectory = fixture.RepoRoot,
+                Name = "code-index-mcp-test",
+                StandardErrorLines = _ => { }
+            }));
     }
 
     [Fact]

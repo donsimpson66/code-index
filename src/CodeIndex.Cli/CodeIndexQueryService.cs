@@ -8,6 +8,7 @@ public sealed class CodeIndexQueryService(CliRuntime runtime)
     {
         ValidateSymbolQuery(request.Query);
         var snapshot = await ReadSnapshotAsync(request.IndexDirectory, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
         return FindSymbols(snapshot, request);
     }
 
@@ -27,6 +28,7 @@ public sealed class CodeIndexQueryService(CliRuntime runtime)
         }
 
         var snapshot = await ReadSnapshotAsync(request.IndexDirectory, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
         var embeddingBuilder = new SemanticEmbeddingIndexBuilder();
         return embeddingBuilder.Search(request.Query, snapshot.Embeddings, itemType, request.Limit <= 0 ? 10 : request.Limit)
             .Select(result => CreateSemanticSearchResult(snapshot, result))
@@ -37,6 +39,7 @@ public sealed class CodeIndexQueryService(CliRuntime runtime)
     {
         ValidateSymbolQuery(request.Query);
         var snapshot = await ReadSnapshotAsync(request.IndexDirectory, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
         return FindReferences(snapshot, request);
     }
 
@@ -44,6 +47,7 @@ public sealed class CodeIndexQueryService(CliRuntime runtime)
     {
         ValidateSymbolQuery(query);
         var snapshot = await ReadSnapshotAsync(indexDirectory, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
         return ResolveSymbol(snapshot, query);
     }
 
@@ -51,6 +55,7 @@ public sealed class CodeIndexQueryService(CliRuntime runtime)
     {
         ValidateSymbolQuery(request.Query);
         var snapshot = await ReadSnapshotAsync(request.IndexDirectory, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
         return GetChildren(snapshot, request);
     }
 
@@ -58,6 +63,7 @@ public sealed class CodeIndexQueryService(CliRuntime runtime)
     {
         ValidateSymbolQuery(request.Query);
         var snapshot = await ReadSnapshotAsync(request.IndexDirectory, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
         return GetCallees(snapshot, request);
     }
 
@@ -65,6 +71,7 @@ public sealed class CodeIndexQueryService(CliRuntime runtime)
     {
         ValidateSymbolQuery(request.Query);
         var snapshot = await ReadSnapshotAsync(request.IndexDirectory, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
         return GetCallers(snapshot, request);
     }
 
@@ -72,6 +79,7 @@ public sealed class CodeIndexQueryService(CliRuntime runtime)
     {
         ValidateSymbolQuery(request.Query);
         var snapshot = await ReadSnapshotAsync(request.IndexDirectory, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
         return GetTestTargets(snapshot, request);
     }
 
@@ -79,6 +87,7 @@ public sealed class CodeIndexQueryService(CliRuntime runtime)
     {
         ValidateSymbolQuery(request.Query);
         var snapshot = await ReadSnapshotAsync(request.IndexDirectory, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
         return GetTests(snapshot, request);
     }
 
@@ -86,11 +95,13 @@ public sealed class CodeIndexQueryService(CliRuntime runtime)
     {
         ValidateExcerptRequest(request);
         var snapshot = await ReadSnapshotAsync(request.IndexDirectory, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
         return await GetExcerptAsync(snapshot, request.FilePath, request.StartLine, request.EndLine, cancellationToken);
     }
 
     public async Task<CodeIndexSnapshot> ReadSnapshotAsync(string? indexDirectory, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         if (string.IsNullOrWhiteSpace(indexDirectory))
         {
             throw new InvalidOperationException("An index directory is required. Pass --index <path>.");

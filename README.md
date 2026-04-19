@@ -76,8 +76,90 @@ Current MCP tools:
 - `get_test_targets`
 - `get_excerpt`
 
-The MCP surface still requires explicit artifact paths for now. Workspace
-defaults and editor-specific configuration examples are planned next.
+`build_index` now defaults to a local `.code-index` artifact directory rooted at
+the indexed workspace. For a solution or project input, that means a sibling
+`.code-index` directory next to the `.sln` or `.csproj`. For a source directory
+input, that means `<source-directory>/.code-index`.
+
+### Recommended MCP Workflow
+
+1. Start the MCP server from the workspace root.
+2. Call `build_index` with the workspace path and let it write to the default `.code-index` directory.
+3. After creating or changing code, rebuild the index before ending the agent session.
+4. Call query tools with `indexDirectory` pointing at that explicit `.code-index` directory.
+
+The server intentionally does not keep an implicit "last built index" cache for
+queries. Agent clients should rebuild when they change the codebase and continue
+to pass the explicit index path on every query so the target index stays
+deterministic.
+
+Example build request for this repository:
+
+```json
+{
+  "path": "${workspaceFolder}/code-index.sln"
+}
+```
+
+Example query request after building:
+
+```json
+{
+  "query": "WorkspaceSymbolIndexBuilder",
+  "indexDirectory": "${workspaceFolder}/.code-index",
+  "limit": 10
+}
+```
+
+### VS Code MCP Example
+
+Create `.vscode/mcp.json` in the workspace:
+
+```json
+{
+  "servers": {
+    "codeIndex": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/src/CodeIndex.Mcp"
+      ]
+    }
+  }
+}
+```
+
+After adding the server, restart it from VS Code if needed, call `build_index`
+for the workspace, rebuild it again after code changes, and point query tools at
+`${workspaceFolder}/.code-index` explicitly.
+
+### OpenCode MCP Example
+
+Add the server to `opencode.json` or `opencode.jsonc`:
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "codeIndex": {
+      "type": "local",
+      "command": [
+        "dotnet",
+        "run",
+        "--project",
+        "./src/CodeIndex.Mcp"
+      ],
+      "enabled": true,
+      "timeout": 15000
+    }
+  }
+}
+```
+
+Use the same workflow there: build first, rebuild after code changes, then query
+against `./.code-index` for solution or project inputs rooted at the workspace.
 
 ## Quick Start
 

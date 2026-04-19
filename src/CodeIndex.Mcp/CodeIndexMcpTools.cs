@@ -19,21 +19,24 @@ public sealed class CodeIndexMcpTools(CodeIndexBuildService buildService, CodeIn
     [Description("Builds JSON code-index artifacts from a solution, project, or supported source directory.")]
     public async Task<BuildIndexToolResult> BuildIndexAsync(
         [Description("Path to a .sln, .csproj, or supported source directory.")] string path,
-        [Description("Directory where code-index artifacts will be written.")] string outputDirectory,
+        [Description("Optional directory where code-index artifacts will be written. Defaults to a .code-index directory rooted at the indexed workspace.")] string? outputDirectory = null,
         [Description("Include generated C# files such as obj outputs and *.g.cs files.")] bool includeGenerated = false,
         [Description("Existing code-index artifact directory to use as an incremental baseline.")] string? incrementalFromIndex = null,
         CancellationToken cancellationToken = default)
     {
+        var resolvedInputPath = Path.GetFullPath(path);
+        var resolvedOutputDirectory = ResolveOutputDirectory(resolvedInputPath, outputDirectory);
+        var resolvedIncrementalFromIndex = ResolveExplicitPath(incrementalFromIndex);
         var stopwatch = Stopwatch.StartNew();
-        var request = new CodeIndexBuildRequest(path, includeGenerated, incrementalFromIndex);
+        var request = new CodeIndexBuildRequest(resolvedInputPath, includeGenerated, resolvedIncrementalFromIndex);
         var result = await buildService.BuildAsync(request, cancellationToken);
-        var outputPaths = await buildService.WriteSnapshotAsync(result.Snapshot, outputDirectory, cancellationToken);
+        var outputPaths = await buildService.WriteSnapshotAsync(result.Snapshot, resolvedOutputDirectory, cancellationToken);
         stopwatch.Stop();
 
         return new BuildIndexToolResult(
             InputPath: result.Snapshot.Meta.InputPath,
             InputKind: result.Snapshot.Meta.InputKind,
-            OutputDirectory: Path.GetFullPath(outputDirectory),
+            OutputDirectory: resolvedOutputDirectory,
             FileCount: result.Stats.FileCount,
             SymbolCount: result.Stats.SymbolCount,
             EdgeCount: result.Stats.EdgeCount,
@@ -58,6 +61,32 @@ public sealed class CodeIndexMcpTools(CodeIndexBuildService buildService, CodeIn
             Warnings: Array.Empty<string>());
     }
 
+    private static string ResolveOutputDirectory(string resolvedInputPath, string? outputDirectory)
+    {
+        if (!string.IsNullOrWhiteSpace(outputDirectory))
+        {
+            return ResolveExplicitPath(outputDirectory)!;
+        }
+
+        var workspaceRoot = SourceInputKindDetector.IsDirectoryInput(resolvedInputPath)
+            ? resolvedInputPath
+            : Path.GetDirectoryName(resolvedInputPath);
+
+        return Path.Combine(workspaceRoot ?? Environment.CurrentDirectory, ".code-index");
+    }
+
+    private static string? ResolveExplicitPath(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
+
+        return Path.IsPathRooted(path)
+            ? Path.GetFullPath(path)
+            : Path.GetFullPath(path, Environment.CurrentDirectory);
+    }
+
     [McpServerTool(
         Name = "find_symbol",
         Title = "Find Symbols",
@@ -76,7 +105,7 @@ public sealed class CodeIndexMcpTools(CodeIndexBuildService buildService, CodeIn
         [Description("Sort order: ranked, name, or accessibility.")] string? sort = null,
         CancellationToken cancellationToken = default)
     {
-        return queryService.FindSymbolsAsync(new CodeIndexFindSymbolsRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
+        return queryService.FindSymbolsAsync(new CodeIndexFindSymbolsRequest(query, ResolveRequiredPath(indexDirectory, "An index directory is required."), limit, kind, accessibility, sort), cancellationToken);
     }
 
     [McpServerTool(
@@ -93,7 +122,7 @@ public sealed class CodeIndexMcpTools(CodeIndexBuildService buildService, CodeIn
         [Description("Path to the code-index artifact directory.")] string indexDirectory,
         CancellationToken cancellationToken = default)
     {
-        return queryService.GetSymbolAsync(query, indexDirectory, cancellationToken);
+        return queryService.GetSymbolAsync(query, ResolveRequiredPath(indexDirectory, "An index directory is required."), cancellationToken);
     }
 
     [McpServerTool(
@@ -114,7 +143,7 @@ public sealed class CodeIndexMcpTools(CodeIndexBuildService buildService, CodeIn
         [Description("Sort order: name, accessibility, or declaration.")] string? sort = null,
         CancellationToken cancellationToken = default)
     {
-        return queryService.GetChildrenAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
+        return queryService.GetChildrenAsync(new CodeIndexChildQueryRequest(query, ResolveRequiredPath(indexDirectory, "An index directory is required."), limit, kind, accessibility, sort), cancellationToken);
     }
 
     [McpServerTool(
@@ -132,7 +161,7 @@ public sealed class CodeIndexMcpTools(CodeIndexBuildService buildService, CodeIn
         [Description("Maximum number of results to return. Use 0 or less for no limit.")] int limit = 20,
         CancellationToken cancellationToken = default)
     {
-        return queryService.FindReferencesAsync(new CodeIndexReferenceQuery(query, indexDirectory, limit), cancellationToken);
+        return queryService.FindReferencesAsync(new CodeIndexReferenceQuery(query, ResolveRequiredPath(indexDirectory, "An index directory is required."), limit), cancellationToken);
     }
 
     [McpServerTool(
@@ -151,7 +180,7 @@ public sealed class CodeIndexMcpTools(CodeIndexBuildService buildService, CodeIn
         [Description("Optional item type filter: file or symbol.")] string? itemType = null,
         CancellationToken cancellationToken = default)
     {
-        return queryService.SemanticSearchAsync(new CodeIndexSemanticSearchRequest(query, indexDirectory, limit, itemType), cancellationToken);
+        return queryService.SemanticSearchAsync(new CodeIndexSemanticSearchRequest(query, ResolveRequiredPath(indexDirectory, "An index directory is required."), limit, itemType), cancellationToken);
     }
 
     [McpServerTool(
@@ -172,7 +201,7 @@ public sealed class CodeIndexMcpTools(CodeIndexBuildService buildService, CodeIn
         [Description("Sort order: name, accessibility, or declaration.")] string? sort = null,
         CancellationToken cancellationToken = default)
     {
-        return queryService.GetCalleesAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
+        return queryService.GetCalleesAsync(new CodeIndexChildQueryRequest(query, ResolveRequiredPath(indexDirectory, "An index directory is required."), limit, kind, accessibility, sort), cancellationToken);
     }
 
     [McpServerTool(
@@ -193,7 +222,7 @@ public sealed class CodeIndexMcpTools(CodeIndexBuildService buildService, CodeIn
         [Description("Sort order: name, accessibility, or declaration.")] string? sort = null,
         CancellationToken cancellationToken = default)
     {
-        return queryService.GetCallersAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
+        return queryService.GetCallersAsync(new CodeIndexChildQueryRequest(query, ResolveRequiredPath(indexDirectory, "An index directory is required."), limit, kind, accessibility, sort), cancellationToken);
     }
 
     [McpServerTool(
@@ -214,7 +243,7 @@ public sealed class CodeIndexMcpTools(CodeIndexBuildService buildService, CodeIn
         [Description("Sort order: name, accessibility, or declaration.")] string? sort = null,
         CancellationToken cancellationToken = default)
     {
-        return queryService.GetTestsAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
+        return queryService.GetTestsAsync(new CodeIndexChildQueryRequest(query, ResolveRequiredPath(indexDirectory, "An index directory is required."), limit, kind, accessibility, sort), cancellationToken);
     }
 
     [McpServerTool(
@@ -235,7 +264,7 @@ public sealed class CodeIndexMcpTools(CodeIndexBuildService buildService, CodeIn
         [Description("Sort order: name, accessibility, or declaration.")] string? sort = null,
         CancellationToken cancellationToken = default)
     {
-        return queryService.GetTestTargetsAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
+        return queryService.GetTestTargetsAsync(new CodeIndexChildQueryRequest(query, ResolveRequiredPath(indexDirectory, "An index directory is required."), limit, kind, accessibility, sort), cancellationToken);
     }
 
     [McpServerTool(
@@ -254,7 +283,12 @@ public sealed class CodeIndexMcpTools(CodeIndexBuildService buildService, CodeIn
         [Description("Inclusive ending line number.")] int endLine,
         CancellationToken cancellationToken = default)
     {
-        return queryService.GetExcerptAsync(new CodeIndexExcerptQuery(filePath, indexDirectory, startLine, endLine), cancellationToken);
+        return queryService.GetExcerptAsync(new CodeIndexExcerptQuery(filePath, ResolveRequiredPath(indexDirectory, "An index directory is required."), startLine, endLine), cancellationToken);
+    }
+
+    private static string ResolveRequiredPath(string path, string errorMessage)
+    {
+        return ResolveExplicitPath(path) ?? throw new InvalidOperationException(errorMessage);
     }
 }
 

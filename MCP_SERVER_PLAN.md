@@ -210,9 +210,8 @@ CLI-specific options into the protocol unnecessarily.
 ### Suggested `build_index` Inputs
 
 - `path`
-- `out`
+- `outputDirectory` optional, defaults to `.code-index` at the indexed workspace root
 - `includeGenerated`
-- `verbose`
 - `incrementalFromIndex`
 
 ### Suggested `build_index` Output
@@ -236,7 +235,7 @@ CLI-specific options into the protocol unnecessarily.
 
 ## Phase 6: Add Workspace-Aware Defaults
 
-Status: not started
+Status: complete
 
 ### Goal
 
@@ -252,13 +251,14 @@ manual path setup.
 ### Concrete Work
 
 - define the default artifact location for `build_index`
-- decide whether queries require an explicit index path every time or can reuse a recent build target
+- keep query tools on explicit `indexDirectory` inputs instead of reusing an implicit recent build target
+- document the expected agent workflow: rebuild after code changes, then query with the explicit index path
 - ensure the server never guesses across repositories in a way that risks reading the wrong project
 
 ### Acceptance Criteria
 
 - a client can build an index for a workspace with minimal arguments
-- repeated queries do not require excessive path repetition
+- query requests stay explicit and deterministic across agent sessions
 - path resolution remains deterministic and safe
 
 ## Phase 7: Documentation And Client Setup
@@ -267,7 +267,7 @@ manual path setup.
 
 Document how to run the MCP server from local editors and agent clients.
 
-Status: in progress
+Status: complete
 
 ### Tasks
 

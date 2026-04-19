@@ -6,14 +6,17 @@ public sealed class CodeIndexBuildService(CliRuntime runtime)
 {
     public async Task<CodeIndexBuildResult> BuildAsync(CodeIndexBuildRequest request, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         CodeIndexSnapshot? incrementalBaseline = null;
 
         if (!string.IsNullOrWhiteSpace(request.IncrementalFromIndex))
         {
             incrementalBaseline = await runtime.ReadSnapshotAsync(request.IncrementalFromIndex, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
         }
 
         var files = await runtime.BuildFilesAsync(request.InputPath, request.IncludeGenerated, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
         var inputKind = SourceInputKindDetector.Detect(request.InputPath);
         var incrementalMergeService = new IncrementalIndexMergeService();
         var embeddingBuilder = new SemanticEmbeddingIndexBuilder();
@@ -28,6 +31,7 @@ public sealed class CodeIndexBuildService(CliRuntime runtime)
 
         if (canReuseIncrementalBaseline)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             symbols = incrementalBaseline!.Symbols;
             edges = incrementalBaseline.Edges;
             references = incrementalBaseline.References;
@@ -48,6 +52,7 @@ public sealed class CodeIndexBuildService(CliRuntime runtime)
         }
         else if (incrementalBaseline is not null)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var fileChanges = incrementalMergeService.AnalyzeFiles(files, incrementalBaseline);
             var rebuiltSymbols = fileChanges.ChangedCurrentFiles.Count == 0
                 ? Array.Empty<SymbolRecord>()
@@ -58,6 +63,7 @@ public sealed class CodeIndexBuildService(CliRuntime runtime)
                     request.IncludeGenerated,
                     cancellationToken)).ToArray();
 
+                    cancellationToken.ThrowIfCancellationRequested();
             var mergePlan = incrementalMergeService.CreateMergePlan(files, incrementalBaseline, fileChanges, rebuiltSymbols);
             var rebuiltEdges = mergePlan.EdgeRebuildFilePaths.Count == 0
                 ? Array.Empty<EdgeRecord>()
@@ -77,6 +83,7 @@ public sealed class CodeIndexBuildService(CliRuntime runtime)
                     request.IncludeGenerated,
                     cancellationToken)).ToArray();
 
+                    cancellationToken.ThrowIfCancellationRequested();
             symbols = mergePlan.MergedSymbols;
             edges = incrementalMergeService.MergeEdges(incrementalBaseline, mergePlan, rebuiltEdges);
             references = incrementalMergeService.MergeReferences(incrementalBaseline, mergePlan, rebuiltReferences);
@@ -100,8 +107,11 @@ public sealed class CodeIndexBuildService(CliRuntime runtime)
         else
         {
             symbols = await runtime.BuildSymbolsAsync(request.InputPath, files, request.IncludeGenerated, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             edges = await runtime.BuildEdgesAsync(request.InputPath, request.IncludeGenerated, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             references = await runtime.BuildReferencesAsync(request.InputPath, files, symbols, request.IncludeGenerated, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             embeddings = embeddingBuilder.Build(files, symbols);
             stats = new CodeIndexBuildStats(
                 UsedIncrementalBaseline: false,
@@ -120,6 +130,7 @@ public sealed class CodeIndexBuildService(CliRuntime runtime)
                 RebuiltReferenceFileCount: 0);
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
         var meta = CodeIndexMetaFactory.Create(request.InputPath, inputKind);
         var snapshot = new CodeIndexSnapshot(meta, files, symbols, edges, references, embeddings);
         runtime.ValidateSnapshot(snapshot);
@@ -128,6 +139,7 @@ public sealed class CodeIndexBuildService(CliRuntime runtime)
 
     public async Task<CodeIndexSnapshotOutputPaths> WriteSnapshotAsync(CodeIndexSnapshot snapshot, string outputDirectory, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var fullOutputDirectory = Path.GetFullPath(outputDirectory);
         var metaOutputPath = Path.Combine(fullOutputDirectory, "code-index.meta.json");
         var filesOutputPath = Path.Combine(fullOutputDirectory, "code-index.files.json");
