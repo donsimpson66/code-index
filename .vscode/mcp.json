@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "codeIndex": {
+      "type": "stdio",
+      "command": "/home/don/.local/share/mise/installs/dotnet/10.0.201/dotnet",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/src/CodeIndex.Mcp"
+      ]
+    }
+  }
+}

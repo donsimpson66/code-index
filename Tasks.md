@@ -488,14 +488,14 @@ Still open:
 - [x] Add OpenCode MCP configuration example
 - [x] Add a live MCP integration test for tool listing and query flow
 - [x] Expand MCP integration tests to cover build and query flows
-- [ ] Harden cancellation, path validation, and error handling
+- [x] Harden cancellation, path validation, and error handling
 
 ### Done Criteria
 
 - [x] Local client setup is documented
 - [x] MCP build and query flows are covered by automated tests
 - [x] Query routing is explicit; agents rebuild after code changes and keep passing the index path
-- [ ] The server is reliable enough for repeated editor use
+- [x] The server is reliable enough for repeated editor use
 
 ---
 

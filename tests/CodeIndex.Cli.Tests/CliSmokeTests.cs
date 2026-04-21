@@ -97,6 +97,104 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
     }
 
     [Fact]
+    public async Task McpServer_LargeResultQueries_HonorPredictableLimits_OnBuiltWorkspace()
+    {
+        var sourceDirectory = Path.Combine(Path.GetTempPath(), $"code-index-mcp-large-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(Path.Combine(sourceDirectory, "src", "ui"));
+
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "ui", "helper.ts"),
+                "export class Helper {\n    log(): string {\n        return 'hi';\n    }\n}\n\nexport function boot(): Helper {\n    return new Helper();\n}\n");
+
+            for (var index = 1; index <= 12; index++)
+            {
+                var suffix = index.ToString("00");
+                await File.WriteAllTextAsync(
+                    Path.Combine(sourceDirectory, "src", "ui", $"greeter{suffix}.ts"),
+                    $"import {{ boot }} from './helper';\n\nexport class Greeter{suffix} {{\n    greet(): string {{\n        return boot().log();\n    }}\n}}\n");
+            }
+
+            await using var client = await CreateMcpClientAsync();
+
+            var build = await client.CallToolAsync(
+                "build_index",
+                new Dictionary<string, object?>
+                {
+                    ["path"] = sourceDirectory
+                });
+
+            Assert.False(build.IsError ?? false);
+            Assert.NotNull(build.StructuredContent);
+
+            var buildResult = ExtractStructuredObject(build.StructuredContent.Value, "outputDirectory");
+            var indexDirectory = buildResult.GetProperty("outputDirectory").GetString();
+            Assert.NotNull(indexDirectory);
+
+            var findSymbol = await client.CallToolAsync(
+                "find_symbol",
+                new Dictionary<string, object?>
+                {
+                    ["query"] = "Greeter",
+                    ["indexDirectory"] = indexDirectory,
+                    ["kind"] = "class",
+                    ["sort"] = "name",
+                    ["limit"] = 5
+                });
+
+            Assert.False(findSymbol.IsError ?? false);
+            Assert.NotNull(findSymbol.StructuredContent);
+
+            var symbolResults = ExtractStructuredArray(findSymbol.StructuredContent.Value).EnumerateArray().ToArray();
+            Assert.Equal(5, symbolResults.Length);
+            Assert.Equal("ui.greeter01.Greeter01", symbolResults[0].GetProperty("qualifiedName").GetString());
+            Assert.Equal("ui.greeter05.Greeter05", symbolResults[4].GetProperty("qualifiedName").GetString());
+
+            var findReferences = await client.CallToolAsync(
+                "find_references",
+                new Dictionary<string, object?>
+                {
+                    ["query"] = "ui.helper.boot",
+                    ["indexDirectory"] = indexDirectory,
+                    ["limit"] = 5
+                });
+
+            Assert.False(findReferences.IsError ?? false);
+            Assert.NotNull(findReferences.StructuredContent);
+
+            var referenceResults = ExtractStructuredArray(findReferences.StructuredContent.Value).EnumerateArray().ToArray();
+            Assert.Equal(5, referenceResults.Length);
+            Assert.Equal("src/ui/greeter01.ts", referenceResults[0].GetProperty("file").GetString());
+            Assert.Equal("src/ui/greeter05.ts", referenceResults[4].GetProperty("file").GetString());
+
+            var semanticSearch = await client.CallToolAsync(
+                "semantic_search",
+                new Dictionary<string, object?>
+                {
+                    ["query"] = "ui",
+                    ["indexDirectory"] = indexDirectory,
+                    ["itemType"] = "file"
+                });
+
+            Assert.False(semanticSearch.IsError ?? false);
+            Assert.NotNull(semanticSearch.StructuredContent);
+
+            var semanticResults = ExtractStructuredArray(semanticSearch.StructuredContent.Value).EnumerateArray().ToArray();
+            Assert.Equal(10, semanticResults.Length);
+            Assert.All(semanticResults, result => Assert.Equal("file", result.GetProperty("itemType").GetString()));
+            Assert.All(semanticResults, result => Assert.Contains("src/ui/", result.GetProperty("path").GetString()!, StringComparison.OrdinalIgnoreCase));
+        }
+        finally
+        {
+            if (Directory.Exists(sourceDirectory))
+            {
+                Directory.Delete(sourceDirectory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task McpServer_FindSymbol_AllowsRelativeIndexDirectory()
     {
         await using var client = await CreateMcpClientAsync();
@@ -186,6 +284,43 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
     }
 
     [Fact]
+    public async Task McpServer_RemainsUsable_AfterToolFailure_AndKeepsDiagnosticsOffProtocol()
+    {
+        var standardErrorLines = new List<string>();
+        await using var client = await CreateMcpClientAsync(standardErrorLines);
+
+        var failure = await client.CallToolAsync(
+            "get_symbol",
+            new Dictionary<string, object?>
+            {
+                ["query"] = "CodeIndex.UnknownSymbol",
+                ["indexDirectory"] = fixture.IndexDirectory
+            });
+
+        Assert.True(failure.IsError ?? false);
+
+        var success = await client.CallToolAsync(
+            "find_symbol",
+            new Dictionary<string, object?>
+            {
+                ["query"] = "WorkspaceSymbolIndexBuilder",
+                ["indexDirectory"] = fixture.IndexDirectory,
+                ["limit"] = 5
+            });
+
+        Assert.False(success.IsError ?? false);
+        Assert.NotNull(success.StructuredContent);
+
+        var symbols = ExtractStructuredArray(success.StructuredContent.Value);
+        Assert.Contains(
+            symbols.EnumerateArray(),
+            symbol => symbol.GetProperty("qualifiedName").GetString() == "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder");
+
+        Assert.DoesNotContain(standardErrorLines, line => line.Contains("Content-Length:", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(standardErrorLines, line => line.Contains("\"jsonrpc\"", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task BuildService_StopsWhenCanceledAfterFilesAreLoaded()
     {
         var buildSymbolsCallCount = 0;
@@ -263,6 +398,108 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
             () => service.GetSymbolAsync("CodeIndex.UnknownSymbol", fixture.IndexDirectory, cancellationTokenSource.Token));
+    }
+
+    [Fact]
+    public async Task QueryService_FindSymbols_UsesPredictableOrdering_AndHonorsLimits()
+    {
+        var snapshot = CreateSnapshot(
+            files:
+            [
+                CreateFileRecord("f:alpha", "src/Alpha.cs"),
+                CreateFileRecord("f:beta", "src/Beta.cs")
+            ],
+            symbols:
+            [
+                CreateSymbolRecord("s:3", "WidgetHelper", "Demo.WidgetHelper", "class", "f:alpha"),
+                CreateSymbolRecord("s:1", "Widget", "Demo.A.Widget", "class", "f:alpha"),
+                CreateSymbolRecord("s:4", "WidgetTools", "Demo.WidgetTools", "class", "f:beta"),
+                CreateSymbolRecord("s:2", "Widget", "Demo.B.Widget", "class", "f:beta")
+            ]);
+
+        var runtime = new global::CodeIndex.Cli.CliRuntime
+        {
+            ReadSnapshotAsync = (_, _) => Task.FromResult(snapshot)
+        };
+
+        var service = new global::CodeIndex.Cli.CodeIndexQueryService(runtime);
+
+        var results = await service.FindSymbolsAsync(
+            new global::CodeIndex.Cli.CodeIndexFindSymbolsRequest("Widget", fixture.IndexDirectory, 2, null, null, "name"),
+            CancellationToken.None);
+
+        Assert.Equal(2, results.Count);
+        Assert.Equal("Demo.A.Widget", results[0].QualifiedName);
+        Assert.Equal("Demo.B.Widget", results[1].QualifiedName);
+    }
+
+    [Fact]
+    public async Task QueryService_FindReferences_UsesPredictableOrdering_AndHonorsLimits()
+    {
+        var snapshot = CreateSnapshot(
+            files:
+            [
+                CreateFileRecord("f:zeta", "src/Zeta.cs"),
+                CreateFileRecord("f:alpha", "src/Alpha.cs")
+            ],
+            symbols:
+            [
+                CreateSymbolRecord("s:target", "Target", "Demo.Target", "method", "f:alpha"),
+                CreateSymbolRecord("s:caller1", "CallerOne", "Demo.CallerOne", "method", "f:alpha"),
+                CreateSymbolRecord("s:caller2", "CallerTwo", "Demo.CallerTwo", "method", "f:zeta")
+            ],
+            references:
+            [
+                new global::CodeIndex.Core.ReferenceRecord("s:target", "s:caller2", "f:zeta", new global::CodeIndex.Core.TextRangeRecord(1, 1, 1, 8), "Target();"),
+                new global::CodeIndex.Core.ReferenceRecord("s:target", "s:caller1", "f:alpha", new global::CodeIndex.Core.TextRangeRecord(10, 4, 10, 11), "Target();"),
+                new global::CodeIndex.Core.ReferenceRecord("s:target", "s:caller1", "f:alpha", new global::CodeIndex.Core.TextRangeRecord(2, 2, 2, 9), "Target();"),
+                new global::CodeIndex.Core.ReferenceRecord("s:target", "s:caller2", "f:zeta", new global::CodeIndex.Core.TextRangeRecord(3, 1, 3, 8), "Target();")
+            ]);
+
+        var runtime = new global::CodeIndex.Cli.CliRuntime
+        {
+            ReadSnapshotAsync = (_, _) => Task.FromResult(snapshot)
+        };
+
+        var service = new global::CodeIndex.Cli.CodeIndexQueryService(runtime);
+
+        var results = await service.FindReferencesAsync(
+            new global::CodeIndex.Cli.CodeIndexReferenceQuery("Demo.Target", fixture.IndexDirectory, 2),
+            CancellationToken.None);
+
+        Assert.Equal(2, results.Count);
+        Assert.Equal("src/Alpha.cs", results[0].File);
+        Assert.Equal(2, results[0].Range.StartLine);
+        Assert.Equal("src/Alpha.cs", results[1].File);
+        Assert.Equal(10, results[1].Range.StartLine);
+    }
+
+    [Fact]
+    public async Task QueryService_SemanticSearch_DefaultsToTenResults_ForBroadMatches()
+    {
+        var files = Enumerable.Range(1, 12)
+            .Select(index => CreateFileRecord($"f:{index:00}", "src/Greeter.cs", summary: "greeter summary"))
+            .ToArray();
+        var embeddingBuilder = new global::CodeIndex.Core.SemanticEmbeddingIndexBuilder();
+        var snapshot = CreateSnapshot(
+            files: files,
+            embeddings: embeddingBuilder.Build(files, Array.Empty<global::CodeIndex.Core.SymbolRecord>()));
+
+        var runtime = new global::CodeIndex.Cli.CliRuntime
+        {
+            ReadSnapshotAsync = (_, _) => Task.FromResult(snapshot)
+        };
+
+        var service = new global::CodeIndex.Cli.CodeIndexQueryService(runtime);
+
+        var results = await service.SemanticSearchAsync(
+            new global::CodeIndex.Cli.CodeIndexSemanticSearchRequest("greeter", fixture.IndexDirectory, 0, global::CodeIndex.Core.EmbeddingItemTypes.File),
+            CancellationToken.None);
+
+        Assert.Equal(10, results.Count);
+        Assert.All(results, result => Assert.Equal(global::CodeIndex.Core.EmbeddingItemTypes.File, result.ItemType));
+        Assert.Equal("f:01", results[0].ItemId);
+        Assert.Equal("f:10", results[9].ItemId);
     }
 
     [Fact]
@@ -355,7 +592,7 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
         throw new Xunit.Sdk.XunitException($"Expected structuredContent to contain an object payload with property '{requiredProperty}' but got: {structuredContent.GetRawText()}");
     }
 
-    private Task<McpClient> CreateMcpClientAsync()
+    private Task<McpClient> CreateMcpClientAsync(ICollection<string>? standardErrorLines = null)
     {
         return McpClient.CreateAsync(
             new StdioClientTransport(new StdioClientTransportOptions
@@ -364,8 +601,73 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
                 Arguments = [fixture.McpServerDllPath],
                 WorkingDirectory = fixture.RepoRoot,
                 Name = "code-index-mcp-test",
-                StandardErrorLines = _ => { }
+                StandardErrorLines = line =>
+                {
+                    if (standardErrorLines is not null)
+                    {
+                        standardErrorLines.Add(line);
+                    }
+                }
             }));
+    }
+
+    private global::CodeIndex.Core.CodeIndexSnapshot CreateSnapshot(
+        IReadOnlyList<global::CodeIndex.Core.FileRecord>? files = null,
+        IReadOnlyList<global::CodeIndex.Core.SymbolRecord>? symbols = null,
+        IReadOnlyList<global::CodeIndex.Core.EdgeRecord>? edges = null,
+        IReadOnlyList<global::CodeIndex.Core.ReferenceRecord>? references = null,
+        IReadOnlyList<global::CodeIndex.Core.EmbeddingRecord>? embeddings = null)
+    {
+        return new global::CodeIndex.Core.CodeIndexSnapshot(
+            new global::CodeIndex.Core.CodeIndexMeta(
+                "1",
+                "test",
+                "code-index",
+                DateTimeOffset.UtcNow,
+                fixture.RepoRoot,
+                fixture.RepoRoot,
+                "directory"),
+            files ?? Array.Empty<global::CodeIndex.Core.FileRecord>(),
+            symbols ?? Array.Empty<global::CodeIndex.Core.SymbolRecord>(),
+            edges ?? Array.Empty<global::CodeIndex.Core.EdgeRecord>(),
+            references ?? Array.Empty<global::CodeIndex.Core.ReferenceRecord>(),
+            embeddings ?? Array.Empty<global::CodeIndex.Core.EmbeddingRecord>());
+    }
+
+    private static global::CodeIndex.Core.FileRecord CreateFileRecord(
+        string id,
+        string path,
+        string projectName = "CodeIndex.Tests",
+        string language = "C#",
+        string hash = "sha256:test",
+        string summary = "summary")
+    {
+        return new global::CodeIndex.Core.FileRecord(id, path, projectName, language, hash, summary);
+    }
+
+    private static global::CodeIndex.Core.SymbolRecord CreateSymbolRecord(
+        string id,
+        string name,
+        string qualifiedName,
+        string kind,
+        string fileId,
+        string accessibility = "public")
+    {
+        return new global::CodeIndex.Core.SymbolRecord(
+            id,
+            name,
+            qualifiedName,
+            kind,
+            fileId,
+            new global::CodeIndex.Core.TextRangeRecord(1, 1, 1, 1),
+            qualifiedName,
+            "summary",
+            null,
+            accessibility,
+            false,
+            false,
+            false,
+            false);
     }
 
     [Fact]
