@@ -288,7 +288,7 @@ Status: complete
 
 Make the server reliable enough for repeated daily editor usage.
 
-Status: complete
+Status: in progress
 
 ### Tasks
 
@@ -297,11 +297,6 @@ Status: complete
 3. Harden cancellation, path validation, and error handling.
 4. Confirm large-repository behavior is predictable.
 5. Ensure logs and protocol traffic stay separated.
-
-All five tasks are now implemented in the current repository state. The server
-keeps explicit index routing, validates failure paths cleanly, preserves
-stderr-only diagnostics for stdio transport safety, and has both service-level
-and live MCP coverage for broad-result query limits.
 
 ### Validation Focus
 
@@ -316,11 +311,6 @@ and live MCP coverage for broad-result query limits.
 - the server handles normal failures without crashing the session
 - editor clients can reconnect and reuse the server reliably
 - production behavior is covered by automated tests, not just manual checks
-
-These acceptance criteria are satisfied by the current automated coverage:
-live stdio MCP tests cover build, query, failure, stderr/protocol separation,
-and predictable capped query behavior; shared service tests cover cancellation
-and deterministic ordering/limits under broad result sets.
 
 ## Recommended Delivery Order
 
