@@ -139,6 +139,43 @@ Example query request after building:
 }
 ```
 
+### Cursor MCP Example
+
+This repository includes [`.cursor/mcp.json`](.cursor/mcp.json) for [Cursor](https://cursor.com)
+MCP support. Open this folder in Cursor; the `codeIndex` server should appear
+under **Cursor Settings → MCP** (or **Features → MCP**).
+
+```json
+{
+  "mcpServers": {
+    "codeIndex": {
+      "command": "${workspaceFolder}/scripts/run-code-index-mcp.sh",
+      "args": []
+    }
+  }
+}
+```
+
+If the server does not connect, reload the window (**Developer: Reload Window**)
+or restart Cursor, then check the MCP log in the Output panel.
+
+To use CodeIndex on **other** projects from Cursor, add a global entry in
+`~/.cursor/mcp.json` pointing at this repo’s launcher script (use your clone path):
+
+```json
+{
+  "mcpServers": {
+    "codeIndex": {
+      "command": "/path/to/code-index/scripts/run-code-index-mcp.sh",
+      "args": []
+    }
+  }
+}
+```
+
+Workflow: call `build_index` with the other project’s solution or directory,
+then pass that project’s `.code-index` path to query tools.
+
 ### VS Code MCP Example
 
 This repository includes `.vscode/mcp.json` that launches the MCP server through
