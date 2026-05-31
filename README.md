@@ -21,6 +21,8 @@ The repository currently supports:
 
 The project does not aim to replace an IDE or full code intelligence platform.
 
+This project is licensed under the [MIT License](LICENSE).
+
 ## Project Layout
 
 ```text
@@ -30,13 +32,33 @@ The project does not aim to replace an IDE or full code intelligence platform.
     /CodeIndex.Core
     /CodeIndex.Roslyn
     /CodeIndex.Cli
+    /CodeIndex.Mcp
   /tests
     /CodeIndex.Core.Tests
     /CodeIndex.Roslyn.Tests
     /CodeIndex.Cli.Tests
-  /schema
   /samples
   /artifacts
+  AGENTS.md
+```
+
+## Checked-In Index Artifacts
+
+This repository keeps a prebuilt JSON index under `artifacts/code-index` so
+agents can query the project immediately after cloning. That directory is a
+reference snapshot, not a substitute for rebuilding on your machine.
+
+- Use `artifacts/code-index` for CLI examples in this README and for
+  `AGENTS.md` workflows in this repository.
+- After you change code, rebuild the index you query against so symbols,
+  references, and excerpts stay accurate.
+- MCP clients should build into `.code-index` at the workspace root (or pass an
+  explicit `indexDirectory`) and rebuild after code changes.
+
+To refresh the checked-in snapshot after substantive changes:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- build ./code-index.sln --out ./artifacts/code-index
 ```
 
 ## Prerequisites

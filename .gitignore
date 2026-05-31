@@ -24,5 +24,8 @@ coverage/
 *.snupkg
 packages/
 
+# Retired SQLite index artifacts
+**/code-index.db
+
 # Local tool caches
 artifacts/**/TestResults/
