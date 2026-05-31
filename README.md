@@ -41,7 +41,9 @@ This project is licensed under the [MIT License](LICENSE).
     run-code-index-mcp.sh
   /samples
   /artifacts
+  /docs
   AGENTS.md
+  CONTRIBUTING.md
   global.json
 ```
 
@@ -56,7 +58,8 @@ reference snapshot, not a substitute for rebuilding on your machine.
 - After you change code, rebuild the index you query against so symbols,
   references, and excerpts stay accurate.
 - MCP clients should build into `.code-index` at the workspace root (or pass an
-  explicit `indexDirectory`) and rebuild after code changes.
+  explicit `indexDirectory`) and rebuild after code changes. That directory is
+  gitignored here; only `artifacts/code-index` is checked in for this repo.
 
 To refresh the checked-in snapshot after substantive changes:
 
@@ -372,3 +375,12 @@ The `build` command writes:
 - `code-index.edges.json`
 - `code-index.references.json`
 - `code-index.embeddings.json`
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for build/test steps, refreshing the
+checked-in index, and pull request expectations.
+
+## Documentation
+
+Planning notes and release guidance live under [docs/](docs/README.md).

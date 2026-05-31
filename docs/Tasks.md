@@ -1,5 +1,8 @@
 # TASKS - C# AI Code Index Tool
 
+> **Status:** Milestone tracker. MVP and the MCP production track are complete;
+> the API server remains optional backlog.
+
 ## Goal
 
 Build a .NET 10 CLI tool that uses Roslyn for `.sln` and `.csproj` inputs and

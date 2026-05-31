@@ -27,5 +27,8 @@ packages/
 # Retired SQLite index artifacts
 **/code-index.db
 
+# Local MCP/workspace indexes (canonical snapshot is artifacts/code-index)
+.code-index/
+
 # Local tool caches
 artifacts/**/TestResults/

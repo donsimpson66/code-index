@@ -1,5 +1,11 @@
 # MCP Server Production Plan
 
+> **Status (2026):** Completed. The stdio MCP server, shared build/query services,
+> JSON-only storage, and client setup docs are all implemented. Early sections
+> about SQLite removal describe historical work — SQLite is no longer in the
+> codebase. See [README.md](../README.md) and [CONTRIBUTING.md](../CONTRIBUTING.md)
+> for current usage.
+
 ## Objective
 
 Prepare `code-index` for a production-ready local MCP server that can build and
