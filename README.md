@@ -37,9 +37,12 @@ This project is licensed under the [MIT License](LICENSE).
     /CodeIndex.Core.Tests
     /CodeIndex.Roslyn.Tests
     /CodeIndex.Cli.Tests
+  /scripts
+    run-code-index-mcp.sh
   /samples
   /artifacts
   AGENTS.md
+  global.json
 ```
 
 ## Checked-In Index Artifacts
@@ -63,7 +66,7 @@ dotnet run --project src/CodeIndex.Cli -- build ./code-index.sln --out ./artifac
 
 ## Prerequisites
 
-- .NET 10 SDK
+- [.NET 10 SDK](https://dotnet.microsoft.com/download) (see `global.json` for the pinned version)
 - a restoreable solution, project, or supported source directory to index
 
 ## Build
@@ -135,19 +138,20 @@ Example query request after building:
 
 ### VS Code MCP Example
 
-Create `.vscode/mcp.json` in the workspace:
+This repository includes `.vscode/mcp.json` that launches the MCP server through
+`scripts/run-code-index-mcp.sh`. The wrapper finds `dotnet` on `PATH`, via
+`DOTNET`, or common install locations (including mise shims) before running
+`src/CodeIndex.Mcp`.
+
+To set it up in another workspace, create `.vscode/mcp.json`:
 
 ```json
 {
   "servers": {
     "codeIndex": {
       "type": "stdio",
-      "command": "dotnet",
-      "args": [
-        "run",
-        "--project",
-        "${workspaceFolder}/src/CodeIndex.Mcp"
-      ]
+      "command": "${workspaceFolder}/scripts/run-code-index-mcp.sh",
+      "args": []
     }
   }
 }
@@ -159,7 +163,8 @@ for the workspace, rebuild it again after code changes, and point query tools at
 
 ### OpenCode MCP Example
 
-Add the server to `opencode.json` or `opencode.jsonc`:
+This repository includes `opencode.json` using the same wrapper script. For
+another workspace, add the server to `opencode.json` or `opencode.jsonc`:
 
 ```jsonc
 {
@@ -167,12 +172,7 @@ Add the server to `opencode.json` or `opencode.jsonc`:
   "mcp": {
     "codeIndex": {
       "type": "local",
-      "command": [
-        "dotnet",
-        "run",
-        "--project",
-        "./src/CodeIndex.Mcp"
-      ],
+      "command": ["./scripts/run-code-index-mcp.sh"],
       "enabled": true,
       "timeout": 15000
     }
