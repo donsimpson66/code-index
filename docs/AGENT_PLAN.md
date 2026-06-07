@@ -1,5 +1,8 @@
 # C# AI Code Index Tool - Implementation Plan
 
+> **Status:** Historical implementation plan. For current setup and commands, see
+> [README.md](../README.md). For agent workflows, see [AGENTS.md](../AGENTS.md).
+
 ## Objective
 
 Build a C#-first code indexing tool that creates a compact JSON project index optimized for AI agents.

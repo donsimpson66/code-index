@@ -3,12 +3,7 @@
   "mcp": {
     "codeIndex": {
       "type": "local",
-      "command": [
-        "dotnet",
-        "run",
-        "--project",
-        "./src/CodeIndex.Mcp"
-      ],
+      "command": ["./scripts/run-code-index-mcp.sh"],
       "enabled": true,
       "timeout": 15000
     }

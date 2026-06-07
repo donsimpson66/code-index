@@ -21,6 +21,8 @@ The repository currently supports:
 
 The project does not aim to replace an IDE or full code intelligence platform.
 
+This project is licensed under the [MIT License](LICENSE).
+
 ## Project Layout
 
 ```text
@@ -30,18 +32,44 @@ The project does not aim to replace an IDE or full code intelligence platform.
     /CodeIndex.Core
     /CodeIndex.Roslyn
     /CodeIndex.Cli
+    /CodeIndex.Mcp
   /tests
     /CodeIndex.Core.Tests
     /CodeIndex.Roslyn.Tests
     /CodeIndex.Cli.Tests
-  /schema
+  /scripts
+    run-code-index-mcp.sh
   /samples
   /artifacts
+  /docs
+  AGENTS.md
+  CONTRIBUTING.md
+  global.json
+```
+
+## Checked-In Index Artifacts
+
+This repository keeps a prebuilt JSON index under `artifacts/code-index` so
+agents can query the project immediately after cloning. That directory is a
+reference snapshot, not a substitute for rebuilding on your machine.
+
+- Use `artifacts/code-index` for CLI examples in this README and for
+  `AGENTS.md` workflows in this repository.
+- After you change code, rebuild the index you query against so symbols,
+  references, and excerpts stay accurate.
+- MCP clients should build into `.code-index` at the workspace root (or pass an
+  explicit `indexDirectory`) and rebuild after code changes. That directory is
+  gitignored here; only `artifacts/code-index` is checked in for this repo.
+
+To refresh the checked-in snapshot after substantive changes:
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- build ./code-index.sln --out ./artifacts/code-index
 ```
 
 ## Prerequisites
 
-- .NET 10 SDK
+- [.NET 10 SDK](https://dotnet.microsoft.com/download) (see `global.json` for the pinned version)
 - a restoreable solution, project, or supported source directory to index
 
 ## Build
@@ -113,19 +141,20 @@ Example query request after building:
 
 ### VS Code MCP Example
 
-Create `.vscode/mcp.json` in the workspace:
+This repository includes `.vscode/mcp.json` that launches the MCP server through
+`scripts/run-code-index-mcp.sh`. The wrapper finds `dotnet` on `PATH`, via
+`DOTNET`, or common install locations (including mise shims) before running
+`src/CodeIndex.Mcp`.
+
+To set it up in another workspace, create `.vscode/mcp.json`:
 
 ```json
 {
   "servers": {
     "codeIndex": {
       "type": "stdio",
-      "command": "dotnet",
-      "args": [
-        "run",
-        "--project",
-        "${workspaceFolder}/src/CodeIndex.Mcp"
-      ]
+      "command": "${workspaceFolder}/scripts/run-code-index-mcp.sh",
+      "args": []
     }
   }
 }
@@ -137,7 +166,8 @@ for the workspace, rebuild it again after code changes, and point query tools at
 
 ### OpenCode MCP Example
 
-Add the server to `opencode.json` or `opencode.jsonc`:
+This repository includes `opencode.json` using the same wrapper script. For
+another workspace, add the server to `opencode.json` or `opencode.jsonc`:
 
 ```jsonc
 {
@@ -145,12 +175,7 @@ Add the server to `opencode.json` or `opencode.jsonc`:
   "mcp": {
     "codeIndex": {
       "type": "local",
-      "command": [
-        "dotnet",
-        "run",
-        "--project",
-        "./src/CodeIndex.Mcp"
-      ],
+      "command": ["./scripts/run-code-index-mcp.sh"],
       "enabled": true,
       "timeout": 15000
     }
@@ -350,3 +375,12 @@ The `build` command writes:
 - `code-index.edges.json`
 - `code-index.references.json`
 - `code-index.embeddings.json`
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for build/test steps, refreshing the
+checked-in index, and pull request expectations.
+
+## Documentation
+
+Planning notes and release guidance live under [docs/](docs/README.md).
