@@ -8,6 +8,13 @@ public static class SourceLanguageCatalog
         [".java"] = "Java",
         [".go"] = "Go",
         [".ts"] = "TypeScript",
+        [".tsx"] = "TypeScript",
+        [".mts"] = "TypeScript",
+        [".cts"] = "TypeScript",
+        [".js"] = "JavaScript",
+        [".jsx"] = "JavaScript",
+        [".mjs"] = "JavaScript",
+        [".cjs"] = "JavaScript",
         [".py"] = "Python",
         [".php"] = "PHP"
     };
@@ -16,6 +23,9 @@ public static class SourceLanguageCatalog
     {
         return ExtensionToLanguage.TryGetValue(Path.GetExtension(path), out language!);
     }
+
+    public static bool IsEcmaScript(string language) =>
+        language is "TypeScript" or "JavaScript";
 
     public static string CreateFileSummary(string normalizedPath, string projectName, string language)
     {

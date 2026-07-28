@@ -114,6 +114,70 @@ public class MultiLanguageIndexingTests
         }
     }
 
+    [Fact]
+    public async Task BuildAsync_IndexesEcmaScriptDialectsSymbolsAndInheritance()
+    {
+        var sourceDirectory = CreateTempSourceDirectory("ecmascript");
+
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(sourceDirectory, "src"));
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "types.ts"),
+                "export interface ImportedContract {}\n\nexport function helper() {}\n");
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "widget.tsx"),
+                "export function Widget() { return <div />; }\n");
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "consumer.js"),
+                "import { ImportedContract, helper } from './types';\n\nclass LocalBase {\n}\n\nexport class Derived extends LocalBase implements ImportedContract {\n    multiLine(\n        value\n    ) {\n        // helper();\n        const closeBrace = \"}\";\n        const template = `}`;\n        helper();\n    }\n\n    handle = (value) => value;\n\n    get status() { return 1; }\n    set status(value) {}\n}\n\nexport enum State {\n    Ready,\n    Done = 2\n}\n\nexport const answer = 42;\n");
+
+            var (files, symbols, edges, references) = await BuildIndexAsync(sourceDirectory);
+
+            Assert.Contains(files, file => file.Path == "src/consumer.js" && file.Language == "JavaScript");
+            Assert.Contains(files, file => file.Path == "src/widget.tsx" && file.Language == "TypeScript");
+            Assert.Contains(symbols, symbol => symbol.QualifiedName == "widget.Widget" && symbol.Kind == SymbolKinds.Method);
+            Assert.Contains(symbols, symbol => symbol.QualifiedName == "consumer.Derived.multiLine" && symbol.Kind == SymbolKinds.Method);
+            Assert.Contains(symbols, symbol => symbol.QualifiedName == "consumer.Derived.handle" && symbol.Kind == SymbolKinds.Method);
+            Assert.Contains(symbols, symbol => symbol.QualifiedName == "consumer.State.Ready" && symbol.Kind == SymbolKinds.Field);
+            Assert.Contains(symbols, symbol => symbol.QualifiedName == "consumer.State.Done" && symbol.Kind == SymbolKinds.Field);
+            Assert.Contains(symbols, symbol => symbol.QualifiedName == "consumer.answer" && symbol.Kind == SymbolKinds.Field);
+            Assert.Single(symbols, symbol => symbol.QualifiedName == "consumer.Derived.status" && symbol.Kind == SymbolKinds.Property);
+
+            var derived = GetSymbolId(symbols, "consumer.Derived", "f:src/consumer.js");
+            var localBase = GetSymbolId(symbols, "consumer.LocalBase", "f:src/consumer.js");
+            var importedContract = GetSymbolId(symbols, "types.ImportedContract", "f:src/types.ts");
+            var multiLine = GetSymbolId(symbols, "consumer.Derived.multiLine", "f:src/consumer.js");
+            var helper = GetSymbolId(symbols, "types.helper", "f:src/types.ts");
+
+            Assert.Contains(edges, edge => edge.Type == EdgeTypes.Inherits && edge.From == derived && edge.To == localBase);
+            Assert.Contains(edges, edge => edge.Type == EdgeTypes.Implements && edge.From == derived && edge.To == importedContract);
+            Assert.Contains(edges, edge => edge.Type == EdgeTypes.Calls && edge.From == multiLine && edge.To == helper);
+            Assert.Single(references, reference => reference.SourceSymbolId == multiLine && reference.TargetSymbolId == helper);
+        }
+        finally
+        {
+            DeleteTempSourceDirectory(sourceDirectory);
+        }
+    }
+
+    [Fact]
+    public void EcmaScriptScanner_Mask_PreservesLinesAndLineLengths()
+    {
+        const string source = "const quoted = \"// not a comment\";\n// masked call()\nconst template = `text ${value + \"}\"}`;\nconst expression = /a\\/b/;\n/* block\ncomment */\n";
+        var scannerType = typeof(MultiLanguageFileIndexBuilder).Assembly.GetType("CodeIndex.Core.EcmaScriptScanner")!;
+        var maskMethod = scannerType.GetMethod("Mask", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)!;
+
+        var maskedLines = (string[])maskMethod.Invoke(null, [source])!;
+        var sourceLines = source.Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n').Split('\n');
+
+        Assert.Equal(sourceLines.Length, maskedLines.Length);
+        Assert.All(sourceLines.Zip(maskedLines), pair => Assert.Equal(pair.First.Length, pair.Second.Length));
+        Assert.DoesNotContain("masked call", string.Join('\n', maskedLines), StringComparison.Ordinal);
+        Assert.DoesNotContain("not a comment", string.Join('\n', maskedLines), StringComparison.Ordinal);
+        Assert.Contains("value +", string.Join('\n', maskedLines), StringComparison.Ordinal);
+    }
+
     private static async Task<(IReadOnlyList<FileRecord> Files, IReadOnlyList<SymbolRecord> Symbols, IReadOnlyList<EdgeRecord> Edges, IReadOnlyList<ReferenceRecord> References)> BuildIndexAsync(string sourceDirectory)
     {
         var fileBuilder = new MultiLanguageFileIndexBuilder();

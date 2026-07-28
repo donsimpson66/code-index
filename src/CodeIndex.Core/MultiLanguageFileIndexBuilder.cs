@@ -10,6 +10,10 @@ public sealed class MultiLanguageFileIndexBuilder
         "node_modules",
         "dist",
         "build",
+        ".next",
+        ".nuxt",
+        "coverage",
+        "out",
         "vendor"
     ];
 
@@ -81,6 +85,7 @@ public sealed class MultiLanguageFileIndexBuilder
         return fileName.Contains(".generated.", StringComparison.OrdinalIgnoreCase) ||
                fileName.EndsWith(".g.cs", StringComparison.OrdinalIgnoreCase) ||
                fileName.EndsWith(".designer.cs", StringComparison.OrdinalIgnoreCase) ||
+               fileName.EndsWith(".d.ts", StringComparison.OrdinalIgnoreCase) ||
                fileName.EndsWith(".min.js", StringComparison.OrdinalIgnoreCase);
     }
 }

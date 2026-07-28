@@ -81,7 +81,7 @@ internal static partial class MultiLanguageUsageParser
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (file.Language is not ("Java" or "Go" or "TypeScript" or "Python" or "PHP"))
+            if (file.Language is not ("Java" or "Go" or "Python" or "PHP") && !SourceLanguageCatalog.IsEcmaScript(file.Language))
             {
                 continue;
             }
@@ -98,7 +98,7 @@ internal static partial class MultiLanguageUsageParser
             {
                 "Java" => ExtractJavaReferences(file, source, fileSymbols, symbols),
                 "Go" => ExtractGoReferences(file, source, fileSymbols, symbols),
-                "TypeScript" => ExtractTypeScriptReferences(file, source, fileSymbols, symbols),
+                _ when SourceLanguageCatalog.IsEcmaScript(file.Language) => ExtractTypeScriptReferences(file, source, fileSymbols, symbols),
                 "Python" => ExtractPythonReferences(file, source, fileSymbols, symbols),
                 "PHP" => ExtractPhpReferences(file, source, fileSymbols, symbols),
                 _ => Array.Empty<ReferenceRecord>()
@@ -462,7 +462,7 @@ internal static partial class MultiLanguageSymbolParser
         {
             "Python" => ParsePython(file, source),
             "Go" => ParseGo(file, source),
-            "TypeScript" => ParseTypeScript(file, source),
+            _ when SourceLanguageCatalog.IsEcmaScript(file.Language) => ParseTypeScript(file, source),
             "PHP" => ParsePhp(file, source),
             "Java" => ParseJavaOrCSharp(file, source),
             "C#" => ParseJavaOrCSharp(file, source),
@@ -652,7 +652,9 @@ internal static partial class MultiLanguageSymbolParser
             segments.RemoveAt(0);
         }
 
-        if (segments.Count > 0 && string.Equals(segments[^1], "__init__", StringComparison.Ordinal))
+        if (segments.Count > 0 &&
+            (string.Equals(segments[^1], "__init__", StringComparison.Ordinal) ||
+             string.Equals(segments[^1], "index", StringComparison.OrdinalIgnoreCase)))
         {
             segments.RemoveAt(segments.Count - 1);
         }

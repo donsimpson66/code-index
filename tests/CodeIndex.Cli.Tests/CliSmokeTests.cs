@@ -924,6 +924,63 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
     }
 
     [Fact]
+    public async Task Build_IndexesEcmaScriptDialectsAndInheritance_ForDirectoryInput()
+    {
+        var sourceDirectory = Path.Combine(Path.GetTempPath(), $"code-index-ecmascript-cli-{Guid.NewGuid():N}");
+        var outputDirectory = Path.Combine(Path.GetTempPath(), $"code-index-ecmascript-cli-out-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(Path.Combine(sourceDirectory, "src"));
+
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "base.ts"),
+                "export interface Contract {}\nexport function helper() {}\n");
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "Widget.tsx"),
+                "export function Widget() { return <div />; }\n");
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "derived.js"),
+                "import { Contract, helper } from './base';\nclass LocalBase {\n}\nexport class Derived extends LocalBase implements Contract {\n    run() {\n        // helper();\n        const closeBrace = \"}\";\n        helper();\n    }\n}\n");
+
+            var output = await fixture.RunCliAsync("build", sourceDirectory, "--out", outputDirectory, "--verbose");
+            Assert.Contains("Indexed 3 files.", output);
+            Assert.Contains("Validation passed.", output);
+
+            using var filesDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.files.json")));
+            var files = filesDocument.RootElement.EnumerateArray().ToArray();
+            Assert.Contains(files, file => file.GetProperty("path").GetString() == "src/derived.js" && file.GetProperty("language").GetString() == "JavaScript");
+            Assert.Contains(files, file => file.GetProperty("path").GetString() == "src/Widget.tsx" && file.GetProperty("language").GetString() == "TypeScript");
+
+            using var symbolsDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.symbols.json")));
+            var symbols = symbolsDocument.RootElement.EnumerateArray().ToArray();
+            Assert.Contains(symbols, symbol => symbol.GetProperty("qualifiedName").GetString() == "Widget.Widget");
+
+            string GetSymbolId(string qualifiedName, string fileId) => symbols
+                .Single(symbol => symbol.GetProperty("qualifiedName").GetString() == qualifiedName && symbol.GetProperty("fileId").GetString() == fileId)
+                .GetProperty("id")
+                .GetString()!;
+
+            using var edgesDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.edges.json")));
+            var edges = edgesDocument.RootElement.EnumerateArray().ToArray();
+            Assert.Contains(edges, edge => edge.GetProperty("type").GetString() == "calls" && edge.GetProperty("from").GetString() == GetSymbolId("derived.Derived.run", "f:src/derived.js") && edge.GetProperty("to").GetString() == GetSymbolId("base.helper", "f:src/base.ts"));
+            Assert.Contains(edges, edge => edge.GetProperty("type").GetString() == "inherits" && edge.GetProperty("from").GetString() == GetSymbolId("derived.Derived", "f:src/derived.js") && edge.GetProperty("to").GetString() == GetSymbolId("derived.LocalBase", "f:src/derived.js"));
+            Assert.Contains(edges, edge => edge.GetProperty("type").GetString() == "implements" && edge.GetProperty("from").GetString() == GetSymbolId("derived.Derived", "f:src/derived.js") && edge.GetProperty("to").GetString() == GetSymbolId("base.Contract", "f:src/base.ts"));
+        }
+        finally
+        {
+            if (Directory.Exists(sourceDirectory))
+            {
+                Directory.Delete(sourceDirectory, recursive: true);
+            }
+
+            if (Directory.Exists(outputDirectory))
+            {
+                Directory.Delete(outputDirectory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task Build_ResolvesJavaImportsAcrossPackages_ForDirectoryInput()
     {
         var sourceDirectory = Path.Combine(Path.GetTempPath(), $"code-index-java-imports-{Guid.NewGuid():N}");

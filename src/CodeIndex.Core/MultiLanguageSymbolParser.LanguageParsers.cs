@@ -14,12 +14,7 @@ internal static partial class MultiLanguageSymbolParser
 
     private static IReadOnlyList<SymbolRecord> ParseTypeScript(FileRecord file, string source)
     {
-        var moduleName = BuildLogicalModuleQualifier(file.Path);
-        var symbols = new List<SymbolRecord>();
-        var moduleSymbol = CreateContainerSymbol(file, Path.GetFileNameWithoutExtension(file.Path), moduleName, SymbolKinds.Module, 1);
-        symbols.Add(moduleSymbol);
-        symbols.AddRange(ParseBraceLanguage(file, source, moduleName, TypeScriptTypeRegex, TypeScriptMethodRegex, "constructor", TypeScriptFunctionRegex, TypeScriptArrowFunctionRegex, TypeScriptFieldRegex, moduleSymbol.Id, TypeScriptTypeRegex));
-        return symbols;
+        return ParseEcmaScript(file, source);
     }
 
     private static IReadOnlyList<SymbolRecord> ParsePhp(FileRecord file, string source)

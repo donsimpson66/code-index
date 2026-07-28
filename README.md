@@ -15,6 +15,8 @@ The repository currently supports:
 
 - Roslyn/MSBuild indexing for `.sln` and `.csproj`
 - directory-based indexing for supported multi-language source trees
+- directory-based indexing for Java, Go, JavaScript/TypeScript (`.js`, `.jsx`,
+  `.mjs`, `.cjs`, `.ts`, `.tsx`, `.mts`, `.cts`), Python, and PHP
 - deterministic JSON artifacts for `meta`, `files`, `symbols`, `edges`, `references`, and `embeddings`
 - CLI query commands for symbol lookup, structural navigation, references, semantic search, call flow, test links, and excerpts
 - incremental rebuilds from an existing JSON artifact directory

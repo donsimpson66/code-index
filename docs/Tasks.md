@@ -367,7 +367,8 @@ Implemented beyond the original MVP:
 - [x] semantic embeddings and `semantic-search`
 - [x] incremental indexing from prior JSON baselines
 - [x] benchmark coverage for JSON size, speed, and estimated token usage
-- [x] directory-based multi-language indexing for Java, Go, TypeScript, Python, and PHP
+- [x] directory-based multi-language indexing for Java, Go, JavaScript/TypeScript, Python, and PHP
+- [x] JavaScript/TypeScript indexing milestone: all `.js`, `.jsx`, `.mjs`, `.cjs`, `.ts`, `.tsx`, `.mts`, and `.cts` dialects; comment/string-aware parsing; multi-line declarations; richer ECMAScript symbols; and inheritance/implementation edges
 
 Still open:
 

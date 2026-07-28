@@ -187,14 +187,14 @@ internal static partial class MultiLanguageUsageParser
     {
         var moduleName = MultiLanguageSymbolParser.BuildLogicalModuleQualifier(file.Path);
         var moduleSymbols = allSymbols.Where(symbol =>
-            string.Equals(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id), "TypeScript", StringComparison.Ordinal) &&
+            SourceLanguageCatalog.IsEcmaScript(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id)) &&
             (string.Equals(symbol.QualifiedName, moduleName, StringComparison.Ordinal) ||
              symbol.QualifiedName.StartsWith(moduleName + ".", StringComparison.Ordinal)))
             .ToArray();
         var importedModules = ParseTypeScriptImports(file.Path, source);
         var importedBindings = ParseTypeScriptImportBindings(file.Path, source);
         var importedSymbols = allSymbols.Where(symbol =>
-            string.Equals(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id), "TypeScript", StringComparison.Ordinal) &&
+            SourceLanguageCatalog.IsEcmaScript(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id)) &&
             importedModules.Any(module =>
                 string.Equals(symbol.QualifiedName, module, StringComparison.Ordinal) ||
                 symbol.QualifiedName.StartsWith(module + ".", StringComparison.Ordinal)))
@@ -219,7 +219,7 @@ internal static partial class MultiLanguageUsageParser
             .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.Range.StartLine).ToArray());
         var fieldTypeLookup = ParseTypeScriptFieldTypes(source, fileSymbols);
         var callableTypeHintLookup = ParseTypeScriptCallableTypeHints(source, fileSymbols, fieldTypeLookup);
-        var contexts = BuildBraceContexts(source, fileSymbols, MultiLanguageSymbolParser.TypeScriptTypeRegex, MultiLanguageSymbolParser.TypeScriptMethodRegex);
+        var contexts = BuildBraceContexts(string.Join('\n', EcmaScriptScanner.Mask(source)), fileSymbols, MultiLanguageSymbolParser.TypeScriptTypeRegex, MultiLanguageSymbolParser.TypeScriptMethodRegex);
         var references = new List<ReferenceRecord>();
 
         foreach (var context in contexts)

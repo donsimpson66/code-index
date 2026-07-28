@@ -54,8 +54,10 @@ public sealed class MultiLanguageEdgeIndexBuilder
         var symbols = await symbolBuilder.BuildAsync(inputPath, files, includeGenerated: true, cancellationToken: cancellationToken);
         var containsEdges = BuildFromSymbols(symbols);
         var callEdges = await MultiLanguageUsageParser.BuildCallEdgesAsync(inputPath, files, symbols, cancellationToken);
+        var inheritanceEdges = await MultiLanguageUsageParser.BuildInheritanceEdgesAsync(inputPath, files, symbols, cancellationToken);
         return containsEdges
             .Concat(callEdges)
+            .Concat(inheritanceEdges)
             .Distinct()
             .OrderBy(edge => edge.Type, StringComparer.Ordinal)
             .ThenBy(edge => edge.From, StringComparer.Ordinal)
