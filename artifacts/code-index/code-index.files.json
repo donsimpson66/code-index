@@ -64,6 +64,14 @@
     "summary": "Defines 3 declarations in namespace CodeIndex.Core, including ValidationIssue, CodeIndexValidationException, CodeIndexValidator."
   },
   {
+    "id": "f:src/CodeIndex.Core/EcmaScriptScanner.cs",
+    "path": "src/CodeIndex.Core/EcmaScriptScanner.cs",
+    "projectName": "CodeIndex.Core",
+    "language": "C#",
+    "hash": "sha256:a49f3dfe218785f53ec07e809d58dc13e929da7ea2c4fcde91399309ef4c3333",
+    "summary": "Defines class EcmaScriptScanner in namespace CodeIndex.Core."
+  },
+  {
     "id": "f:src/CodeIndex.Core/EdgeRecord.cs",
     "path": "src/CodeIndex.Core/EdgeRecord.cs",
     "projectName": "CodeIndex.Core",
@@ -108,7 +116,7 @@
     "path": "src/CodeIndex.Core/MultiLanguageEdgeIndexBuilder.cs",
     "projectName": "CodeIndex.Core",
     "language": "C#",
-    "hash": "sha256:7a33e34517b11b6c1dd3a406f7391f19b395d3531b51774552c2efaf47b5946c",
+    "hash": "sha256:97edae62fccf5c29fdcc9a9bfff233a4bd095dde2d5482f6b9ad277f9231c621",
     "summary": "Defines class MultiLanguageEdgeIndexBuilder in namespace CodeIndex.Core."
   },
   {
@@ -116,7 +124,7 @@
     "path": "src/CodeIndex.Core/MultiLanguageFileIndexBuilder.cs",
     "projectName": "CodeIndex.Core",
     "language": "C#",
-    "hash": "sha256:5eb992953510b118bf8cba0374a6b8c1bbcfa1692db440f48603fa5f478846f7",
+    "hash": "sha256:30017626bcee799f16290b67b5b84cc6b6cb4f3a27ce50c327055e23d7dfce42",
     "summary": "Defines class MultiLanguageFileIndexBuilder in namespace CodeIndex.Core."
   },
   {
@@ -132,7 +140,7 @@
     "path": "src/CodeIndex.Core/MultiLanguageSourceIndexing.cs",
     "projectName": "CodeIndex.Core",
     "language": "C#",
-    "hash": "sha256:c371b6943fe68058e953b8edf406cd9812d5c45185ada250303d0e81d15776a1",
+    "hash": "sha256:9558e1513329c5d44dd41820ca9cfeee97f2112255e54d99522e91dceccbbd2c",
     "summary": "Defines 2 declarations in namespace CodeIndex.Core, including MultiLanguageUsageParser, MultiLanguageSymbolParser."
   },
   {
@@ -144,11 +152,19 @@
     "summary": "Defines class MultiLanguageSymbolIndexBuilder in namespace CodeIndex.Core."
   },
   {
+    "id": "f:src/CodeIndex.Core/MultiLanguageSymbolParser.EcmaScript.cs",
+    "path": "src/CodeIndex.Core/MultiLanguageSymbolParser.EcmaScript.cs",
+    "projectName": "CodeIndex.Core",
+    "language": "C#",
+    "hash": "sha256:1a62da1147e1212724780b4abbd178789d192ccce53b44ffe6e6a1be8ab5a77d",
+    "summary": "Defines class MultiLanguageSymbolParser in namespace CodeIndex.Core."
+  },
+  {
     "id": "f:src/CodeIndex.Core/MultiLanguageSymbolParser.LanguageParsers.cs",
     "path": "src/CodeIndex.Core/MultiLanguageSymbolParser.LanguageParsers.cs",
     "projectName": "CodeIndex.Core",
     "language": "C#",
-    "hash": "sha256:0169ec35aa8e706e555bc6a133c1a8ed2fbb5a69ce78834cfc648d84f3628af1",
+    "hash": "sha256:7bfe3430110d196b7791e27264f3fef88c8c3c6d6f1d82ae37f8e095616f0105",
     "summary": "Defines class MultiLanguageSymbolParser in namespace CodeIndex.Core."
   },
   {
@@ -168,11 +184,19 @@
     "summary": "Defines class MultiLanguageUsageParser in namespace CodeIndex.Core."
   },
   {
+    "id": "f:src/CodeIndex.Core/MultiLanguageUsageParser.Inheritance.cs",
+    "path": "src/CodeIndex.Core/MultiLanguageUsageParser.Inheritance.cs",
+    "projectName": "CodeIndex.Core",
+    "language": "C#",
+    "hash": "sha256:a57cb404e1d9eadd2e989a5e02ae22e10970538c4b54103b5b4a1acb4ce50228",
+    "summary": "Defines class MultiLanguageUsageParser in namespace CodeIndex.Core."
+  },
+  {
     "id": "f:src/CodeIndex.Core/MultiLanguageUsageParser.LanguageReferences.cs",
     "path": "src/CodeIndex.Core/MultiLanguageUsageParser.LanguageReferences.cs",
     "projectName": "CodeIndex.Core",
     "language": "C#",
-    "hash": "sha256:4c5ca1e5a9a84434dcaaff8a582324cf9acfbac69eb6b3495e690cc73fc0c4f1",
+    "hash": "sha256:e8ec4dc6c2e60bbf1f9a1a4e40f5d563c46cb58ccc5e0a34cc59ad8776ef41aa",
     "summary": "Defines class MultiLanguageUsageParser in namespace CodeIndex.Core."
   },
   {
@@ -212,7 +236,7 @@
     "path": "src/CodeIndex.Core/SourceLanguageCatalog.cs",
     "projectName": "CodeIndex.Core",
     "language": "C#",
-    "hash": "sha256:d2af136899348304e6f897e0edd5d9c79bac6d0df5b55086ae96a0455209971a",
+    "hash": "sha256:8aa6eba22c24568dd2abd8460e44be658947674e9689edcf52a195a319ec3b3f",
     "summary": "Defines class SourceLanguageCatalog in namespace CodeIndex.Core."
   },
   {
@@ -316,7 +340,7 @@
     "path": "tests/CodeIndex.Cli.Tests/CliSmokeTests.cs",
     "projectName": "CodeIndex.Cli.Tests",
     "language": "C#",
-    "hash": "sha256:61582d49979886b1cc22e5ba021e8209691b6b571c648b48219f30623a8922f6",
+    "hash": "sha256:22f6e02a77e004fabffea91baad4464740fd5822c713807b62f513931533b1e9",
     "summary": "Defines 3 declarations in namespace CodeIndex.Cli.Tests, including CliInvocationResult, CliSmokeTests, IndexFixture."
   },
   {
@@ -340,7 +364,7 @@
     "path": "tests/CodeIndex.Core.Tests/MultiLanguageIndexingTests.cs",
     "projectName": "CodeIndex.Core.Tests",
     "language": "C#",
-    "hash": "sha256:e92f346376f74be62c7759ba2da9b7f874c0996ed0377c8de096b584e7d9c967",
+    "hash": "sha256:062a7e7263d24a77d14f753b6ec84673b40a66cd0d57a760e600d727207331b3",
     "summary": "Defines class MultiLanguageIndexingTests in namespace CodeIndex.Core.Tests."
   },
   {
