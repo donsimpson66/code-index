@@ -4,24 +4,28 @@ set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 project="$root/src/CodeIndex.Mcp"
 
+dotnet_works() {
+  local candidate="$1"
+  [[ -n "$candidate" && -x "$candidate" ]] || return 1
+  (cd "$root" && "$candidate" --version >/dev/null 2>&1)
+}
+
 resolve_dotnet() {
-  if [[ -n "${DOTNET:-}" && -x "$DOTNET" ]]; then
+  if [[ -n "${DOTNET:-}" ]] && dotnet_works "$DOTNET"; then
     printf '%s\n' "$DOTNET"
     return 0
   fi
 
-  if command -v dotnet >/dev/null 2>&1; then
-    command -v dotnet
-    return 0
-  fi
-
-  local candidate
+  local candidate path_dotnet
+  path_dotnet="$(command -v dotnet 2>/dev/null || true)"
   for candidate in \
+    "$HOME/.dotnet/dotnet" \
+    "$path_dotnet" \
     "$HOME/.local/share/mise/shims/dotnet" \
     "/opt/homebrew/bin/dotnet" \
     "/usr/local/share/dotnet/dotnet" \
     "/usr/share/dotnet/dotnet"; do
-    if [[ -x "$candidate" ]]; then
+    if dotnet_works "$candidate"; then
       printf '%s\n' "$candidate"
       return 0
     fi
@@ -31,8 +35,9 @@ resolve_dotnet() {
 }
 
 dotnet_path="$(resolve_dotnet)" || {
-  echo "code-index MCP: dotnet not found. Install .NET 10 SDK or set DOTNET to the dotnet executable." >&2
+  echo "code-index MCP: no .NET SDK matching global.json was found. Install the pinned SDK or set DOTNET to that executable." >&2
   exit 1
 }
 
+cd "$root"
 exec "$dotnet_path" run --project "$project" "$@"

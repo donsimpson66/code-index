@@ -151,6 +151,7 @@ under **Cursor Settings → MCP** (or **Features → MCP**).
 {
   "mcpServers": {
     "codeIndex": {
+      "type": "stdio",
       "command": "${workspaceFolder}/scripts/run-code-index-mcp.sh",
       "args": []
     }
@@ -168,6 +169,7 @@ To use CodeIndex on **other** projects from Cursor, add a global entry in
 {
   "mcpServers": {
     "codeIndex": {
+      "type": "stdio",
       "command": "/path/to/code-index/scripts/run-code-index-mcp.sh",
       "args": []
     }
@@ -181,9 +183,9 @@ then pass that project’s `.code-index` path to query tools.
 ### VS Code MCP Example
 
 This repository includes `.vscode/mcp.json` that launches the MCP server through
-`scripts/run-code-index-mcp.sh`. The wrapper finds `dotnet` on `PATH`, via
-`DOTNET`, or common install locations (including mise shims) before running
-`src/CodeIndex.Mcp`.
+`scripts/run-code-index-mcp.sh`. The wrapper runs from the repository root,
+selects a `dotnet` that satisfies `global.json` (`DOTNET`, `~/.dotnet`, `PATH`,
+then common install locations including mise shims), and starts `src/CodeIndex.Mcp`.
 
 To set it up in another workspace, create `.vscode/mcp.json`:
 

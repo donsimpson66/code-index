@@ -1,6 +1,7 @@
 {
   "mcpServers": {
     "codeIndex": {
+      "type": "stdio",
       "command": "${workspaceFolder}/scripts/run-code-index-mcp.sh",
       "args": []
     }
