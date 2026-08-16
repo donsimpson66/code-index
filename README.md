@@ -184,7 +184,7 @@ then pass that project’s `.code-index` path to query tools.
 
 This repository includes `.vscode/mcp.json` that launches the MCP server through
 `scripts/run-code-index-mcp.sh`. The wrapper runs from the repository root,
-selects a `dotnet` that satisfies `global.json` (`DOTNET`, `~/.dotnet`, `PATH`,
+selects a `dotnet` that satisfies `global.json` (`DOTNET`, `PATH`, `~/.dotnet`,
 then common install locations including mise shims), and starts `src/CodeIndex.Mcp`.
 
 To set it up in another workspace, create `.vscode/mcp.json`:

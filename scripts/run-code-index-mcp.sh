@@ -19,8 +19,8 @@ resolve_dotnet() {
   local candidate path_dotnet
   path_dotnet="$(command -v dotnet 2>/dev/null || true)"
   for candidate in \
-    "$HOME/.dotnet/dotnet" \
     "$path_dotnet" \
+    "$HOME/.dotnet/dotnet" \
     "$HOME/.local/share/mise/shims/dotnet" \
     "/opt/homebrew/bin/dotnet" \
     "/usr/local/share/dotnet/dotnet" \
