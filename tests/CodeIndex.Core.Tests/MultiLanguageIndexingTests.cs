@@ -41,6 +41,45 @@ public class MultiLanguageIndexingTests
     }
 
     [Fact]
+    public async Task BuildAsync_ExtractsRustSymbolsCallEdgesAndReferences()
+    {
+        var sourceDirectory = CreateTempSourceDirectory("rust");
+
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(sourceDirectory, "src"));
+
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "helper.rs"),
+                "pub fn boot() {}\n\npub struct Helper;\n\nimpl Helper {\n    pub fn log(&self) {}\n}\n");
+
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "greeter.rs"),
+                "use crate::helper::{boot, Helper};\n\npub struct Greeter;\n\ntrait Speak {}\n\nimpl Speak for Greeter {}\n\nimpl Greeter {\n    pub fn greet(&self) {\n        boot();\n        self.log();\n        let _ = Helper;\n    }\n\n    fn log(&self) {}\n}\n\nfn unused() {}\n");
+
+            var (files, symbols, edges, references) = await BuildIndexAsync(sourceDirectory);
+
+            Assert.Contains(files, file => file.Path == "src/greeter.rs" && file.Language == "Rust");
+            Assert.Contains(symbols, symbol => symbol.QualifiedName == "greeter.Greeter" && symbol.Kind == SymbolKinds.Struct);
+            Assert.Contains(symbols, symbol => symbol.QualifiedName == "greeter.Speak" && symbol.Kind == SymbolKinds.Interface);
+            Assert.Contains(symbols, symbol => symbol.QualifiedName == "greeter.Greeter.greet" && symbol.Kind == SymbolKinds.Method && symbol.Accessibility == "public");
+            Assert.Contains(symbols, symbol => symbol.QualifiedName == "greeter.Greeter.log" && symbol.Accessibility == "private");
+            Assert.Contains(symbols, symbol => symbol.QualifiedName == "helper.boot" && symbol.Kind == SymbolKinds.Method);
+
+            Assert.Contains(edges, edge => edge.Type == EdgeTypes.Calls && edge.From == GetSymbolId(symbols, "greeter.Greeter.greet", "f:src/greeter.rs") && edge.To == GetSymbolId(symbols, "helper.boot", "f:src/helper.rs"));
+            Assert.Contains(edges, edge => edge.Type == EdgeTypes.Calls && edge.From == GetSymbolId(symbols, "greeter.Greeter.greet", "f:src/greeter.rs") && edge.To == GetSymbolId(symbols, "greeter.Greeter.log", "f:src/greeter.rs"));
+            Assert.Contains(edges, edge => edge.Type == EdgeTypes.Implements && edge.From == GetSymbolId(symbols, "greeter.Greeter", "f:src/greeter.rs") && edge.To == GetSymbolId(symbols, "greeter.Speak", "f:src/greeter.rs"));
+
+            Assert.Contains(references, reference => reference.TargetSymbolId == GetSymbolId(symbols, "helper.boot", "f:src/helper.rs") && reference.SourceSymbolId == GetSymbolId(symbols, "greeter.Greeter.greet", "f:src/greeter.rs"));
+            Assert.Contains(references, reference => reference.TargetSymbolId == GetSymbolId(symbols, "helper.Helper", "f:src/helper.rs") && reference.SourceSymbolId == GetSymbolId(symbols, "greeter.Greeter.greet", "f:src/greeter.rs"));
+        }
+        finally
+        {
+            DeleteTempSourceDirectory(sourceDirectory);
+        }
+    }
+
+    [Fact]
     public async Task BuildAsync_ExtractsTypeScriptCallEdgesAndReferences()
     {
         var sourceDirectory = CreateTempSourceDirectory("typescript");

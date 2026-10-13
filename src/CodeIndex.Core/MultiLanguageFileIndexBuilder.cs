@@ -14,7 +14,8 @@ public sealed class MultiLanguageFileIndexBuilder
         ".nuxt",
         "coverage",
         "out",
-        "vendor"
+        "vendor",
+        "target"
     ];
 
     public async Task<IReadOnlyList<FileRecord>> BuildAsync(string inputPath, bool includeGenerated = false, CancellationToken cancellationToken = default)

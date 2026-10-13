@@ -409,4 +409,189 @@ internal static partial class MultiLanguageUsageParser
 
         return references;
     }
+
+    private static IReadOnlyList<ReferenceRecord> ExtractRustReferences(FileRecord file, string source, IReadOnlyList<SymbolRecord> fileSymbols, IReadOnlyList<SymbolRecord> allSymbols)
+    {
+        var moduleName = MultiLanguageSymbolParser.BuildLogicalModuleQualifier(file.Path);
+        var imports = ParseRustImports(source);
+        var moduleSymbols = allSymbols.Where(symbol =>
+            string.Equals(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id), "Rust", StringComparison.Ordinal) &&
+            (string.Equals(symbol.QualifiedName, moduleName, StringComparison.Ordinal) ||
+             symbol.QualifiedName.StartsWith(moduleName + ".", StringComparison.Ordinal)))
+            .ToArray();
+        var importedModuleNames = imports.Bindings.Values
+            .Select(MultiLanguageSymbolParser.GetQualifierPrefix)
+            .Concat(imports.Bindings.Values)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        var importedSymbols = allSymbols.Where(symbol =>
+                string.Equals(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id), "Rust", StringComparison.Ordinal) &&
+                importedModuleNames.Any(importedModule =>
+                    string.Equals(symbol.QualifiedName, importedModule, StringComparison.Ordinal) ||
+                    symbol.QualifiedName.StartsWith(importedModule + ".", StringComparison.Ordinal) ||
+                    imports.Bindings.Values.Contains(symbol.QualifiedName)))
+            .ToArray();
+        var candidateSymbols = moduleSymbols.Concat(importedSymbols).Distinct().ToArray();
+        var typeSymbols = candidateSymbols.Where(MultiLanguageSymbolParser.IsTypeSymbol).ToArray();
+        var callableSymbols = candidateSymbols.Where(symbol => CallableKinds.Contains(symbol.Kind)).ToArray();
+        var moduleFunctionLookup = moduleSymbols
+            .Where(symbol => CallableKinds.Contains(symbol.Kind))
+            .Where(symbol => symbol.ParentId is null || allSymbols.Any(parent => parent.Id == symbol.ParentId && parent.Kind == SymbolKinds.Module))
+            .GroupBy(symbol => symbol.Name, symbol => symbol)
+            .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.Range.StartLine).ToArray(), StringComparer.Ordinal);
+        var importedFunctionLookup = callableSymbols
+            .Where(symbol => symbol.ParentId is null || candidateSymbols.Any(parent => parent.Id == symbol.ParentId && parent.Kind == SymbolKinds.Module))
+            .GroupBy(symbol => symbol.QualifiedName, symbol => symbol)
+            .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.Range.StartLine).ToArray(), StringComparer.Ordinal);
+        var receiverMethodLookup = callableSymbols
+            .Where(symbol => symbol.ParentId is not null)
+            .GroupBy(symbol => (symbol.ParentId, symbol.Name), symbol => symbol)
+            .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.Range.StartLine).ToArray());
+        var typeLookup = typeSymbols
+            .GroupBy(symbol => symbol.Name, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.QualifiedName, StringComparer.Ordinal).First(), StringComparer.Ordinal);
+        var contexts = BuildGoContexts(source, fileSymbols);
+        var references = new List<ReferenceRecord>();
+
+        foreach (var context in contexts)
+        {
+            if (context.Callable is null || context.LineNumber == context.Callable.Range.StartLine)
+            {
+                continue;
+            }
+
+            foreach (Match match in RustSelectorCallRegex.Matches(context.Line))
+            {
+                var methodName = match.Groups["name"].Value;
+                if (IgnoredCallNames.Contains(methodName))
+                {
+                    continue;
+                }
+
+                if (context.Type is not null &&
+                    receiverMethodLookup.TryGetValue((context.Type.Id, methodName), out var methods))
+                {
+                    references.Add(CreateReference(methods[0], context.Callable.Id, file.Id, context.LineNumber, match.Groups["name"].Index + 1, methodName, context.Line));
+                }
+            }
+
+            foreach (Match match in RustPathCallRegex.Matches(context.Line))
+            {
+                var typeName = match.Groups["type"].Value;
+                var methodName = match.Groups["name"].Value;
+                if (IgnoredCallNames.Contains(methodName))
+                {
+                    continue;
+                }
+
+                if (ResolveRustTypeTarget(typeName, typeLookup, imports) is { } targetType &&
+                    receiverMethodLookup.TryGetValue((targetType.Id, methodName), out var methods))
+                {
+                    references.Add(CreateReference(methods[0], context.Callable.Id, file.Id, context.LineNumber, match.Groups["name"].Index + 1, methodName, context.Line));
+                }
+            }
+
+            foreach (Match match in RustCallRegex.Matches(context.Line))
+            {
+                var functionName = match.Groups["name"].Value;
+                if (IgnoredCallNames.Contains(functionName) ||
+                    context.Line.Contains($".{functionName}(", StringComparison.Ordinal) ||
+                    context.Line.Contains($"::{functionName}(", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                SymbolRecord? target = null;
+                if (imports.Bindings.TryGetValue(functionName, out var importedQualifiedName) &&
+                    importedFunctionLookup.TryGetValue(importedQualifiedName, out var importedFunctions))
+                {
+                    target = importedFunctions[0];
+                }
+                else if (moduleFunctionLookup.TryGetValue(functionName, out var functions))
+                {
+                    target = functions[0];
+                }
+
+                if (target is not null)
+                {
+                    references.Add(CreateReference(target, context.Callable.Id, file.Id, context.LineNumber, match.Groups["name"].Index + 1, functionName, context.Line));
+                }
+            }
+
+            foreach (var typeSymbol in typeLookup.Values)
+            {
+                AddRustTypeReference(references, typeSymbol, typeSymbol.Name, context, file);
+            }
+
+            foreach (var binding in imports.Bindings)
+            {
+                if (!typeLookup.Values.Any(symbol => string.Equals(symbol.QualifiedName, binding.Value, StringComparison.Ordinal)) &&
+                    !importedSymbols.Any(symbol => string.Equals(symbol.QualifiedName, binding.Value, StringComparison.Ordinal) && MultiLanguageSymbolParser.IsTypeSymbol(symbol)))
+                {
+                    continue;
+                }
+
+                var targetType = importedSymbols.FirstOrDefault(symbol =>
+                    MultiLanguageSymbolParser.IsTypeSymbol(symbol) &&
+                    string.Equals(symbol.QualifiedName, binding.Value, StringComparison.Ordinal))
+                    ?? typeLookup.Values.FirstOrDefault(symbol => string.Equals(symbol.QualifiedName, binding.Value, StringComparison.Ordinal));
+
+                if (targetType is not null)
+                {
+                    AddRustTypeReference(references, targetType, binding.Key, context, file);
+                }
+            }
+        }
+
+        return references;
+    }
+
+    private static void AddRustTypeReference(
+        ICollection<ReferenceRecord> references,
+        SymbolRecord typeSymbol,
+        string token,
+        ScopedLineContext context,
+        FileRecord file)
+    {
+        var patterns = new[]
+        {
+            $"{token} {{",
+            $"{token}{{",
+            $"{token}::",
+            $" {token};",
+            $"={token};",
+            $"= {token};",
+            $"({token})",
+            $" {token} ",
+        };
+
+        foreach (var pattern in patterns)
+        {
+            var index = context.Line.IndexOf(pattern, StringComparison.Ordinal);
+            if (index < 0)
+            {
+                continue;
+            }
+
+            var tokenIndex = context.Line.IndexOf(token, index, StringComparison.Ordinal);
+            if (tokenIndex >= 0 && context.Callable is not null)
+            {
+                references.Add(CreateReference(typeSymbol, context.Callable.Id, file.Id, context.LineNumber, tokenIndex + 1, token, context.Line));
+                return;
+            }
+        }
+    }
+
+    private static SymbolRecord? ResolveRustTypeTarget(
+        string typeName,
+        IReadOnlyDictionary<string, SymbolRecord> typeLookup,
+        RustImportInfo imports)
+    {
+        if (imports.Bindings.TryGetValue(typeName, out var importedQualifiedName))
+        {
+            return typeLookup.Values.FirstOrDefault(symbol => string.Equals(symbol.QualifiedName, importedQualifiedName, StringComparison.Ordinal));
+        }
+
+        return typeLookup.TryGetValue(typeName, out var localType) ? localType : null;
+    }
 }

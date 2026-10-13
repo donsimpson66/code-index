@@ -735,6 +735,58 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
     }
 
     [Fact]
+    public async Task Build_IndexesRustSymbolsAndCallEdges_ForDirectoryInput()
+    {
+        var sourceDirectory = Path.Combine(Path.GetTempPath(), $"code-index-rust-{Guid.NewGuid():N}");
+        var outputDirectory = Path.Combine(Path.GetTempPath(), $"code-index-rust-out-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(Path.Combine(sourceDirectory, "src"));
+
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceDirectory, "src", "greeter.rs"),
+                "pub struct Greeter;\n\nimpl Greeter {\n    pub fn greet(&self) {\n        self.log();\n    }\n\n    fn log(&self) {}\n}\n");
+
+            await fixture.RunCliAsync("build", sourceDirectory, "--out", outputDirectory, "--skip-embeddings");
+
+            using var filesDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.files.json")));
+            Assert.Contains(
+                filesDocument.RootElement.EnumerateArray(),
+                file => file.GetProperty("path").GetString() == "src/greeter.rs" && file.GetProperty("language").GetString() == "Rust");
+
+            using var symbolsDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.symbols.json")));
+            var symbols = symbolsDocument.RootElement.EnumerateArray().ToArray();
+            Assert.Contains(symbols, symbol => symbol.GetProperty("qualifiedName").GetString() == "greeter.Greeter" && symbol.GetProperty("kind").GetString() == "struct");
+            Assert.Contains(symbols, symbol => symbol.GetProperty("qualifiedName").GetString() == "greeter.Greeter.greet" && symbol.GetProperty("accessibility").GetString() == "public");
+            Assert.Contains(symbols, symbol => symbol.GetProperty("qualifiedName").GetString() == "greeter.Greeter.log" && symbol.GetProperty("accessibility").GetString() == "private");
+
+            string GetSymbolId(string qualifiedName) => symbols
+                .Single(symbol => symbol.GetProperty("qualifiedName").GetString() == qualifiedName)
+                .GetProperty("id").GetString()!;
+
+            using var edgesDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(outputDirectory, "code-index.edges.json")));
+            var edges = edgesDocument.RootElement.EnumerateArray().ToArray();
+            Assert.Contains(
+                edges,
+                edge => edge.GetProperty("type").GetString() == "calls" &&
+                        edge.GetProperty("from").GetString() == GetSymbolId("greeter.Greeter.greet") &&
+                        edge.GetProperty("to").GetString() == GetSymbolId("greeter.Greeter.log"));
+        }
+        finally
+        {
+            if (Directory.Exists(sourceDirectory))
+            {
+                Directory.Delete(sourceDirectory, recursive: true);
+            }
+
+            if (Directory.Exists(outputDirectory))
+            {
+                Directory.Delete(outputDirectory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task Build_TightensTypeScriptPythonAndPhpSymbolFidelity_ForDirectoryInput()
     {
         var sourceDirectory = Path.Combine(Path.GetTempPath(), $"code-index-symbol-fidelity-{Guid.NewGuid():N}");

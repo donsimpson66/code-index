@@ -17,6 +17,46 @@ internal static partial class MultiLanguageUsageParser
         var sourceRoot = MultiLanguageFileIndexBuilder.GetSourceRoot(inputPath);
         var edges = new List<EdgeRecord>();
 
+        foreach (var file in files.Where(file => string.Equals(file.Language, "Rust", StringComparison.Ordinal)))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var fullPath = Path.Combine(sourceRoot, file.Path.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(fullPath))
+            {
+                continue;
+            }
+
+            var source = await File.ReadAllTextAsync(fullPath, cancellationToken);
+            var moduleName = MultiLanguageSymbolParser.BuildLogicalModuleQualifier(file.Path);
+            var moduleSymbols = symbols.Where(symbol =>
+                string.Equals(MultiLanguageSymbolParser.GetLanguageFromSymbolId(symbol.Id), "Rust", StringComparison.Ordinal) &&
+                (string.Equals(symbol.QualifiedName, moduleName, StringComparison.Ordinal) ||
+                 symbol.QualifiedName.StartsWith(moduleName + ".", StringComparison.Ordinal)))
+                .ToArray();
+            var localTypes = moduleSymbols
+                .Where(MultiLanguageSymbolParser.IsTypeSymbol)
+                .GroupBy(symbol => symbol.Name, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.OrderBy(symbol => symbol.QualifiedName, StringComparer.Ordinal).First(), StringComparer.Ordinal);
+
+            foreach (var line in MultiLanguageSymbolParser.SplitLines(source))
+            {
+                var match = RustImplForRegex.Match(line);
+                if (!match.Success)
+                {
+                    continue;
+                }
+
+                var traitName = match.Groups["trait"].Value.Split("::", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+                var typeName = match.Groups["type"].Value;
+                if (localTypes.TryGetValue(typeName, out var derived) &&
+                    localTypes.TryGetValue(traitName, out var trait) &&
+                    !string.Equals(derived.Id, trait.Id, StringComparison.Ordinal))
+                {
+                    edges.Add(new EdgeRecord(EdgeTypes.Implements, derived.Id, trait.Id));
+                }
+            }
+        }
+
         foreach (var file in files.Where(file => SourceLanguageCatalog.IsEcmaScript(file.Language)))
         {
             cancellationToken.ThrowIfCancellationRequested();

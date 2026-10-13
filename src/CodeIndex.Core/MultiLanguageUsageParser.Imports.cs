@@ -132,6 +132,68 @@ internal static partial class MultiLanguageUsageParser
         return new PythonImportInfo(bindings);
     }
 
+    private static RustImportInfo ParseRustImports(string source)
+    {
+        var bindings = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (Match match in RustUseRegex.Matches(source))
+        {
+            var rest = match.Groups["rest"].Value.Trim();
+            if (string.IsNullOrWhiteSpace(rest))
+            {
+                continue;
+            }
+
+            var braceStart = rest.IndexOf('{');
+            if (braceStart >= 0)
+            {
+                var braceEnd = rest.LastIndexOf('}');
+                if (braceEnd <= braceStart)
+                {
+                    continue;
+                }
+
+                var modulePath = rest[..braceStart].Trim().TrimEnd(':').Replace("::", ".", StringComparison.Ordinal);
+                var names = rest[(braceStart + 1)..braceEnd]
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                foreach (var rawName in names)
+                {
+                    var name = rawName.Split([" as "], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+                    if (string.IsNullOrWhiteSpace(modulePath))
+                    {
+                        bindings[name] = name;
+                    }
+                    else
+                    {
+                        bindings[name] = $"{modulePath}.{name}";
+                    }
+                }
+
+                continue;
+            }
+
+            var segments = rest.Replace("::", ".", StringComparison.Ordinal)
+                .Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (segments.Length == 0)
+            {
+                continue;
+            }
+
+            var importedName = segments[^1].Split([" as "], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+            var aliasParts = rest.Split([" as "], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (aliasParts.Length > 1)
+            {
+                importedName = aliasParts[^1].Trim();
+            }
+
+            var qualifiedName = string.Join('.', segments.Select(segment =>
+                segment.Split([" as "], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)[0].Trim()));
+            bindings[importedName] = qualifiedName;
+        }
+
+        return new RustImportInfo(bindings);
+    }
+
     private static PhpImportInfo ParsePhpImports(string source)
     {
         var typeBindings = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -252,4 +314,6 @@ internal static partial class MultiLanguageUsageParser
     private sealed record PhpImportInfo(
         IReadOnlyDictionary<string, string> TypeBindings,
         IReadOnlyDictionary<string, string> FunctionBindings);
+
+    private sealed record RustImportInfo(IReadOnlyDictionary<string, string> Bindings);
 }

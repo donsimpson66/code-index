@@ -20,6 +20,11 @@ internal static partial class MultiLanguageUsageParser
     private static readonly Regex GoSelectorCallRegex = new(@"(?<qualifier>[A-Za-z_][A-Za-z0-9_]*)\s*\.\s*(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex GoCallRegex = new(@"(?<!func\s)(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex GoImportSpecRegex = new(@"^(?:(?<alias>[A-Za-z_][A-Za-z0-9_]*|\.|_)\s+)?""(?<path>[^""]+)""$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex RustSelectorCallRegex = new(@"(?<qualifier>self|[A-Za-z_][A-Za-z0-9_]*)\s*\.\s*(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex RustPathCallRegex = new(@"(?<type>[A-Za-z_][A-Za-z0-9_]*)\s*::\s*(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex RustCallRegex = new(@"(?<!fn\s)(?<!::)(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex RustUseRegex = new(@"^\s*use\s+(?<path>crate::|super::|self::)?(?<rest>[A-Za-z0-9_:{},\s]+)\s*;", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.Multiline);
+    private static readonly Regex RustImplForRegex = new(@"^\s*impl(?:\s*<[^>]*>)?\s+(?<trait>[A-Za-z_][A-Za-z0-9_:]*)\s+for\s+(?<type>[A-Za-z_][A-Za-z0-9_]*)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex PythonCallRegex = new(@"(?:(?<qualifier>[A-Za-z_][A-Za-z0-9_]*)\s*\.\s*)?(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex PythonImportRegex = new(@"^\s*import\s+(?<module>[A-Za-z_][A-Za-z0-9_\.]*)\s*(?:as\s+(?<alias>[A-Za-z_][A-Za-z0-9_]*))?", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.Multiline);
     private static readonly Regex PythonFromImportRegex = new(@"^\s*from\s+(?<module>[A-Za-z_][A-Za-z0-9_\.]*)\s+import\s+(?<names>[^\r\n]+)", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.Multiline);
@@ -42,7 +47,12 @@ internal static partial class MultiLanguageUsageParser
         "catch",
         "return",
         "new",
-        "func"
+        "func",
+        "match",
+        "loop",
+        "if",
+        "while",
+        "for"
     };
 
     private static readonly HashSet<string> CallableKinds = new(StringComparer.Ordinal)
@@ -81,7 +91,7 @@ internal static partial class MultiLanguageUsageParser
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (file.Language is not ("Java" or "Go" or "Python" or "PHP") && !SourceLanguageCatalog.IsEcmaScript(file.Language))
+            if (file.Language is not ("Java" or "Go" or "Python" or "PHP" or "Rust") && !SourceLanguageCatalog.IsEcmaScript(file.Language))
             {
                 continue;
             }
@@ -101,6 +111,7 @@ internal static partial class MultiLanguageUsageParser
                 _ when SourceLanguageCatalog.IsEcmaScript(file.Language) => ExtractTypeScriptReferences(file, source, fileSymbols, symbols),
                 "Python" => ExtractPythonReferences(file, source, fileSymbols, symbols),
                 "PHP" => ExtractPhpReferences(file, source, fileSymbols, symbols),
+                "Rust" => ExtractRustReferences(file, source, fileSymbols, symbols),
                 _ => Array.Empty<ReferenceRecord>()
             });
         }
@@ -466,6 +477,7 @@ internal static partial class MultiLanguageSymbolParser
             "PHP" => ParsePhp(file, source),
             "Java" => ParseJavaOrCSharp(file, source),
             "C#" => ParseJavaOrCSharp(file, source),
+            "Rust" => ParseRust(file, source),
             _ => Array.Empty<SymbolRecord>()
         };
     }

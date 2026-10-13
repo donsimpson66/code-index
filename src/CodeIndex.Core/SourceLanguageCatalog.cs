@@ -16,7 +16,8 @@ public static class SourceLanguageCatalog
         [".mjs"] = "JavaScript",
         [".cjs"] = "JavaScript",
         [".py"] = "Python",
-        [".php"] = "PHP"
+        [".php"] = "PHP",
+        [".rs"] = "Rust"
     };
 
     public static bool TryGetLanguage(string path, out string language)

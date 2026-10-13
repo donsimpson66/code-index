@@ -4,6 +4,19 @@ namespace CodeIndex.Core;
 
 internal static partial class MultiLanguageSymbolParser
 {
+    private static readonly Regex RustTypeRegex = new(
+        @"^\s*(?:pub(?:\s*\([^)]*\))?\s+)?(?<kind>struct|enum|trait|type)\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex RustImplRegex = new(
+        @"^\s*impl(?:\s*<[^>]*>)?\s+(?:(?<trait>[A-Za-z_][A-Za-z0-9_:]*)\s+for\s+)?(?<type>[A-Za-z_][A-Za-z0-9_]*)",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex RustFnRegex = new(
+        @"^\s*(?:pub(?:\s*\([^)]*\))?\s+)?(?:async\s+)?(?:const\s+)?(?:unsafe\s+)?fn\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*(?:<[^>]*>)?\s*\(",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex RustConstOrStaticRegex = new(
+        @"^\s*(?:pub(?:\s*\([^)]*\))?\s+)?(?<kind>const|static)\s+(?:mut\s+)?(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*:",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
     private static IReadOnlyList<SymbolRecord> ParseJavaOrCSharp(FileRecord file, string source)
     {
         var namespaceName = PackageRegex.Match(source) is { Success: true } packageMatch
@@ -77,6 +90,134 @@ internal static partial class MultiLanguageSymbolParser
         }
 
         return symbols;
+    }
+
+    private static IReadOnlyList<SymbolRecord> ParseRust(FileRecord file, string source)
+    {
+        var moduleName = BuildLogicalModuleQualifier(file.Path);
+        var lines = SplitLines(source);
+        var symbols = new List<SymbolRecord>();
+        var typesByName = new Dictionary<string, SymbolRecord>(StringComparer.Ordinal);
+        var moduleSymbol = CreateContainerSymbol(file, moduleName.Split('.').Last(), moduleName, SymbolKinds.Module, 1);
+        symbols.Add(moduleSymbol);
+
+        var implScopes = new Stack<BraceScope>();
+        SymbolRecord? pendingImplType = null;
+        var braceDepth = 0;
+
+        for (var index = 0; index < lines.Length; index++)
+        {
+            var line = lines[index];
+            var lineNumber = index + 1;
+            var trimmed = line.TrimStart();
+
+            if (trimmed.StartsWith("//", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            while (implScopes.Count > 0 && braceDepth < implScopes.Peek().BodyDepth)
+            {
+                implScopes.Pop();
+            }
+
+            var typeMatch = RustTypeRegex.Match(line);
+            if (typeMatch.Success)
+            {
+                var typeName = typeMatch.Groups["name"].Value;
+                var typeKindToken = typeMatch.Groups["kind"].Value;
+                var kind = typeKindToken switch
+                {
+                    "struct" => SymbolKinds.Struct,
+                    "enum" => SymbolKinds.Enum,
+                    "trait" => SymbolKinds.Interface,
+                    "type" => SymbolKinds.TypeAlias,
+                    _ => SymbolKinds.Struct
+                };
+                var typeQualifiedName = BuildQualifiedName(moduleName, typeName);
+                var typeSymbol = CreateSymbol(
+                    file,
+                    typeName,
+                    typeQualifiedName,
+                    kind,
+                    moduleSymbol.Id,
+                    lineNumber,
+                    line,
+                    ExtractRustAccessibility(line));
+                symbols.Add(typeSymbol);
+                if (kind != SymbolKinds.TypeAlias)
+                {
+                    typesByName[typeName] = typeSymbol;
+                }
+            }
+
+            var implMatch = RustImplRegex.Match(line);
+            if (implMatch.Success)
+            {
+                var implTypeName = implMatch.Groups["type"].Value;
+                pendingImplType = typesByName.TryGetValue(implTypeName, out var implType) ? implType : null;
+            }
+
+            var fnMatch = RustFnRegex.Match(line);
+            if (fnMatch.Success)
+            {
+                var methodName = fnMatch.Groups["name"].Value;
+                var parent = implScopes.Count > 0 ? implScopes.Peek().Symbol : pendingImplType;
+                var methodQualifiedName = parent is null
+                    ? BuildQualifiedName(moduleName, methodName)
+                    : BuildQualifiedName(parent.QualifiedName, methodName);
+                symbols.Add(CreateSymbol(
+                    file,
+                    methodName,
+                    methodQualifiedName,
+                    SymbolKinds.Method,
+                    parent?.Id ?? moduleSymbol.Id,
+                    lineNumber,
+                    line,
+                    ExtractRustAccessibility(line)));
+            }
+
+            var constMatch = RustConstOrStaticRegex.Match(line);
+            if (constMatch.Success && implScopes.Count == 0 && pendingImplType is null)
+            {
+                var constName = constMatch.Groups["name"].Value;
+                symbols.Add(CreateSymbol(
+                    file,
+                    constName,
+                    BuildQualifiedName(moduleName, constName),
+                    SymbolKinds.Field,
+                    moduleSymbol.Id,
+                    lineNumber,
+                    line,
+                    ExtractRustAccessibility(line),
+                    isStatic: true));
+            }
+
+            var openBraceCount = CountOccurrences(line, '{');
+            var closeBraceCount = CountOccurrences(line, '}');
+            braceDepth += openBraceCount - closeBraceCount;
+
+            if (pendingImplType is not null && openBraceCount > closeBraceCount)
+            {
+                implScopes.Push(new BraceScope(braceDepth, pendingImplType));
+                pendingImplType = null;
+            }
+            else if (pendingImplType is not null && openBraceCount == 0 && closeBraceCount == 0)
+            {
+                // Keep pending until the opening brace line (possibly later).
+            }
+            else if (pendingImplType is not null && openBraceCount <= closeBraceCount)
+            {
+                pendingImplType = null;
+            }
+        }
+
+        return symbols;
+    }
+
+    private static string ExtractRustAccessibility(string line)
+    {
+        return Regex.IsMatch(line, @"\bpub\b", RegexOptions.CultureInvariant) ? "public" : "private";
     }
 
     private static IReadOnlyList<SymbolRecord> ParsePython(FileRecord file, string source)
