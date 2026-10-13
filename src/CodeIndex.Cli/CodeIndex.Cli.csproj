@@ -15,6 +15,12 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>code-index</ToolCommandName>
+    <PackageId>CodeIndex.Cli</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>CodeIndex</Authors>
+    <Description>Index-first CLI for compact code navigation by AI agents.</Description>
   </PropertyGroup>
 
 </Project>

@@ -120,11 +120,7 @@ public sealed class CliRuntime
 
 public static class CliApplication
 {
-	private static readonly JsonSerializerOptions OutputJsonOptions = new()
-	{
-		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-		WriteIndented = true
-	};
+	private static readonly JsonSerializerOptions OutputJsonOptions = QueryResultFormatter.CompactJsonOptions;
 
 	public static async Task<int> RunAsync(string[] args, CliRuntime? runtime = null)
 	{
@@ -166,6 +162,21 @@ public static class CliApplication
 			Description = "Include generated C# files such as obj outputs and *.g.cs files."
 		};
 
+		var includeLocalsOption = new Option<bool>("--include-locals")
+		{
+			Description = "Include local variable symbols in the index. Locals are excluded by default."
+		};
+
+		var skipEmbeddingsOption = new Option<bool>("--skip-embeddings")
+		{
+			Description = "Skip embedding generation. Semantic search will be unavailable until embeddings are rebuilt."
+		};
+
+		var ifChangedOption = new Option<bool>("--if-changed")
+		{
+			Description = "Skip rewriting artifacts when --out already matches the current file hashes."
+		};
+
 		var verboseOption = new Option<bool>("--verbose")
 		{
 			Description = "Write progress information while building the index."
@@ -183,7 +194,44 @@ public static class CliApplication
 
 		var limitOption = new Option<int>("--limit")
 		{
-			Description = "Maximum number of results to return."
+			Description = "Maximum number of results to return. Use 0 for no limit."
+		};
+
+		var findLimitOption = new Option<int>("--limit")
+		{
+			Description = "Maximum number of results to return. Use 0 for no limit.",
+			DefaultValueFactory = _ => 20
+		};
+
+		var childrenLimitOption = new Option<int>("--limit")
+		{
+			Description = "Maximum number of results to return. Use 0 for no limit.",
+			DefaultValueFactory = _ => 40
+		};
+
+		var formatOption = new Option<string>("--format")
+		{
+			Description = "Output format: json (default) or text."
+		};
+
+		var fullOption = new Option<bool>("--full")
+		{
+			Description = "Return full symbol records instead of compact list projections."
+		};
+
+		var compactOption = new Option<bool>("--compact")
+		{
+			Description = "Force compact list projections (default for list queries)."
+		};
+
+		var fieldsOption = new Option<string>("--fields")
+		{
+			Description = "Comma-separated fields to include in JSON output."
+		};
+
+		var prettyOption = new Option<bool>("--pretty")
+		{
+			Description = "Pretty-print JSON output with indentation."
 		};
 
 		var kindOption = new Option<string>("--kind")
@@ -275,6 +323,9 @@ public static class CliApplication
 		buildCommand.Add(pathArgument);
 		buildCommand.Add(outputOption);
 		buildCommand.Add(includeGeneratedOption);
+		buildCommand.Add(includeLocalsOption);
+		buildCommand.Add(skipEmbeddingsOption);
+		buildCommand.Add(ifChangedOption);
 		buildCommand.Add(verboseOption);
 		buildCommand.Add(incrementalFromIndexOption);
 		buildCommand.SetAction(async (parseResult, cancellationToken) =>
@@ -282,6 +333,9 @@ public static class CliApplication
 			var path = parseResult.GetValue(pathArgument);
 			var outputDirectory = parseResult.GetValue(outputOption);
 			var includeGenerated = parseResult.GetValue(includeGeneratedOption);
+			var includeLocals = parseResult.GetValue(includeLocalsOption);
+			var skipEmbeddings = parseResult.GetValue(skipEmbeddingsOption);
+			var ifChanged = parseResult.GetValue(ifChangedOption);
 			var verbose = parseResult.GetValue(verboseOption);
 			var incrementalFromIndex = parseResult.GetValue(incrementalFromIndexOption);
 
@@ -299,6 +353,8 @@ public static class CliApplication
 			{
 				Console.WriteLine($"Loading source input from {Path.GetFullPath(path)}");
 				Console.WriteLine(includeGenerated ? "Including generated files." : "Excluding generated files.");
+				Console.WriteLine(includeLocals ? "Including local symbols." : "Excluding local symbols.");
+				Console.WriteLine(skipEmbeddings ? "Skipping embeddings." : "Building embeddings.");
 			}
 
 			if (verbose && !string.IsNullOrWhiteSpace(incrementalFromIndex))
@@ -306,7 +362,9 @@ public static class CliApplication
 				Console.WriteLine($"Loaded incremental baseline from {Path.GetFullPath(incrementalFromIndex)}");
 			}
 
-			var buildResult = await buildService.BuildAsync(new CodeIndexBuildRequest(path, includeGenerated, incrementalFromIndex), cancellationToken);
+			var buildResult = await buildService.BuildAsync(
+				new CodeIndexBuildRequest(path, includeGenerated, incrementalFromIndex, includeLocals, skipEmbeddings, ifChanged, outputDirectory),
+				cancellationToken);
 			var snapshot = buildResult.Snapshot;
 			var stats = buildResult.Stats;
 
@@ -314,7 +372,11 @@ public static class CliApplication
 			{
 				Console.WriteLine($"Indexed {stats.FileCount} files.");
 
-				if (stats.ReusedIncrementalBaseline)
+				if (stats.SkippedBecauseUnchanged)
+				{
+					Console.WriteLine("No file changes detected for --if-changed. Skipping artifact rewrite.");
+				}
+				else if (stats.ReusedIncrementalBaseline)
 				{
 					Console.WriteLine("No file changes detected against the incremental baseline. Reusing symbols, edges, references, and embeddings.");
 					Console.WriteLine($"Reused {stats.SymbolCount} symbols.");
@@ -341,7 +403,7 @@ public static class CliApplication
 				Console.WriteLine("Validation passed.");
 			}
 
-			if (!string.IsNullOrWhiteSpace(outputDirectory))
+			if (!string.IsNullOrWhiteSpace(outputDirectory) && !stats.SkippedBecauseUnchanged)
 			{
 				var outputPaths = await buildService.WriteSnapshotAsync(snapshot, outputDirectory, cancellationToken);
 
@@ -352,6 +414,10 @@ public static class CliApplication
 				Console.WriteLine($"Wrote {snapshot.References.Count} reference records to {outputPaths.ReferencesPath}");
 				Console.WriteLine($"Wrote {snapshot.Embeddings.Count} embedding records to {outputPaths.EmbeddingsPath}");
 			}
+			else if (stats.SkippedBecauseUnchanged)
+			{
+				Console.WriteLine($"Index unchanged at {Path.GetFullPath(outputDirectory)}");
+			}
 
 			return 0;
 		});
@@ -359,42 +425,45 @@ public static class CliApplication
 		var findSymbolCommand = new Command("find-symbol", "Find symbols by name or qualified name from a generated index.");
 		findSymbolCommand.Add(symbolQueryArgument);
 		findSymbolCommand.Add(indexOption);
-		findSymbolCommand.Add(limitOption);
+		findSymbolCommand.Add(findLimitOption);
 		findSymbolCommand.Add(kindOption);
 		findSymbolCommand.Add(accessibilityOption);
 		findSymbolCommand.Add(sortOption);
+		AddQueryOutputOptions(findSymbolCommand, formatOption, fullOption, compactOption, fieldsOption, prettyOption);
 		findSymbolCommand.SetAction(async (parseResult, cancellationToken) =>
 		{
 			var query = parseResult.GetValue(symbolQueryArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
-			var limit = parseResult.GetValue(limitOption);
+			var limit = parseResult.GetValue(findLimitOption);
 			var kind = parseResult.GetValue(kindOption);
 			var accessibility = parseResult.GetValue(accessibilityOption);
 			var sort = parseResult.GetValue(sortOption);
+			var output = ReadQueryOutputOptions(parseResult, formatOption, fullOption, compactOption, fieldsOption, prettyOption);
 
 			if (string.IsNullOrWhiteSpace(query))
 			{
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-
-			var matches = await queryService.FindSymbolsAsync(new CodeIndexFindSymbolsRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
-
-			WriteJson(matches);
+			var snapshot = await queryService.ReadSnapshotAsync(indexDirectory, cancellationToken);
+			var matches = queryService.FindSymbols(snapshot, new CodeIndexFindSymbolsRequest(query, indexDirectory, limit, kind, accessibility, sort));
+			WriteQueryOutput(QueryResultFormatter.PrepareSymbolResults(matches, snapshot, output.Full, output.Fields), output);
 			return 0;
 		});
 
 		var semanticSearchCommand = new Command("semantic-search", "Search embedded file and symbol text using deterministic vector similarity.");
 		semanticSearchCommand.Add(symbolQueryArgument);
 		semanticSearchCommand.Add(indexOption);
-		semanticSearchCommand.Add(limitOption);
+		semanticSearchCommand.Add(findLimitOption);
 		semanticSearchCommand.Add(typeOption);
+		AddQueryOutputOptions(semanticSearchCommand, formatOption, fullOption, compactOption, fieldsOption, prettyOption);
 		semanticSearchCommand.SetAction(async (parseResult, cancellationToken) =>
 		{
 			var query = parseResult.GetValue(symbolQueryArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
-			var limit = parseResult.GetValue(limitOption);
+			var limit = parseResult.GetValue(findLimitOption);
 			var itemType = NormalizeOptional(parseResult.GetValue(typeOption));
+			var output = ReadQueryOutputOptions(parseResult, formatOption, fullOption, compactOption, fieldsOption, prettyOption);
 
 			if (string.IsNullOrWhiteSpace(query))
 			{
@@ -402,20 +471,21 @@ public static class CliApplication
 			}
 
 			var results = await queryService.SemanticSearchAsync(new CodeIndexSemanticSearchRequest(query, indexDirectory, limit, itemType), cancellationToken);
-
-			WriteJson(results);
+			WriteQueryOutput(QueryResultFormatter.ApplyFields(results, output.Fields), output);
 			return 0;
 		});
 
 		var findReferencesCommand = new Command("find-references", "Find references for a symbol ID or qualified name from a generated index.");
 		findReferencesCommand.Add(symbolQueryArgument);
 		findReferencesCommand.Add(indexOption);
-		findReferencesCommand.Add(limitOption);
+		findReferencesCommand.Add(findLimitOption);
+		AddQueryOutputOptions(findReferencesCommand, formatOption, fullOption, compactOption, fieldsOption, prettyOption);
 		findReferencesCommand.SetAction(async (parseResult, cancellationToken) =>
 		{
 			var query = parseResult.GetValue(symbolQueryArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
-			var limit = parseResult.GetValue(limitOption);
+			var limit = parseResult.GetValue(findLimitOption);
+			var output = ReadQueryOutputOptions(parseResult, formatOption, fullOption, compactOption, fieldsOption, prettyOption);
 
 			if (string.IsNullOrWhiteSpace(query))
 			{
@@ -423,162 +493,96 @@ public static class CliApplication
 			}
 
 			var results = await queryService.FindReferencesAsync(new CodeIndexReferenceQuery(query, indexDirectory, limit), cancellationToken);
-
-			WriteJson(results);
+			WriteQueryOutput(QueryResultFormatter.ApplyFields(results, output.Fields), output);
 			return 0;
 		});
 
 		var getSymbolCommand = new Command("get-symbol", "Get a single symbol by ID or qualified name from a generated index.");
 		getSymbolCommand.Add(symbolQueryArgument);
 		getSymbolCommand.Add(indexOption);
+		AddQueryOutputOptions(getSymbolCommand, formatOption, fullOption, compactOption, fieldsOption, prettyOption);
 		getSymbolCommand.SetAction(async (parseResult, cancellationToken) =>
 		{
 			var query = parseResult.GetValue(symbolQueryArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
+			var output = ReadQueryOutputOptions(parseResult, formatOption, fullOption, compactOption, fieldsOption, prettyOption);
 
 			if (string.IsNullOrWhiteSpace(query))
 			{
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
+			var snapshot = await queryService.ReadSnapshotAsync(indexDirectory, cancellationToken);
 			var symbol = await queryService.GetSymbolAsync(query, indexDirectory, cancellationToken);
-
-			WriteJson(symbol);
+			// get-symbol defaults to full record unless --compact is set.
+			var useFull = output.Full || !output.CompactRequested;
+			WriteQueryOutput(QueryResultFormatter.PrepareSingleSymbol(symbol, snapshot, useFull, output.Fields), output);
 			return 0;
 		});
 
 		var getChildrenCommand = new Command("get-children", "Get child symbols for a parent symbol from a generated index.");
-		getChildrenCommand.Add(symbolQueryArgument);
-		getChildrenCommand.Add(indexOption);
-		getChildrenCommand.Add(limitOption);
-		getChildrenCommand.Add(kindOption);
-		getChildrenCommand.Add(accessibilityOption);
-		getChildrenCommand.Add(sortOption);
-		getChildrenCommand.SetAction(async (parseResult, cancellationToken) =>
-		{
-			var query = parseResult.GetValue(symbolQueryArgument);
-			var indexDirectory = parseResult.GetValue(indexOption);
-			var limit = parseResult.GetValue(limitOption);
-			var kind = parseResult.GetValue(kindOption);
-			var accessibility = parseResult.GetValue(accessibilityOption);
-			var sort = parseResult.GetValue(sortOption);
-
-			if (string.IsNullOrWhiteSpace(query))
-			{
-				throw new InvalidOperationException("A symbol query is required.");
-			}
-
-			var children = await queryService.GetChildrenAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
-
-			WriteJson(children);
-			return 0;
-		});
+		AddRelatedSymbolCommand(getChildrenCommand, symbolQueryArgument, indexOption, childrenLimitOption, kindOption, accessibilityOption, sortOption, formatOption, fullOption, compactOption, fieldsOption, prettyOption,
+			async (query, indexDirectory, limit, kind, accessibility, sort, cancellationToken) =>
+				await queryService.GetChildrenAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken),
+			queryService);
 
 		var getCalleesCommand = new Command("get-callees", "Get call targets for a method or constructor from a generated index.");
-		getCalleesCommand.Add(symbolQueryArgument);
-		getCalleesCommand.Add(indexOption);
-		getCalleesCommand.Add(limitOption);
-		getCalleesCommand.Add(kindOption);
-		getCalleesCommand.Add(accessibilityOption);
-		getCalleesCommand.Add(sortOption);
-		getCalleesCommand.SetAction(async (parseResult, cancellationToken) =>
-		{
-			var query = parseResult.GetValue(symbolQueryArgument);
-			var indexDirectory = parseResult.GetValue(indexOption);
-			var limit = parseResult.GetValue(limitOption);
-			var kind = parseResult.GetValue(kindOption);
-			var accessibility = parseResult.GetValue(accessibilityOption);
-			var sort = parseResult.GetValue(sortOption);
-
-			if (string.IsNullOrWhiteSpace(query))
-			{
-				throw new InvalidOperationException("A symbol query is required.");
-			}
-
-			var callees = await queryService.GetCalleesAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
-
-			WriteJson(callees);
-			return 0;
-		});
+		AddRelatedSymbolCommand(getCalleesCommand, symbolQueryArgument, indexOption, childrenLimitOption, kindOption, accessibilityOption, sortOption, formatOption, fullOption, compactOption, fieldsOption, prettyOption,
+			async (query, indexDirectory, limit, kind, accessibility, sort, cancellationToken) =>
+				await queryService.GetCalleesAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken),
+			queryService);
 
 		var getCallersCommand = new Command("get-callers", "Get callers for a method or constructor from a generated index.");
-		getCallersCommand.Add(symbolQueryArgument);
-		getCallersCommand.Add(indexOption);
-		getCallersCommand.Add(limitOption);
-		getCallersCommand.Add(kindOption);
-		getCallersCommand.Add(accessibilityOption);
-		getCallersCommand.Add(sortOption);
-		getCallersCommand.SetAction(async (parseResult, cancellationToken) =>
-		{
-			var query = parseResult.GetValue(symbolQueryArgument);
-			var indexDirectory = parseResult.GetValue(indexOption);
-			var limit = parseResult.GetValue(limitOption);
-			var kind = parseResult.GetValue(kindOption);
-			var accessibility = parseResult.GetValue(accessibilityOption);
-			var sort = parseResult.GetValue(sortOption);
-
-			if (string.IsNullOrWhiteSpace(query))
-			{
-				throw new InvalidOperationException("A symbol query is required.");
-			}
-
-			var callers = await queryService.GetCallersAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
-
-			WriteJson(callers);
-			return 0;
-		});
+		AddRelatedSymbolCommand(getCallersCommand, symbolQueryArgument, indexOption, childrenLimitOption, kindOption, accessibilityOption, sortOption, formatOption, fullOption, compactOption, fieldsOption, prettyOption,
+			async (query, indexDirectory, limit, kind, accessibility, sort, cancellationToken) =>
+				await queryService.GetCallersAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken),
+			queryService);
 
 		var getTestTargetsCommand = new Command("get-test-targets", "Get heuristic production targets for a test symbol from a generated index.");
-		getTestTargetsCommand.Add(symbolQueryArgument);
-		getTestTargetsCommand.Add(indexOption);
-		getTestTargetsCommand.Add(limitOption);
-		getTestTargetsCommand.Add(kindOption);
-		getTestTargetsCommand.Add(accessibilityOption);
-		getTestTargetsCommand.Add(sortOption);
-		getTestTargetsCommand.SetAction(async (parseResult, cancellationToken) =>
-		{
-			var query = parseResult.GetValue(symbolQueryArgument);
-			var indexDirectory = parseResult.GetValue(indexOption);
-			var limit = parseResult.GetValue(limitOption);
-			var kind = parseResult.GetValue(kindOption);
-			var accessibility = parseResult.GetValue(accessibilityOption);
-			var sort = parseResult.GetValue(sortOption);
-
-			if (string.IsNullOrWhiteSpace(query))
-			{
-				throw new InvalidOperationException("A symbol query is required.");
-			}
-
-			var targets = await queryService.GetTestTargetsAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
-
-			WriteJson(targets);
-			return 0;
-		});
+		AddRelatedSymbolCommand(getTestTargetsCommand, symbolQueryArgument, indexOption, childrenLimitOption, kindOption, accessibilityOption, sortOption, formatOption, fullOption, compactOption, fieldsOption, prettyOption,
+			async (query, indexDirectory, limit, kind, accessibility, sort, cancellationToken) =>
+				await queryService.GetTestTargetsAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken),
+			queryService);
 
 		var getTestsCommand = new Command("get-tests", "Get heuristic tests for a production symbol from a generated index.");
-		getTestsCommand.Add(symbolQueryArgument);
-		getTestsCommand.Add(indexOption);
-		getTestsCommand.Add(limitOption);
-		getTestsCommand.Add(kindOption);
-		getTestsCommand.Add(accessibilityOption);
-		getTestsCommand.Add(sortOption);
-		getTestsCommand.SetAction(async (parseResult, cancellationToken) =>
+		AddRelatedSymbolCommand(getTestsCommand, symbolQueryArgument, indexOption, childrenLimitOption, kindOption, accessibilityOption, sortOption, formatOption, fullOption, compactOption, fieldsOption, prettyOption,
+			async (query, indexDirectory, limit, kind, accessibility, sort, cancellationToken) =>
+				await queryService.GetTestsAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken),
+			queryService);
+
+		var outlineCommand = new Command("outline", "Get a compact type/member outline for a symbol in one call.");
+		outlineCommand.Add(symbolQueryArgument);
+		outlineCommand.Add(indexOption);
+		outlineCommand.Add(childrenLimitOption);
+		outlineCommand.Add(kindOption);
+		outlineCommand.Add(accessibilityOption);
+		outlineCommand.Add(sortOption);
+		AddQueryOutputOptions(outlineCommand, formatOption, fullOption, compactOption, fieldsOption, prettyOption);
+		outlineCommand.SetAction(async (parseResult, cancellationToken) =>
 		{
 			var query = parseResult.GetValue(symbolQueryArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
-			var limit = parseResult.GetValue(limitOption);
+			var limit = parseResult.GetValue(childrenLimitOption);
 			var kind = parseResult.GetValue(kindOption);
 			var accessibility = parseResult.GetValue(accessibilityOption);
-			var sort = parseResult.GetValue(sortOption);
+			var sort = parseResult.GetValue(sortOption) ?? "declaration";
+			var output = ReadQueryOutputOptions(parseResult, formatOption, fullOption, compactOption, fieldsOption, prettyOption);
 
 			if (string.IsNullOrWhiteSpace(query))
 			{
 				throw new InvalidOperationException("A symbol query is required.");
 			}
 
-			var tests = await queryService.GetTestsAsync(new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort), cancellationToken);
-
-			WriteJson(tests);
+			var snapshot = await queryService.ReadSnapshotAsync(indexDirectory, cancellationToken);
+			var (symbol, children) = await queryService.GetOutlineAsync(
+				new CodeIndexChildQueryRequest(query, indexDirectory, limit, kind, accessibility, sort),
+				cancellationToken);
+			var payload = new
+			{
+				symbol = QueryResultFormatter.PrepareSingleSymbol(symbol, snapshot, output.Full, null),
+				children = QueryResultFormatter.PrepareSymbolResults(children, snapshot, output.Full, null)
+			};
+			WriteQueryOutput(QueryResultFormatter.ApplyFields(payload, output.Fields), output);
 			return 0;
 		});
 
@@ -587,12 +591,14 @@ public static class CliApplication
 		getExcerptCommand.Add(indexOption);
 		getExcerptCommand.Add(startOption);
 		getExcerptCommand.Add(endOption);
+		AddQueryOutputOptions(getExcerptCommand, formatOption, fullOption, compactOption, fieldsOption, prettyOption);
 		getExcerptCommand.SetAction(async (parseResult, cancellationToken) =>
 		{
 			var file = parseResult.GetValue(filePathArgument);
 			var indexDirectory = parseResult.GetValue(indexOption);
 			var start = parseResult.GetValue(startOption);
 			var end = parseResult.GetValue(endOption);
+			var output = ReadQueryOutputOptions(parseResult, formatOption, fullOption, compactOption, fieldsOption, prettyOption);
 
 			if (string.IsNullOrWhiteSpace(file))
 			{
@@ -600,8 +606,7 @@ public static class CliApplication
 			}
 
 			var excerpt = await queryService.GetExcerptAsync(new CodeIndexExcerptQuery(file, indexDirectory, start, end), cancellationToken);
-
-			WriteJson(excerpt);
+			WriteQueryOutput(QueryResultFormatter.ApplyFields(excerpt, output.Fields), output);
 			return 0;
 		});
 
@@ -691,6 +696,7 @@ public static class CliApplication
 			{
 				var symbolQueryStopwatch = Stopwatch.StartNew();
 				var matches = LimitResults(OrderFindSymbolResults(snapshot.Symbols
+					.Where(symbol => !string.Equals(symbol.Kind, SymbolKinds.Local, StringComparison.Ordinal))
 					.Where(symbol =>
 						string.Equals(symbol.Name, symbolQuery, StringComparison.OrdinalIgnoreCase) ||
 						string.Equals(symbol.QualifiedName, symbolQuery, StringComparison.OrdinalIgnoreCase) ||
@@ -702,12 +708,13 @@ public static class CliApplication
 					? Array.Empty<SymbolRecord>()
 					: OrderChildResults(snapshot.Edges
 						.Where(edge => edge.Type == EdgeTypes.Contains && edge.From == selected.Id)
-						.Join(snapshot.Symbols, edge => edge.To, symbol => symbol.Id, (_, symbol) => symbol), "declaration")
+						.Join(snapshot.Symbols, edge => edge.To, symbol => symbol.Id, (_, symbol) => symbol)
+						.Where(symbol => !string.Equals(symbol.Kind, SymbolKinds.Local, StringComparison.Ordinal)), "declaration")
 						.ToArray();
 
-				var findSymbolBytes = GetSerializedByteCount(matches);
+				var findSymbolBytes = GetSerializedByteCount(QueryResultFormatter.ProjectSymbols(matches, snapshot));
 				var getSymbolBytes = selected is null ? 0 : GetSerializedByteCount(selected);
-				var getChildrenBytes = children.Length == 0 ? 0 : GetSerializedByteCount(children);
+				var getChildrenBytes = children.Length == 0 ? 0 : GetSerializedByteCount(QueryResultFormatter.ProjectSymbols(children, snapshot));
 				symbolQueryStopwatch.Stop();
 				indexFirstFlowBytes += findSymbolBytes + getSymbolBytes + getChildrenBytes;
 				indexFirstFlowElapsedMs += symbolQueryStopwatch.ElapsedMilliseconds;
@@ -827,10 +834,95 @@ public static class CliApplication
 		rootCommand.Add(getCallersCommand);
 		rootCommand.Add(getTestTargetsCommand);
 		rootCommand.Add(getTestsCommand);
+		rootCommand.Add(outlineCommand);
 		rootCommand.Add(getExcerptCommand);
 
 		return rootCommand;
 	}
+
+	private static void AddQueryOutputOptions(
+		Command command,
+		Option<string> formatOption,
+		Option<bool> fullOption,
+		Option<bool> compactOption,
+		Option<string> fieldsOption,
+		Option<bool> prettyOption)
+	{
+		command.Add(formatOption);
+		command.Add(fullOption);
+		command.Add(compactOption);
+		command.Add(fieldsOption);
+		command.Add(prettyOption);
+	}
+
+	private static QueryOutputOptions ReadQueryOutputOptions(
+		ParseResult parseResult,
+		Option<string> formatOption,
+		Option<bool> fullOption,
+		Option<bool> compactOption,
+		Option<string> fieldsOption,
+		Option<bool> prettyOption)
+	{
+		return new QueryOutputOptions(
+			parseResult.GetValue(formatOption),
+			parseResult.GetValue(fullOption),
+			parseResult.GetValue(compactOption),
+			parseResult.GetValue(fieldsOption),
+			parseResult.GetValue(prettyOption));
+	}
+
+	private static void WriteQueryOutput(object value, QueryOutputOptions options)
+	{
+		Console.WriteLine(QueryResultFormatter.Format(value, options.Format, options.Pretty));
+	}
+
+	private static void AddRelatedSymbolCommand(
+		Command command,
+		Argument<string> symbolQueryArgument,
+		Option<string> indexOption,
+		Option<int> limitOption,
+		Option<string> kindOption,
+		Option<string> accessibilityOption,
+		Option<string> sortOption,
+		Option<string> formatOption,
+		Option<bool> fullOption,
+		Option<bool> compactOption,
+		Option<string> fieldsOption,
+		Option<bool> prettyOption,
+		Func<string, string?, int, string?, string?, string?, CancellationToken, Task<IReadOnlyList<SymbolRecord>>> execute,
+		CodeIndexQueryService queryService)
+	{
+		command.Add(symbolQueryArgument);
+		command.Add(indexOption);
+		command.Add(limitOption);
+		command.Add(kindOption);
+		command.Add(accessibilityOption);
+		command.Add(sortOption);
+		AddQueryOutputOptions(command, formatOption, fullOption, compactOption, fieldsOption, prettyOption);
+		command.SetAction(async (parseResult, cancellationToken) =>
+		{
+			var query = parseResult.GetValue(symbolQueryArgument);
+			var indexDirectory = parseResult.GetValue(indexOption);
+			var limit = parseResult.GetValue(limitOption);
+			var kind = parseResult.GetValue(kindOption);
+			var accessibility = parseResult.GetValue(accessibilityOption);
+			var sort = parseResult.GetValue(sortOption);
+			var output = ReadQueryOutputOptions(parseResult, formatOption, fullOption, compactOption, fieldsOption, prettyOption);
+
+			if (string.IsNullOrWhiteSpace(query))
+			{
+				throw new InvalidOperationException("A symbol query is required.");
+			}
+
+			var snapshot = await queryService.ReadSnapshotAsync(indexDirectory, cancellationToken);
+			var results = await execute(query!, indexDirectory, limit, kind, accessibility, sort, cancellationToken);
+			var useFull = output.Full && !output.CompactRequested;
+			WriteQueryOutput(QueryResultFormatter.PrepareSymbolResults(results, snapshot, useFull, output.Fields), output);
+			return 0;
+		});
+	}
+
+	private sealed record QueryOutputOptions(string? Format, bool Full, bool CompactRequested, string? Fields, bool Pretty);
 
 	private static async Task<CodeIndexSnapshot> ReadSnapshotAsync(CliRuntime runtime, string? indexDirectory, CancellationToken cancellationToken)
 	{
@@ -845,6 +937,11 @@ public static class CliApplication
 	private static void WriteJson<T>(T value)
 	{
 		Console.WriteLine(JsonSerializer.Serialize(value, OutputJsonOptions));
+	}
+
+	private static void WriteJsonPretty<T>(T value)
+	{
+		Console.WriteLine(JsonSerializer.Serialize(value, QueryResultFormatter.PrettyJsonOptions));
 	}
 
 	private static object CreateSemanticSearchResult(CodeIndexSnapshot snapshot, EmbeddingSearchResult result)

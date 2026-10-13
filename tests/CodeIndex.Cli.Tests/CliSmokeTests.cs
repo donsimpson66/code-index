@@ -174,7 +174,8 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
                 {
                     ["query"] = "ui",
                     ["indexDirectory"] = indexDirectory,
-                    ["itemType"] = "file"
+                    ["itemType"] = "file",
+                    ["limit"] = 10
                 });
 
             Assert.False(semanticSearch.IsError ?? false);
@@ -1809,7 +1810,7 @@ public sealed class CliSmokeTests(IndexFixture fixture) : IClassFixture<IndexFix
 
 public sealed class IndexFixture : IAsyncLifetime
 {
-    private readonly SemaphoreSlim consoleLock = new(1, 1);
+    private static readonly SemaphoreSlim ConsoleLock = new(1, 1);
     private readonly SemaphoreSlim solutionIndexLock = new(1, 1);
     private string? solutionIndexDirectory;
 
@@ -1857,7 +1858,6 @@ public sealed class IndexFixture : IAsyncLifetime
 
     public Task DisposeAsync()
     {
-        consoleLock.Dispose();
         solutionIndexLock.Dispose();
 
         if (!string.IsNullOrWhiteSpace(solutionIndexDirectory) && Directory.Exists(solutionIndexDirectory))
@@ -1895,6 +1895,12 @@ public sealed class IndexFixture : IAsyncLifetime
             var edges = await edgeBuilder.BuildAsync(SolutionPath);
             var references = await referenceBuilder.BuildAsync(SolutionPath, files, symbols);
             var embeddings = embeddingBuilder.Build(files, symbols);
+            (symbols, edges, references, embeddings) = global::CodeIndex.Core.SymbolPresentation.FilterLocals(
+                symbols,
+                edges,
+                references,
+                embeddings,
+                includeLocals: false);
             var meta = global::CodeIndex.Core.CodeIndexMetaFactory.Create(SolutionPath, "solution");
             var snapshot = new global::CodeIndex.Core.CodeIndexSnapshot(meta, files, symbols, edges, references, embeddings);
             var validator = new global::CodeIndex.Core.CodeIndexValidator();
@@ -1953,7 +1959,7 @@ public sealed class IndexFixture : IAsyncLifetime
 
     private async Task<CliInvocationResult> InvokeCliAsync(global::CodeIndex.Cli.CliRuntime? runtime, string[] arguments)
     {
-        await consoleLock.WaitAsync();
+        await ConsoleLock.WaitAsync();
         var originalOut = Console.Out;
         var originalError = Console.Error;
         using var outputWriter = new StringWriter();
@@ -1971,7 +1977,7 @@ public sealed class IndexFixture : IAsyncLifetime
         {
             Console.SetOut(originalOut);
             Console.SetError(originalError);
-            consoleLock.Release();
+            ConsoleLock.Release();
         }
     }
 

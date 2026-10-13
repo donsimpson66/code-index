@@ -99,6 +99,16 @@ public sealed class CodeIndexQueryService(CliRuntime runtime)
         return await GetExcerptAsync(snapshot, request.FilePath, request.StartLine, request.EndLine, cancellationToken);
     }
 
+    public async Task<(SymbolRecord Symbol, IReadOnlyList<SymbolRecord> Children)> GetOutlineAsync(CodeIndexChildQueryRequest request, CancellationToken cancellationToken)
+    {
+        ValidateSymbolQuery(request.Query);
+        var snapshot = await ReadSnapshotAsync(request.IndexDirectory, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        var symbol = ResolveSymbol(snapshot, request.Query);
+        var children = GetChildren(snapshot, request);
+        return (symbol, children);
+    }
+
     public async Task<CodeIndexSnapshot> ReadSnapshotAsync(string? indexDirectory, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -112,7 +122,9 @@ public sealed class CodeIndexQueryService(CliRuntime runtime)
 
     internal IReadOnlyList<SymbolRecord> FindSymbols(CodeIndexSnapshot snapshot, CodeIndexFindSymbolsRequest request)
     {
+        var includeLocals = string.Equals(request.Kind, SymbolKinds.Local, StringComparison.OrdinalIgnoreCase);
         return LimitResults(OrderFindSymbolResults(snapshot.Symbols
+            .Where(symbol => includeLocals || !string.Equals(symbol.Kind, SymbolKinds.Local, StringComparison.Ordinal))
             .Where(symbol =>
                 string.Equals(symbol.Name, request.Query, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(symbol.QualifiedName, request.Query, StringComparison.OrdinalIgnoreCase) ||
@@ -197,9 +209,11 @@ public sealed class CodeIndexQueryService(CliRuntime runtime)
 
     private static IReadOnlyList<SymbolRecord> GetRelatedSymbols(CodeIndexSnapshot snapshot, string symbolId, string edgeType, bool outgoing, CodeIndexChildQueryRequest request)
     {
+        var includeLocals = string.Equals(request.Kind, SymbolKinds.Local, StringComparison.OrdinalIgnoreCase);
         var relatedSymbols = (outgoing
                 ? snapshot.Edges.Where(edge => edge.Type == edgeType && edge.From == symbolId).Join(snapshot.Symbols, edge => edge.To, candidate => candidate.Id, (_, candidate) => candidate)
                 : snapshot.Edges.Where(edge => edge.Type == edgeType && edge.To == symbolId).Join(snapshot.Symbols, edge => edge.From, candidate => candidate.Id, (_, candidate) => candidate))
+            .Where(candidate => includeLocals || !string.Equals(candidate.Kind, SymbolKinds.Local, StringComparison.Ordinal))
             .Where(candidate => string.IsNullOrWhiteSpace(request.Kind) || string.Equals(candidate.Kind, request.Kind, StringComparison.OrdinalIgnoreCase))
             .Where(candidate => string.IsNullOrWhiteSpace(request.Accessibility) || string.Equals(candidate.Accessibility, request.Accessibility, StringComparison.OrdinalIgnoreCase));
 

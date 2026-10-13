@@ -232,7 +232,7 @@ public sealed class WorkspaceSymbolIndexBuilder
                 sourceLocation.LineSpan.EndLinePosition.Line + 1,
                 sourceLocation.LineSpan.EndLinePosition.Character + 1),
             signature,
-            GetSummary(symbol, symbolKind),
+            GetSummary(symbol),
             parentId,
             GetAccessibility(symbol),
             symbol.IsStatic,
@@ -400,7 +400,7 @@ public sealed class WorkspaceSymbolIndexBuilder
         };
     }
 
-    private static string GetSummary(ISymbol symbol, string symbolKind)
+    private static string GetSummary(ISymbol symbol)
     {
         var xml = symbol.GetDocumentationCommentXml(expandIncludes: true, cancellationToken: default);
 
@@ -423,11 +423,7 @@ public sealed class WorkspaceSymbolIndexBuilder
             }
         }
 
-        var displayName = symbol is IMethodSymbol { MethodKind: MethodKind.Constructor } && symbol.ContainingType is not null
-            ? symbol.ContainingType.Name
-            : symbol.Name;
-
-        return $"{symbolKind} {displayName}.";
+        return string.Empty;
     }
 
     private static string GetAccessibility(ISymbol symbol)

@@ -94,10 +94,11 @@ dotnet run --project src/CodeIndex.Mcp
 
 Current MCP tools:
 
-- `build_index`
-- `find_symbol`
+- `build_index` (supports `includeLocals`, `skipEmbeddings`, `ifChanged`)
+- `find_symbol` (compact projections; default limit 20)
 - `get_symbol`
-- `get_children`
+- `get_children` (compact projections; default limit 40)
+- `outline` (parent + children in one call)
 - `find_references`
 - `semantic_search`
 - `get_callees`
@@ -245,38 +246,38 @@ dotnet run --project src/CodeIndex.Cli -- build ./samples/SampleSolution/SampleS
 
 ## Recommended Workflow
 
-1. Rebuild the index if it may be stale.
+1. Rebuild the index only when it may be stale.
 
 ```bash
-dotnet run --project src/CodeIndex.Cli -- build ./code-index.sln --out ./artifacts/code-index
+./scripts/code-index build ./code-index.sln --out ./artifacts/code-index --if-changed
 ```
 
-2. Find likely symbols first.
+2. Find likely symbols first (compact projections by default).
 
 ```bash
-dotnet run --project src/CodeIndex.Cli -- find-symbol "WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index
+./scripts/code-index find-symbol "WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index --limit 10
+./scripts/code-index outline "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index --kind method
 ```
 
-3. Confirm the owning symbol or inspect its children.
+3. Confirm the owning symbol when you need the full record.
 
 ```bash
-dotnet run --project src/CodeIndex.Cli -- get-symbol "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index
-dotnet run --project src/CodeIndex.Cli -- get-children "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index --kind method --sort declaration
+./scripts/code-index get-symbol "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index
 ```
 
 4. Fetch references, semantic matches, or call/test relationships as needed.
 
 ```bash
-dotnet run --project src/CodeIndex.Cli -- find-references "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index --limit 20
-dotnet run --project src/CodeIndex.Cli -- semantic-search "workspace inspection" --index ./artifacts/code-index --type symbol --limit 10
-dotnet run --project src/CodeIndex.Cli -- get-callers "CodeIndex.Roslyn.WorkspaceLoader.LoadAsync" --index ./artifacts/code-index --kind method --limit 20
-dotnet run --project src/CodeIndex.Cli -- get-tests "CodeIndex.Roslyn.WorkspaceLoader.LoadAsync" --index ./artifacts/code-index --kind method --limit 20
+./scripts/code-index find-references "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index --limit 20
+./scripts/code-index semantic-search "workspace inspection" --index ./artifacts/code-index --type symbol --limit 10
+./scripts/code-index get-callers "CodeIndex.Roslyn.WorkspaceLoader.LoadAsync" --index ./artifacts/code-index --kind method --limit 20
+./scripts/code-index get-tests "CodeIndex.Roslyn.WorkspaceLoader.LoadAsync" --index ./artifacts/code-index --kind method --limit 20
 ```
 
 5. Read only the exact source lines you still need.
 
 ```bash
-dotnet run --project src/CodeIndex.Cli -- get-excerpt "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs" --index ./artifacts/code-index --start 1 --end 80
+./scripts/code-index get-excerpt "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs" --index ./artifacts/code-index --start 1 --end 80
 ```
 
 ## CLI Commands
@@ -302,11 +303,15 @@ Options:
 - `--out <path>`
 - `--incremental-from-index <path>`
 - `--include-generated`
+- `--include-locals` (locals are excluded by default)
+- `--skip-embeddings` (omit embedding vectors; semantic search needs a rebuild without this flag)
+- `--if-changed` (skip rewriting `--out` when file hashes already match)
 - `--verbose`
 
 Notes:
 
 - generated files are excluded by default
+- local symbols are excluded by default
 - validation runs before artifacts are written
 - when an incremental JSON baseline is provided and file paths and hashes are unchanged, the build reuses existing symbols, edges, references, and embeddings instead of rebuilding them
 
@@ -404,6 +409,43 @@ Gets exact source lines from a file.
 
 ```bash
 dotnet run --project src/CodeIndex.Cli -- get-excerpt "SampleLibrary/FriendlyGreeter.cs" --index ./artifacts/code-index --start 1 --end 20
+```
+
+### `outline`
+
+Returns a compact parent symbol plus children in one call.
+
+```bash
+dotnet run --project src/CodeIndex.Cli -- outline "SampleLibrary.FriendlyGreeter" --index ./artifacts/code-index --kind method --limit 20
+```
+
+### Query output options
+
+List queries (`find-symbol`, `get-children`, `get-callees`, `get-callers`, `get-tests`, `get-test-targets`, `outline`) return compact projections by default:
+
+- `id`, `name`, `qualifiedName`, `kind`, `file`, `startLine`, `accessibility`, short `signature`, and real `summary` when present
+
+Shared flags:
+
+- `--format json|text` (default `json`, compact / non-indented)
+- `--full` full `SymbolRecord` payloads instead of projections
+- `--compact` force projections (mainly useful with `get-symbol`)
+- `--fields name,kind,file` keep only selected JSON fields
+- `--pretty` indented JSON
+- `--limit` defaults to `20` for find/search and `40` for children-style commands (`0` means unlimited)
+
+Install the CLI as a local tool when you want to avoid `dotnet run`:
+
+```bash
+dotnet pack src/CodeIndex.Cli -c Release
+dotnet tool install --global --add-source ./src/CodeIndex.Cli/bin/Release CodeIndex.Cli
+code-index find-symbol "FriendlyGreeter" --index ./artifacts/code-index
+```
+
+Or use the repo wrapper:
+
+```bash
+./scripts/code-index find-symbol "FriendlyGreeter" --index ./artifacts/code-index --format text
 ```
 
 ## Output Files

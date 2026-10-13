@@ -20,6 +20,56 @@ public sealed class CodeIndexBuildService(CliRuntime runtime)
         var inputKind = SourceInputKindDetector.Detect(request.InputPath);
         var incrementalMergeService = new IncrementalIndexMergeService();
         var embeddingBuilder = new SemanticEmbeddingIndexBuilder();
+
+        if (request.IfChanged && !string.IsNullOrWhiteSpace(request.OutputDirectory) && Directory.Exists(request.OutputDirectory))
+        {
+            try
+            {
+                var existing = await runtime.ReadSnapshotAsync(request.OutputDirectory, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                if (incrementalMergeService.CanReuseBaseline(request.InputPath, inputKind, files, existing))
+                {
+                    var (existingSymbols, existingEdges, existingReferences, existingEmbeddings) = SymbolPresentation.FilterLocals(
+                        existing.Symbols,
+                        existing.Edges,
+                        existing.References,
+                        existing.Embeddings,
+                        request.IncludeLocals);
+
+                    if (request.SkipEmbeddings)
+                    {
+                        existingEmbeddings = Array.Empty<EmbeddingRecord>();
+                    }
+
+                    var cleaned = existingSymbols.Count != existing.Symbols.Count ||
+                        (request.SkipEmbeddings && existing.Embeddings.Count > 0);
+                    var unchangedMeta = CodeIndexMetaFactory.Create(request.InputPath, inputKind);
+                    var unchangedSnapshot = new CodeIndexSnapshot(unchangedMeta, files, existingSymbols, existingEdges, existingReferences, existingEmbeddings);
+                    runtime.ValidateSnapshot(unchangedSnapshot);
+                    return new CodeIndexBuildResult(
+                        unchangedSnapshot,
+                        new CodeIndexBuildStats(
+                            UsedIncrementalBaseline: true,
+                            ReusedIncrementalBaseline: true,
+                            SkippedBecauseUnchanged: !cleaned,
+                            FileCount: files.Count,
+                            SymbolCount: existingSymbols.Count,
+                            EdgeCount: existingEdges.Count,
+                            ReferenceCount: existingReferences.Count,
+                            EmbeddingCount: existingEmbeddings.Count,
+                            ChangedFileCount: 0,
+                            RemovedFileCount: 0,
+                            RebuiltSymbolCount: 0,
+                            RebuiltEdgeCount: 0,
+                            RebuiltReferenceCount: 0));
+                }
+            }
+            catch (Exception)
+            {
+                // Fall through to a normal build when the existing out directory is unreadable.
+            }
+        }
+
         var canReuseIncrementalBaseline = incrementalBaseline is not null &&
             incrementalMergeService.CanReuseBaseline(request.InputPath, inputKind, files, incrementalBaseline);
 
@@ -39,6 +89,7 @@ public sealed class CodeIndexBuildService(CliRuntime runtime)
             stats = new CodeIndexBuildStats(
                 UsedIncrementalBaseline: true,
                 ReusedIncrementalBaseline: true,
+                SkippedBecauseUnchanged: false,
                 FileCount: files.Count,
                 SymbolCount: symbols.Count,
                 EdgeCount: edges.Count,
@@ -87,10 +138,11 @@ public sealed class CodeIndexBuildService(CliRuntime runtime)
             symbols = mergePlan.MergedSymbols;
             edges = incrementalMergeService.MergeEdges(incrementalBaseline, mergePlan, rebuiltEdges);
             references = incrementalMergeService.MergeReferences(incrementalBaseline, mergePlan, rebuiltReferences);
-            embeddings = embeddingBuilder.Build(files, symbols);
+            embeddings = request.SkipEmbeddings ? Array.Empty<EmbeddingRecord>() : embeddingBuilder.Build(files, symbols);
             stats = new CodeIndexBuildStats(
                 UsedIncrementalBaseline: true,
                 ReusedIncrementalBaseline: false,
+                SkippedBecauseUnchanged: false,
                 FileCount: files.Count,
                 SymbolCount: symbols.Count,
                 EdgeCount: edges.Count,
@@ -112,10 +164,11 @@ public sealed class CodeIndexBuildService(CliRuntime runtime)
             cancellationToken.ThrowIfCancellationRequested();
             references = await runtime.BuildReferencesAsync(request.InputPath, files, symbols, request.IncludeGenerated, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
-            embeddings = embeddingBuilder.Build(files, symbols);
+            embeddings = request.SkipEmbeddings ? Array.Empty<EmbeddingRecord>() : embeddingBuilder.Build(files, symbols);
             stats = new CodeIndexBuildStats(
                 UsedIncrementalBaseline: false,
                 ReusedIncrementalBaseline: false,
+                SkippedBecauseUnchanged: false,
                 FileCount: files.Count,
                 SymbolCount: symbols.Count,
                 EdgeCount: edges.Count,
@@ -131,6 +184,26 @@ public sealed class CodeIndexBuildService(CliRuntime runtime)
         }
 
         cancellationToken.ThrowIfCancellationRequested();
+        (symbols, edges, references, embeddings) = SymbolPresentation.FilterLocals(
+            symbols,
+            edges,
+            references,
+            embeddings,
+            request.IncludeLocals);
+
+        if (request.SkipEmbeddings)
+        {
+            embeddings = Array.Empty<EmbeddingRecord>();
+        }
+
+        stats = stats with
+        {
+            SymbolCount = symbols.Count,
+            EdgeCount = edges.Count,
+            ReferenceCount = references.Count,
+            EmbeddingCount = embeddings.Count
+        };
+
         var meta = CodeIndexMetaFactory.Create(request.InputPath, inputKind);
         var snapshot = new CodeIndexSnapshot(meta, files, symbols, edges, references, embeddings);
         runtime.ValidateSnapshot(snapshot);
@@ -165,7 +238,14 @@ public sealed class CodeIndexBuildService(CliRuntime runtime)
     }
 }
 
-public sealed record CodeIndexBuildRequest(string InputPath, bool IncludeGenerated, string? IncrementalFromIndex);
+public sealed record CodeIndexBuildRequest(
+    string InputPath,
+    bool IncludeGenerated,
+    string? IncrementalFromIndex,
+    bool IncludeLocals = false,
+    bool SkipEmbeddings = false,
+    bool IfChanged = false,
+    string? OutputDirectory = null);
 
 public sealed record CodeIndexBuildResult(CodeIndexSnapshot Snapshot, CodeIndexBuildStats Stats);
 
@@ -183,7 +263,8 @@ public sealed record CodeIndexBuildStats(
     int RebuiltEdgeCount,
     int RebuiltReferenceCount,
     int RebuiltEdgeFileCount = 0,
-    int RebuiltReferenceFileCount = 0);
+    int RebuiltReferenceFileCount = 0,
+    bool SkippedBecauseUnchanged = false);
 
 public sealed record CodeIndexSnapshotOutputPaths(
     string MetaPath,

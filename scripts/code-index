@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+project="$root/src/CodeIndex.Cli"
+
+dotnet_works() {
+  local candidate="$1"
+  [[ -n "$candidate" && -x "$candidate" ]] || return 1
+  (cd "$root" && "$candidate" --version >/dev/null 2>&1)
+}
+
+resolve_dotnet() {
+  if [[ -n "${DOTNET:-}" ]] && dotnet_works "$DOTNET"; then
+    printf '%s\n' "$DOTNET"
+    return 0
+  fi
+
+  local candidate path_dotnet
+  path_dotnet="$(command -v dotnet 2>/dev/null || true)"
+  for candidate in \
+    "$path_dotnet" \
+    "$HOME/.dotnet/dotnet" \
+    "$HOME/.local/share/mise/shims/dotnet" \
+    "/opt/homebrew/bin/dotnet" \
+    "/usr/local/share/dotnet/dotnet" \
+    "/usr/share/dotnet/dotnet"; do
+    if dotnet_works "$candidate"; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+
+  echo "error: could not find a usable dotnet SDK" >&2
+  return 1
+}
+
+dotnet_bin="$(resolve_dotnet)"
+exec "$dotnet_bin" run --project "$project" -c Release --no-launch-profile -- "$@"

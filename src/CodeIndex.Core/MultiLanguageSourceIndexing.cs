@@ -627,7 +627,7 @@ internal static partial class MultiLanguageSymbolParser
             file.Id,
             new TextRangeRecord(lineNumber, startColumn, lineNumber, endColumn),
             kind == SymbolKinds.Constructor ? $"{qualifiedName}()" : $"{kind} {qualifiedName}",
-            $"{kind} {name} in {file.Language} source.",
+            string.Empty,
             parentId,
             accessibility,
             isStatic,

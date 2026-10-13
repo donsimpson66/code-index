@@ -2,38 +2,48 @@
 
 ## Index First
 
-When working in this repository, consult the checked-in index in
-`artifacts/code-index` before searching through project files directly.
-Use the code-index commands to search the project code first, then fall back
-to file or text search only when the index does not answer the question.
+Consult the checked-in index in `artifacts/code-index` before searching project
+files directly. Prefer MCP `codeIndex` tools when available; otherwise use the
+`scripts/code-index` wrapper (or a locally installed `code-index` tool). Fall
+back to `rg` or file reads only when the index cannot answer.
 
 Preferred workflow:
 
-1. Rebuild the repository index if it may be stale.
+1. Rebuild only when the index may be stale (after structural edits). Prefer
+   `--if-changed` so unchanged trees skip rewriting.
 
 ```bash
-dotnet run --project src/CodeIndex.Cli -- build ./code-index.sln --out ./artifacts/code-index
+./scripts/code-index build ./code-index.sln --out ./artifacts/code-index --if-changed
 ```
 
-2. Use code-index symbol queries before searching project files.
+2. Use compact symbol queries first (`find-symbol`, `outline`, `get-children`).
+   Defaults return list projections, not full records.
 
 ```bash
-dotnet run --project src/CodeIndex.Cli -- find-symbol "WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index
-dotnet run --project src/CodeIndex.Cli -- get-symbol "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index
-dotnet run --project src/CodeIndex.Cli -- get-children "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index --kind method --sort declaration
+./scripts/code-index find-symbol "WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index --limit 10
+./scripts/code-index outline "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index --kind method
+./scripts/code-index get-symbol "CodeIndex.Roslyn.WorkspaceSymbolIndexBuilder" --index ./artifacts/code-index
 ```
 
-3. Use exact excerpts for follow-up source reads.
+3. Fetch the smallest excerpt still needed.
 
 ```bash
-dotnet run --project src/CodeIndex.Cli -- get-excerpt "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs" --index ./artifacts/code-index --start 1 --end 80
+./scripts/code-index get-excerpt "src/CodeIndex.Roslyn/WorkspaceSymbolIndexBuilder.cs" --index ./artifacts/code-index --start 88 --end 120
 ```
 
 ## Search Order
 
-- Search project code with the code-index commands before using `rg`, editor file search, or broad file reads.
-- Prefer `find-symbol` when you know a type, member, or namespace name.
-- Prefer `get-symbol` to confirm the owning file, signature, summary, and parent.
-- Prefer `get-children` before opening an entire type file.
+- Prefer `find-symbol` / `outline` when you know a type, member, or namespace name.
+- Prefer `get-symbol` for one full record after a list hit.
+- Prefer `get-children` / `outline` before opening an entire type file.
 - Prefer `get-excerpt` for the smallest necessary source slice.
+- Cap list queries with `--limit` (defaults are already modest).
+- Use `--format text` when a denser line-oriented view helps.
+- Use `--fields` to keep only the columns you need.
 - Use broad text search only when the index does not answer the question.
+
+## Token Budget Notes
+
+- Locals are excluded from builds by default; pass `--include-locals` only if needed.
+- List commands return compact projections; use `get-symbol` or `--full` for full records.
+- Embeddings are optional at build time (`--skip-embeddings`); skip them when semantic search is not needed.
